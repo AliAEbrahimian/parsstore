@@ -1,0 +1,17 @@
+{% extends "core/base.html" %}
+
+{% block title %}خطای سرور | {{ SITE.name }}{% endblock %}
+
+{% block content %}
+<section class="section error-page">
+  <div class="container error-inner">
+    <p class="eyebrow">خطای ۵۰۰</p>
+    <h1>مشکلی در سرور پیش آمد</h1>
+    <p>درخواست شما انجام نشد. لطفاً چند لحظه بعد دوباره تلاش کنید یا با ما تماس بگیرید.</p>
+    <a class="btn btn-primary" href="{% url 'core:home' %}">
+      بازگشت به صفحه اصلی
+      <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
+    </a>
+  </div>
+</section>
+{% endblock %}

@@ -1,0 +1,29 @@
+# همهٔ فایل‌های متنی با پایان‌خط LF ذخیره شوند
+* text=auto eol=lf
+
+*.py    text eol=lf
+*.html  text eol=lf
+*.css   text eol=lf
+*.js    text eol=lf
+*.md    text eol=lf
+*.txt   text eol=lf
+*.yml   text eol=lf
+*.yaml  text eol=lf
+*.json  text eol=lf
+
+# فایل‌های دودویی
+*.woff2 binary
+*.woff  binary
+*.ttf   binary
+*.png   binary
+*.jpg   binary
+*.jpeg  binary
+*.gif   binary
+*.ico   binary
+*.sqlite3 binary
+
+# نمایش بهتر در GitHub
+*.py    linguist-language=Python
+*.html  linguist-language=HTML
+*.css   linguist-language=CSS
+*.js    linguist-language=JavaScript

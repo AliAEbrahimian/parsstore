@@ -1,0 +1,65 @@
+name: گزارش باگ
+description: گزارش خطا یا رفتار نادرست در سایت
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        از این‌که برای بهتر شدن پروژه وقت می‌گذارید سپاسگزاریم.
+        لطفاً پیش از ثبت، Issues موجود را جست‌وجو کنید.
+
+  - type: textarea
+    id: description
+    attributes:
+      label: توضیح مشکل
+      description: چه اتفاقی افتاد و انتظار داشتید چه اتفاقی بیفتد؟
+      placeholder: هنگام ارسال فرم استعلام، صفحه به‌جای پیام موفقیت خطا نشان می‌دهد.
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: مراحل بازتولید
+      placeholder: |
+        ۱. صفحه اصلی را باز کنید
+        ۲. فرم را پر کنید
+        ۳. روی «ارسال استعلام» بزنید
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: نسخهٔ پایتون و جنگو
+      placeholder: Python 3.13.5 — Django 5.2.4
+    validations:
+      required: true
+
+  - type: input
+    id: browser
+    attributes:
+      label: مرورگر / سیستم‌عامل
+      placeholder: Chrome 140 — Windows 11
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: متن خطا یا لاگ
+      description: خروجی کنسول مرورگر یا ترمینال را اینجا بگذارید (اطلاعات حساس را حذف کنید).
+      render: shell
+    validations:
+      required: false
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: بررسی‌های نهایی
+      options:
+        - label: Issues موجود را جست‌وجو کرده‌ام.
+          required: true
+        - label: این گزارش شامل کلید یا اطلاعات حساس نیست.
+          required: true
