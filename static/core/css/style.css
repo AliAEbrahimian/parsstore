@@ -1468,6 +1468,311 @@ section[id] {
   font-size: 0.84rem;
 }
 
+.products-all {
+  display: flex;
+  justify-content: center;
+  margin-bottom: clamp(32px, 4vw, 48px);
+}
+
+.product-media-link {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+.product-body h3 a {
+  color: inherit;
+}
+
+.product-body h3 a:hover {
+  color: var(--accent);
+}
+
+/* --- سرصفحهٔ صفحات داخلی (کاتالوگ و جزئیات) --- */
+.page-head {
+  padding-block: calc(var(--header-h) + clamp(26px, 4vw, 44px)) clamp(20px, 3vw, 30px);
+  border-bottom: 1px solid var(--line-soft);
+  background:
+    radial-gradient(60% 90% at 88% 0%, var(--accent-soft), transparent 70%),
+    var(--bg-soft);
+}
+
+.page-head h1 {
+  font-size: clamp(1.7rem, 3.6vw, 2.5rem);
+  margin-bottom: 0.55rem;
+}
+
+.page-head .lead-sm {
+  max-width: 70ch;
+}
+
+.breadcrumbs {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.15rem;
+  color: var(--muted-2);
+  font-size: 0.78rem;
+}
+
+.breadcrumbs a {
+  color: var(--muted);
+}
+
+.breadcrumbs a:hover {
+  color: var(--accent);
+}
+
+/* --- کاتالوگ محصولات --- */
+.catalog {
+  padding-top: clamp(26px, 4vw, 44px);
+}
+
+.catalog-filters {
+  display: grid;
+  grid-template-columns: minmax(0, 2fr) minmax(0, 1fr) minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: clamp(18px, 2.5vw, 26px);
+  padding: clamp(16px, 2.2vw, 24px);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--card-grad);
+}
+
+.filter-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 0;
+}
+
+.filter-field label {
+  color: var(--text-dim);
+  font-size: 0.78rem;
+  font-weight: 500;
+}
+
+.filter-field .field-input {
+  width: 100%;
+}
+
+.filter-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.catalog-meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px 18px;
+  margin-bottom: clamp(18px, 2.4vw, 26px);
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.catalog-meta b {
+  color: var(--accent);
+  font-size: 1.05rem;
+}
+
+.catalog-hint {
+  color: var(--muted-2);
+  font-size: 0.78rem;
+}
+
+.catalog-note {
+  margin-top: clamp(28px, 3.5vw, 42px);
+  color: var(--muted);
+  font-size: 0.88rem;
+  text-align: center;
+}
+
+.catalog-note a {
+  color: var(--accent);
+  border-bottom: 1px dashed var(--accent-border-strong);
+}
+
+.catalog-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+  padding: clamp(40px, 6vw, 80px) 20px;
+  border: 1px dashed var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--surface-1);
+  text-align: center;
+}
+
+.catalog-empty .icon {
+  width: 42px;
+  height: 42px;
+  color: var(--faint);
+}
+
+.catalog-empty h2 {
+  font-size: 1.15rem;
+}
+
+.catalog-empty p {
+  max-width: 46ch;
+  color: var(--muted);
+  font-size: 0.88rem;
+}
+
+.catalog-empty .btn {
+  margin-top: 0.8rem;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: clamp(26px, 3vw, 36px);
+}
+
+.page-link {
+  display: grid;
+  place-items: center;
+  min-width: 38px;
+  height: 38px;
+  padding: 0 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: var(--surface-1);
+  color: var(--text-soft);
+  font-size: 0.84rem;
+  font-weight: 600;
+}
+
+.page-link:hover {
+  border-color: var(--accent-border);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.page-link.is-current {
+  border-color: var(--accent);
+  background: var(--accent-soft);
+  color: var(--accent);
+}
+
+.page-link.is-disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.page-ellipsis {
+  padding: 0 6px;
+  color: var(--muted-2);
+}
+
+.pager-info {
+  margin-top: 10px;
+  color: var(--muted-2);
+  font-size: 0.75rem;
+  text-align: center;
+}
+
+/* --- صفحهٔ جزئیات محصول --- */
+.product-detail-section {
+  padding-top: clamp(28px, 4vw, 48px);
+}
+
+.product-detail-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+  gap: clamp(24px, 4vw, 52px);
+  align-items: start;
+}
+
+.product-detail-media {
+  position: relative;
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  background: var(--part-figure-grad);
+}
+
+.product-detail-media img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.product-detail-info h1 {
+  margin: 0.35rem 0 0.6rem;
+  font-size: clamp(1.45rem, 2.6vw, 2rem);
+  line-height: 1.45;
+}
+
+.detail-specs {
+  margin-top: clamp(18px, 2.4vw, 26px);
+  border-top: 1px solid var(--line-soft);
+}
+
+.detail-specs div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 0.62rem 0;
+  border-bottom: 1px solid var(--line-soft);
+  font-size: 0.84rem;
+}
+
+.detail-specs dt {
+  color: var(--muted);
+}
+
+.detail-specs dd {
+  margin: 0;
+  color: var(--text-soft);
+  font-weight: 500;
+  text-align: end;
+}
+
+.product-description {
+  margin-top: clamp(18px, 2.4vw, 26px);
+  color: var(--text-dim);
+  font-size: 0.9rem;
+  line-height: 2;
+}
+
+.product-description p + p {
+  margin-top: 0.7rem;
+}
+
+.detail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: clamp(20px, 2.6vw, 28px);
+}
+
+.detail-note {
+  margin-top: 12px;
+  color: var(--muted-2);
+  font-size: 0.76rem;
+  line-height: 1.9;
+}
+
+.related-section {
+  border-top: 1px solid var(--line-soft);
+}
+
+.related-section .product-grid {
+  margin-bottom: 0;
+}
+
 /* ---------------------------------------------------------------- برندها */
 .brands-section {
   border-block: 1px solid var(--line-soft);
@@ -2434,6 +2739,19 @@ textarea.field-input {
     margin-bottom: 8px;
   }
 
+  .product-detail-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .catalog-filters {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .filter-search,
+  .filter-actions {
+    grid-column: 1 / -1;
+  }
+
   .footer-grid {
     grid-template-columns: 1.2fr 0.8fr;
     gap: 30px;
@@ -2489,6 +2807,19 @@ textarea.field-input {
 
   .form-grid {
     grid-template-columns: 1fr;
+  }
+
+  .catalog-filters {
+    grid-template-columns: 1fr;
+  }
+
+  .filter-search,
+  .filter-actions {
+    grid-column: auto;
+  }
+
+  .filter-actions .btn {
+    flex: 1;
   }
 
   .footer-grid {

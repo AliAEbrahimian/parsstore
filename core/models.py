@@ -8,6 +8,7 @@ from django.core.validators import MaxValueValidator
 from django.db import models
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
+from django.urls import reverse
 
 from .images import make_thumbnail
 from .utils import normalize_digits
@@ -93,6 +94,16 @@ class Product(models.Model):
         verbose_name = "محصول"
         verbose_name_plural = "محصولات"
         ordering = ["sort_order", "name"]
+        # برای کاتالوگ بزرگ (۸۰۰ تا ۱۲۰۰ قطعه) فیلتر و مرتب‌سازی صفحهٔ محصولات
+        # باید از ایندکس استفاده کند تا با رشد کاتالوگ کند نشود.
+        indexes = [
+            models.Index(
+                fields=["is_active", "is_featured", "sort_order"],
+                name="product_active_feat_idx",
+            ),
+            models.Index(fields=["category"], name="product_category_idx"),
+            models.Index(fields=["brand"], name="product_brand_idx"),
+        ]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -108,6 +119,9 @@ class Product(models.Model):
     def display_image(self):
         """بندانگشتی در اولویت است؛ اگر نبود تصویر اصلی نمایش داده می‌شود."""
         return self.image_thumb or self.image
+
+    def get_absolute_url(self) -> str:
+        return reverse("core:product_detail", args=[self.pk])
 
     def save(self, *args, **kwargs):
         image_field = self.image

@@ -1,0 +1,64 @@
+<article class="product-card reveal">
+  <div class="product-media">
+    {% if detail_url %}
+      <a class="product-media-link" href="{{ detail_url }}" tabindex="-1" aria-hidden="true">
+    {% endif %}
+      {% with image=product.display_image %}
+        {% if image %}
+          <img
+            src="{{ image.url }}"
+            alt="{{ product.image_alt|default:product.name }}"
+            width="960"
+            height="720"
+            loading="lazy"
+            decoding="async"
+          >
+        {% else %}
+          <span class="product-placeholder">
+            <svg class="icon" aria-hidden="true"><use href="#i-gear"></use></svg>
+          </span>
+        {% endif %}
+      {% endwith %}
+    {% if detail_url %}</a>{% endif %}
+    <span class="product-cat">{{ product.get_category_display }}</span>
+  </div>
+
+  <div class="product-body">
+    {% if product.brand %}
+      <p class="product-brand" dir="ltr">{{ product.brand }}</p>
+    {% endif %}
+    <h3>
+      {% if detail_url %}
+        <a href="{{ detail_url }}">{{ product.name }}</a>
+      {% else %}
+        {{ product.name }}
+      {% endif %}
+    </h3>
+    <p class="product-summary">{{ product.summary }}</p>
+
+    {% with specs=product.specs.all %}
+      {% if specs %}
+        <dl class="product-specs">
+          {% for spec in specs|slice:":3" %}
+            <div><dt>{{ spec.label }}</dt><dd>{{ spec.value }}</dd></div>
+          {% endfor %}
+        </dl>
+      {% endif %}
+    {% endwith %}
+
+    <div class="product-foot">
+      {% if product.machine_models %}
+        <span class="product-models" dir="ltr">{{ product.machine_models }}</span>
+      {% endif %}
+      {% if detail_url %}
+        <a class="btn btn-sm btn-outline" href="{{ detail_url }}">جزئیات قطعه</a>
+      {% else %}
+        <a
+          class="btn btn-sm btn-outline"
+          href="#contact"
+          data-inquire="{{ product.name }}"
+        >استعلام قیمت</a>
+      {% endif %}
+    </div>
+  </div>
+</article>

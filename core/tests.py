@@ -182,6 +182,134 @@ class ProductTests(TestCase):
             self.assertLessEqual(max(thumb.size), 960)
 
 
+class ProductCatalogTests(TestCase):
+    def _product(self, name="نوزل تست", **overrides):
+        data = {
+            "name": name,
+            "category": Product.CATEGORY_WEFT,
+            "brand": "PICANOL",
+            "machine_models": "GTX",
+            "summary": "توضیح کوتاه برای تست کاتالوگ.",
+        }
+        data.update(overrides)
+        return Product.objects.create(**data)
+
+    def test_catalog_page_lists_only_active_products(self):
+        self._product(name="نوزل تست")
+        self._product(name="قطعهٔ مخفی", is_active=False)
+
+        response = self.client.get(reverse("core:product_list"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "همهٔ قطعات یدکی")
+        self.assertContains(response, "نوزل تست")
+        self.assertNotContains(response, "قطعهٔ مخفی")
+
+    def test_home_page_links_to_full_catalog(self):
+        self._product()
+
+        response = self.client.get(reverse("core:home"))
+
+        self.assertContains(response, reverse("core:product_list"))
+
+    def test_catalog_search_matches_name_brand_and_machine(self):
+        self._product(name="نوزل پیکانول", brand="PICANOL", machine_models="GTX")
+        self._product(name="تسمه دورنیه", brand="DORNIER", machine_models="HTV")
+
+        response = self.client.get(reverse("core:product_list"), {"q": "دورنیه"})
+
+        self.assertContains(response, "تسمه دورنیه")
+        self.assertNotContains(response, "نوزل پیکانول")
+
+        response = self.client.get(reverse("core:product_list"), {"q": "GTX"})
+
+        self.assertContains(response, "نوزل پیکانول")
+        self.assertNotContains(response, "تسمه دورنیه")
+
+    def test_catalog_filters_by_category_and_brand(self):
+        self._product(
+            name="نوزل وفت",
+            category=Product.CATEGORY_WEFT,
+            brand="PICANOL",
+        )
+        self._product(
+            name="برد الکترونیکی",
+            category=Product.CATEGORY_ELECTRONIC,
+            brand="DORNIER",
+        )
+
+        response = self.client.get(
+            reverse("core:product_list"),
+            {"category": Product.CATEGORY_ELECTRONIC, "brand": "DORNIER"},
+        )
+
+        self.assertContains(response, "برد الکترونیکی")
+        self.assertNotContains(response, "نوزل وفت")
+
+    def test_unknown_filter_values_are_ignored(self):
+        self._product(name="نوزل وفت")
+        self._product(name="برد الکترونیکی", category=Product.CATEGORY_ELECTRONIC)
+
+        response = self.client.get(
+            reverse("core:product_list"),
+            {"category": "not-a-category", "brand": "NOT-A-BRAND"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "نوزل وفت")
+        self.assertContains(response, "برد الکترونیکی")
+
+    @override_settings(PRODUCTS_PAGE_SIZE=6)
+    def test_catalog_pagination_limits_results(self):
+        for index in range(13):
+            self._product(name=f"قطعهٔ شمارهٔ {index}")
+
+        response = self.client.get(reverse("core:product_list"))
+
+        self.assertEqual(len(response.context["products"]), 6)
+        self.assertContains(response, "page=2")
+
+        second = self.client.get(reverse("core:product_list"), {"page": 2})
+
+        self.assertEqual(second.status_code, 200)
+        self.assertEqual(len(second.context["products"]), 6)
+
+    def test_detail_page_shows_specs_and_inquiry_link(self):
+        product = self._product()
+        product.specs.create(label="شماره فنی", value="PIC-999", sort_order=1)
+
+        response = self.client.get(product.get_absolute_url())
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "PIC-999")
+        self.assertContains(response, "استعلام قیمت این قطعه")
+        self.assertContains(response, f"?product={product.pk}#contact")
+
+    def test_inactive_product_detail_returns_404(self):
+        product = self._product(is_active=False)
+
+        response = self.client.get(product.get_absolute_url())
+
+        self.assertEqual(response.status_code, 404)
+
+    def test_home_prefills_inquiry_from_product_link(self):
+        product = self._product()
+
+        response = self.client.get(reverse("core:home"), {"product": product.pk})
+
+        self.assertContains(response, f"استعلام قیمت برای: {product.name}")
+
+    @override_settings(PRODUCTS_HOME_LIMIT=2)
+    def test_home_limits_products_and_shows_total(self):
+        for index in range(4):
+            self._product(name=f"قطعهٔ صفحهٔ اصلی {index}")
+
+        response = self.client.get(reverse("core:home"))
+
+        self.assertEqual(len(response.context["products"]), 2)
+        self.assertContains(response, "مشاهده همهٔ محصولات (4 قطعه)")
+
+
 class ClubTests(TestCase):
     payload = {
         "form_type": "club",

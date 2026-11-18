@@ -4,7 +4,9 @@ from django.conf import settings
 from django.contrib import messages
 from django.core.cache import cache
 from django.core.mail import send_mail
-from django.shortcuts import redirect, render
+from django.core.paginator import Paginator
+from django.db.models import Q
+from django.shortcuts import get_object_or_404, redirect, render
 from django.urls import reverse
 
 from . import content
@@ -15,7 +17,8 @@ logger = logging.getLogger(__name__)
 
 
 def home(request):
-    inquiry_form = InquiryForm()
+    prefill = _inquiry_prefill(request)
+    inquiry_form = InquiryForm(initial={"message": prefill} if prefill else None)
     club_form = ClubSignupForm()
 
     if request.method == "POST":
@@ -75,10 +78,98 @@ def home(request):
         "faq": content.FAQ,
         "CLUB": content.CLUB,
         "products": products,
+        "products_total": Product.objects.filter(is_active=True).count(),
         "form": inquiry_form,
         "club_form": club_form,
     }
     return render(request, "core/home.html", context)
+
+
+def product_list(request):
+    """کاتالوگ کامل قطعات با جست‌وجو، فیلتر و صفحه‌بندی.
+
+    صفحهٔ اصلی فقط چند محصول منتخب را نشان می‌دهد؛ این صفحه برای کاتالوگ
+    ۸۰۰ تا ۱۲۰۰ قطعه ساخته شده و هر بار فقط یک صفحه از نتایج را می‌خواند.
+    """
+    q = (request.GET.get("q") or "").strip()[:80]
+    category = request.GET.get("category", "")
+    brand = (request.GET.get("brand") or "").strip()[:80]
+
+    category_choices = Product.CATEGORY_CHOICES
+    if category not in {value for value, _ in category_choices}:
+        category = ""
+
+    brand_options = list(
+        Product.objects.filter(is_active=True)
+        .exclude(brand="")
+        .values_list("brand", flat=True)
+        .distinct()
+        .order_by("brand")
+    )
+    if brand not in brand_options:
+        brand = ""
+
+    products = Product.objects.filter(is_active=True).prefetch_related("specs")
+    if q:
+        products = products.filter(
+            Q(name__icontains=q)
+            | Q(brand__icontains=q)
+            | Q(machine_models__icontains=q)
+            | Q(summary__icontains=q)
+        )
+    if category:
+        products = products.filter(category=category)
+    if brand:
+        products = products.filter(brand=brand)
+    products = products.order_by("-is_featured", "sort_order", "name")
+
+    paginator = Paginator(products, _products_page_size())
+    page_obj = paginator.get_page(request.GET.get("page"))
+
+    params = request.GET.copy()
+    params.pop("page", None)
+    querystring = params.urlencode()
+
+    page_items = [
+        {"number": number, "is_ellipsis": number == Paginator.ELLIPSIS}
+        for number in paginator.get_elided_page_range(
+            page_obj.number, on_each_side=2, on_ends=1
+        )
+    ]
+
+    context = {
+        "products": page_obj.object_list,
+        "page_obj": page_obj,
+        "paginator": paginator,
+        "page_items": page_items,
+        "querystring": querystring,
+        "q": q,
+        "category": category,
+        "brand": brand,
+        "category_choices": category_choices,
+        "brand_options": brand_options,
+        "has_filters": bool(q or category or brand),
+        "result_count": paginator.count,
+    }
+    return render(request, "core/products.html", context)
+
+
+def product_detail(request, pk):
+    """صفحهٔ کامل یک قطعه؛ مشخصات فنی و راه استعلام قیمت."""
+    product = get_object_or_404(
+        Product.objects.filter(is_active=True).prefetch_related("specs"), pk=pk
+    )
+    related = (
+        Product.objects.filter(is_active=True, category=product.category)
+        .exclude(pk=product.pk)
+        .prefetch_related("specs")
+        .order_by("-is_featured", "sort_order", "name")[:4]
+    )
+    return render(
+        request,
+        "core/product_detail.html",
+        {"product": product, "related": related},
+    )
 
 
 def page_not_found(request, exception=None):
@@ -90,6 +181,27 @@ def server_error(request):
 
 
 # ---------------------------------------------------------------- کمک‌تابع‌ها
+def _products_page_size():
+    """اندازهٔ صفحهٔ کاتالوگ با محدودهٔ امن (۶ تا ۹۶) برای جلوگیری از پاسخ سنگین."""
+    size = getattr(settings, "PRODUCTS_PAGE_SIZE", 24)
+    return max(6, min(96, size))
+
+
+def _inquiry_prefill(request):
+    """متن پیش‌فرض فرم استعلام وقتی کاربر از صفحهٔ محصول آمده است."""
+    product_id = request.GET.get("product", "")
+    if not product_id.isdigit():
+        return ""
+    product = (
+        Product.objects.filter(pk=int(product_id), is_active=True)
+        .only("name")
+        .first()
+    )
+    if not product:
+        return ""
+    return f"استعلام قیمت برای: {product.name}"
+
+
 def _client_ip(request):
     """IP مشتری؛ هدرهای پراکسی فقط با فعال‌سازی صریح DJANGO_TRUST_PROXY_HEADERS خوانده می‌شوند."""
     if getattr(settings, "TRUST_PROXY_HEADERS", False):

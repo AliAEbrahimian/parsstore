@@ -1,0 +1,131 @@
+{% extends "core/base.html" %}
+
+{% block title %}همهٔ محصولات | {{ SITE.name }}{% endblock %}
+{% block description %}کاتالوگ کامل قطعات یدکی ماشین‌های بافندگی؛ جست‌وجو بر اساس نام قطعه، برند، مدل ماشین و دسته‌بندی، همراه با تصویر و مشخصات فنی.{% endblock %}
+
+{% block content %}
+<section class="section page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="مسیر صفحه">
+      <a href="{% url 'core:home' %}">خانه</a>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page">محصولات</span>
+    </nav>
+    <p class="eyebrow">کاتالوگ قطعات</p>
+    <h1>همهٔ قطعات یدکی</h1>
+    <p class="lead-sm">
+      قطعهٔ مورد نیاز خود را با نام، برند، مدل ماشین یا دسته‌بندی پیدا کنید. برای
+      دیدن مشخصات کامل روی هر قطعه بزنید؛ استعلام قیمت و موجودی در صفحهٔ همان قطعه است.
+    </p>
+  </div>
+</section>
+
+<section class="section catalog" aria-label="کاتالوگ محصولات">
+  <div class="container">
+    <form class="catalog-filters" method="get" action="{% url 'core:product_list' %}" role="search">
+      <div class="filter-field filter-search">
+        <label for="filter-q">جست‌وجو</label>
+        <input
+          id="filter-q"
+          class="field-input"
+          type="search"
+          name="q"
+          value="{{ q }}"
+          maxlength="80"
+          placeholder="نام قطعه، شماره فنی، برند یا مدل ماشین"
+        >
+      </div>
+
+      <div class="filter-field">
+        <label for="filter-category">دسته‌بندی</label>
+        <select id="filter-category" class="field-input" name="category">
+          <option value="">همهٔ دسته‌ها</option>
+          {% for value, label in category_choices %}
+            <option value="{{ value }}"{% if value == category %} selected{% endif %}>{{ label }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-field">
+        <label for="filter-brand">برند</label>
+        <select id="filter-brand" class="field-input" name="brand">
+          <option value="">همهٔ برندها</option>
+          {% for item in brand_options %}
+            <option value="{{ item }}"{% if item == brand %} selected{% endif %}>{{ item }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="filter-actions">
+        <button class="btn btn-primary" type="submit">جست‌وجو</button>
+        {% if has_filters %}
+          <a class="btn btn-ghost" href="{% url 'core:product_list' %}">پاک کردن</a>
+        {% endif %}
+      </div>
+    </form>
+
+    <div class="catalog-meta">
+      <p><b>{{ result_count }}</b> قطعه پیدا شد.</p>
+      {% if has_filters %}
+        <p class="catalog-hint">
+          {% if q %}جست‌وجو: «{{ q }}»{% endif %}
+          {% if category %} · فیلتر دسته‌بندی فعال{% endif %}
+          {% if brand %} · برند: <span dir="ltr">{{ brand }}</span>{% endif %}
+        </p>
+      {% endif %}
+    </div>
+
+    {% if products %}
+      <div class="product-grid">
+        {% for product in products %}
+          {% include "core/_product_card.html" with product=product detail_url=product.get_absolute_url %}
+        {% endfor %}
+      </div>
+
+      {% if page_obj.paginator.num_pages > 1 %}
+        <nav class="pager" aria-label="صفحه‌بندی محصولات">
+          {% if page_obj.has_previous %}
+            <a class="page-link page-nav" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">قبلی</a>
+          {% else %}
+            <span class="page-link page-nav is-disabled" aria-disabled="true">قبلی</span>
+          {% endif %}
+
+          {% for item in page_items %}
+            {% if item.is_ellipsis %}
+              <span class="page-ellipsis" aria-hidden="true">…</span>
+            {% elif item.number == page_obj.number %}
+              <span class="page-link is-current" aria-current="page">{{ item.number }}</span>
+            {% else %}
+              <a class="page-link" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ item.number }}">{{ item.number }}</a>
+            {% endif %}
+          {% endfor %}
+
+          {% if page_obj.has_next %}
+            <a class="page-link page-nav" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">بعدی</a>
+          {% else %}
+            <span class="page-link page-nav is-disabled" aria-disabled="true">بعدی</span>
+          {% endif %}
+        </nav>
+        <p class="pager-info">صفحهٔ {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</p>
+      {% endif %}
+    {% else %}
+      <div class="catalog-empty">
+        <svg class="icon" aria-hidden="true"><use href="#i-gear"></use></svg>
+        <h2>قطعه‌ای با این مشخصات پیدا نشد</h2>
+        {% if has_filters %}
+          <p>عبارت جست‌وجو یا فیلترها را تغییر دهید یا همهٔ فیلترها را پاک کنید.</p>
+          <a class="btn btn-outline" href="{% url 'core:product_list' %}">نمایش همهٔ قطعات</a>
+        {% else %}
+          <p>هنوز محصولی در کاتالوگ ثبت نشده است. برای استعلام قطعه با ما تماس بگیرید.</p>
+          <a class="btn btn-outline" href="{% url 'core:home' %}#contact">استعلام قطعه</a>
+        {% endif %}
+      </div>
+    {% endif %}
+
+    <p class="catalog-note">
+      قطعهٔ مورد نظر در فهرست نیست؟
+      <a href="{% url 'core:home' %}#contact">برای ما بفرستید</a> — بیش از ۱۲٬۰۰۰ قلم قطعه در انبار موجود است.
+    </p>
+  </div>
+</section>
+{% endblock %}

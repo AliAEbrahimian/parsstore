@@ -166,57 +166,14 @@
     {% if products %}
       <div class="product-grid">
         {% for product in products %}
-          <article class="product-card reveal">
-            <div class="product-media">
-              {% with image=product.display_image %}
-                {% if image %}
-                  <img
-                    src="{{ image.url }}"
-                    alt="{{ product.image_alt|default:product.name }}"
-                    width="960"
-                    height="720"
-                    loading="lazy"
-                    decoding="async"
-                  >
-                {% else %}
-                  <span class="product-placeholder">
-                    <svg class="icon" aria-hidden="true"><use href="#i-gear"></use></svg>
-                  </span>
-                {% endif %}
-              {% endwith %}
-              <span class="product-cat">{{ product.get_category_display }}</span>
-            </div>
-
-            <div class="product-body">
-              {% if product.brand %}
-                <p class="product-brand" dir="ltr">{{ product.brand }}</p>
-              {% endif %}
-              <h3>{{ product.name }}</h3>
-              <p class="product-summary">{{ product.summary }}</p>
-
-              {% with specs=product.specs.all %}
-                {% if specs %}
-                  <dl class="product-specs">
-                    {% for spec in specs|slice:":3" %}
-                      <div><dt>{{ spec.label }}</dt><dd>{{ spec.value }}</dd></div>
-                    {% endfor %}
-                  </dl>
-                {% endif %}
-              {% endwith %}
-
-              <div class="product-foot">
-                {% if product.machine_models %}
-                  <span class="product-models" dir="ltr">{{ product.machine_models }}</span>
-                {% endif %}
-                <a
-                  class="btn btn-sm btn-outline"
-                  href="#contact"
-                  data-inquire="{{ product.name }}"
-                >استعلام قیمت</a>
-              </div>
-            </div>
-          </article>
+          {% include "core/_product_card.html" with product=product %}
         {% endfor %}
+      </div>
+
+      <div class="products-all reveal">
+        <a class="btn btn-outline" href="{% url 'core:product_list' %}">
+          مشاهده همهٔ محصولات{% if products_total %} ({{ products_total }} قطعه){% endif %}
+        </a>
       </div>
 
       <div class="products-subhead reveal">

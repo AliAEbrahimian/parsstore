@@ -40,6 +40,8 @@ class ProductAdmin(admin.ModelAdmin):
     readonly_fields = ("thumbnail_preview", "created_at", "updated_at")
     inlines = (ProductSpecInline,)
     actions = ("rebuild_thumbnails",)
+    list_per_page = 50
+    date_hierarchy = "created_at"
     fieldsets = (
         (
             "اطلاعات محصول",

@@ -1,0 +1,109 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ product.name }} | {{ SITE.name }}{% endblock %}
+{% block description %}{{ product.summary }}{% endblock %}
+
+{% block content %}
+<section class="section page-head product-page-head">
+  <div class="container">
+    <nav class="breadcrumbs" aria-label="مسیر صفحه">
+      <a href="{% url 'core:home' %}">خانه</a>
+      <span aria-hidden="true">›</span>
+      <a href="{% url 'core:product_list' %}">محصولات</a>
+      <span aria-hidden="true">›</span>
+      <span aria-current="page">{{ product.name }}</span>
+    </nav>
+  </div>
+</section>
+
+<section class="section product-detail-section">
+  <div class="container product-detail-grid">
+    <div class="product-detail-media">
+      {% with image=product.display_image %}
+        {% if image %}
+          <img
+            src="{{ image.url }}"
+            alt="{{ product.image_alt|default:product.name }}"
+            width="960"
+            height="720"
+            loading="eager"
+            decoding="async"
+          >
+        {% else %}
+          <span class="product-placeholder">
+            <svg class="icon" aria-hidden="true"><use href="#i-gear"></use></svg>
+          </span>
+        {% endif %}
+      {% endwith %}
+      <span class="product-cat">{{ product.get_category_display }}</span>
+    </div>
+
+    <div class="product-detail-info">
+      {% if product.brand %}
+        <p class="product-brand" dir="ltr">{{ product.brand }}</p>
+      {% endif %}
+      <h1>{{ product.name }}</h1>
+      <p class="lead-sm">{{ product.summary }}</p>
+
+      <dl class="detail-specs">
+        <div>
+          <dt>دسته‌بندی</dt>
+          <dd>{{ product.get_category_display }}</dd>
+        </div>
+        {% if product.brand %}
+          <div>
+            <dt>برند</dt>
+            <dd dir="ltr">{{ product.brand }}</dd>
+          </div>
+        {% endif %}
+        {% if product.machine_models %}
+          <div>
+            <dt>مدل ماشین‌های سازگار</dt>
+            <dd dir="ltr">{{ product.machine_models }}</dd>
+          </div>
+        {% endif %}
+        {% for spec in product.specs.all %}
+          <div>
+            <dt>{{ spec.label }}</dt>
+            <dd>{{ spec.value }}</dd>
+          </div>
+        {% endfor %}
+      </dl>
+
+      {% if product.description %}
+        <div class="product-description">
+          {{ product.description|linebreaks }}
+        </div>
+      {% endif %}
+
+      <div class="detail-actions">
+        <a class="btn btn-primary" href="{% url 'core:home' %}?product={{ product.pk }}#contact">
+          استعلام قیمت این قطعه
+          <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
+        </a>
+        <a class="btn btn-outline" href="{% url 'core:product_list' %}">بازگشت به کاتالوگ</a>
+      </div>
+      <p class="detail-note">
+        قیمت و موجودی پس از ثبت استعلام، تلفنی یا با ایمیل اعلام می‌شود؛ سایت
+        فروشگاه اینترنتی نیست و پرداخت آنلاین ندارد.
+      </p>
+    </div>
+  </div>
+</section>
+
+{% if related %}
+  <section class="section related-section" aria-label="قطعات مشابه">
+    <div class="container">
+      <div class="section-head">
+        <p class="eyebrow">در همین دسته</p>
+        <h2>قطعات مشابه</h2>
+      </div>
+      <div class="product-grid">
+        {% for item in related %}
+          {% include "core/_product_card.html" with product=item detail_url=item.get_absolute_url %}
+        {% endfor %}
+      </div>
+    </div>
+  </section>
+{% endif %}
+{% endblock %}
