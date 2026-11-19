@@ -9,9 +9,17 @@ from .models import Customer, Inquiry, Product, ProductSpec
 
 @admin.register(Inquiry)
 class InquiryAdmin(admin.ModelAdmin):
-    list_display = ("name", "company", "phone", "machine", "is_processed", "created_at")
+    list_display = (
+        "name",
+        "company",
+        "phone",
+        "email",
+        "machine",
+        "is_processed",
+        "created_at",
+    )
     list_filter = ("is_processed", "created_at")
-    search_fields = ("name", "company", "phone", "machine", "message")
+    search_fields = ("name", "company", "phone", "email", "machine", "message")
     list_editable = ("is_processed",)
     readonly_fields = ("created_at",)
     date_hierarchy = "created_at"
@@ -113,6 +121,7 @@ class CustomerAdmin(admin.ModelAdmin):
         "first_name",
         "last_name",
         "phone",
+        "email",
         "company",
         "tier",
         "discount_percent",
@@ -120,7 +129,7 @@ class CustomerAdmin(admin.ModelAdmin):
         "created_at",
     )
     list_filter = ("status", "tier", "created_at")
-    search_fields = ("code", "first_name", "last_name", "phone", "company")
+    search_fields = ("code", "first_name", "last_name", "phone", "email", "company")
     list_editable = ("tier", "discount_percent", "status")
     readonly_fields = ("code", "created_at", "updated_at")
     actions = ("activate_members", "block_members")
@@ -128,7 +137,7 @@ class CustomerAdmin(admin.ModelAdmin):
     fieldsets = (
         (
             "هویت عضو",
-            {"fields": ("code", "first_name", "last_name", "phone", "company")},
+            {"fields": ("code", "first_name", "last_name", "phone", "email", "company")},
         ),
         (
             "باشگاه",

@@ -3,6 +3,7 @@ import tempfile
 from io import BytesIO
 from pathlib import Path
 
+from django.core import mail
 from django.core.cache import cache
 from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase, override_settings
@@ -15,6 +16,7 @@ VALID_PAYLOAD = {
     "name": "علی رضایی",
     "company": "نساجی البرز",
     "phone": "09121234567",
+    "email": "ali@example.com",
     "machine": "Picanol GTX",
     "message": "یک عدد نوزل نیاز دارم.",
 }
@@ -82,9 +84,15 @@ class InquiryFormTests(TestCase):
         inquiry = Inquiry.objects.first()
         self.assertEqual(inquiry.name, "علی رضایی")
         self.assertEqual(inquiry.phone, "09121234567")
+        self.assertEqual(inquiry.email, "ali@example.com")
 
     def test_company_and_machine_are_optional(self):
-        payload = {"name": "رضا", "phone": "۰۹۱۲۱۲۳۴۵۶۷", "message": "استعلام قیمت"}
+        payload = {
+            "name": "رضا",
+            "phone": "۰۹۱۲۱۲۳۴۵۶۷",
+            "email": "reza@example.com",
+            "message": "استعلام قیمت",
+        }
         response = self.client.post(reverse("core:home"), payload, follow=True)
 
         self.assertRedirects(response, f"{reverse('core:home')}#contact")
@@ -113,6 +121,31 @@ class InquiryFormTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Inquiry.objects.count(), 0)
         self.assertContains(response, "درخواست نامعتبر است")
+
+    def test_inquiry_always_emails_customer(self):
+        self.client.post(reverse("core:home"), VALID_PAYLOAD)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["ali@example.com"])
+        self.assertIn("استعلام شما", mail.outbox[0].subject)
+
+    @override_settings(CONTACT_NOTIFY_EMAIL="admin@example.com")
+    def test_inquiry_emails_customer_and_admin(self):
+        self.client.post(reverse("core:home"), VALID_PAYLOAD)
+
+        self.assertEqual(len(mail.outbox), 2)
+        admin_mail, customer_mail = mail.outbox
+        self.assertEqual(admin_mail.to, ["admin@example.com"])
+        self.assertEqual(customer_mail.to, ["ali@example.com"])
+        self.assertIn("استعلام جدید", admin_mail.subject)
+        self.assertIn("ali@example.com", admin_mail.body)
+
+    def test_invalid_email_is_rejected(self):
+        payload = {**VALID_PAYLOAD, "email": "not-an-email"}
+        response = self.client.post(reverse("core:home"), payload)
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(Inquiry.objects.count(), 0)
 
     @override_settings(INQUIRY_RATE_LIMIT=2, INQUIRY_RATE_WINDOW=600)
     def test_rate_limit_blocks_extra_submissions(self):
@@ -317,6 +350,7 @@ class ClubTests(TestCase):
         "last_name": "احمدی",
         "company": "نساجی البرز",
         "phone": "۰۹۱۲۱۲۳۴۵۶۷",
+        "email": "maryam@example.com",
     }
 
     def setUp(self):
@@ -337,6 +371,7 @@ class ClubTests(TestCase):
         customer = Customer.objects.first()
         self.assertEqual(customer.full_name, "مریم احمدی")
         self.assertEqual(customer.phone, "09121234567")
+        self.assertEqual(customer.email, "maryam@example.com")
         self.assertEqual(customer.status, Customer.STATUS_PENDING)
         self.assertEqual(customer.discount_percent, 5)
         self.assertTrue(customer.code.startswith("PT-"))
@@ -344,7 +379,10 @@ class ClubTests(TestCase):
 
     def test_duplicate_phone_is_rejected(self):
         Customer.objects.create(
-            first_name="مریم", last_name="احمدی", phone="09121234567"
+            first_name="مریم",
+            last_name="احمدی",
+            phone="09121234567",
+            email="maryam@example.com",
         )
 
         response = self.client.post(reverse("core:home"), self.payload)
@@ -361,6 +399,31 @@ class ClubTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(Customer.objects.count(), 0)
         self.assertContains(response, "درخواست نامعتبر است")
+
+    def test_signup_always_emails_customer(self):
+        self.client.post(reverse("core:home"), self.payload)
+
+        self.assertEqual(len(mail.outbox), 1)
+        self.assertEqual(mail.outbox[0].to, ["maryam@example.com"])
+        self.assertIn("باشگاه مشتریان", mail.outbox[0].subject)
+
+    @override_settings(CLUB_NOTIFY_EMAIL="club-admin@example.com")
+    def test_signup_emails_customer_and_admin(self):
+        self.client.post(reverse("core:home"), self.payload)
+
+        self.assertEqual(len(mail.outbox), 2)
+        admin_mail, customer_mail = mail.outbox
+        self.assertEqual(admin_mail.to, ["club-admin@example.com"])
+        self.assertEqual(customer_mail.to, ["maryam@example.com"])
+        self.assertIn("عضویت باشگاه", admin_mail.subject)
+        self.assertIn("maryam@example.com", admin_mail.body)
+
+    @override_settings(CONTACT_NOTIFY_EMAIL="owner@example.com", CLUB_NOTIFY_EMAIL="")
+    def test_signup_admin_email_falls_back_to_contact_recipient(self):
+        self.client.post(reverse("core:home"), self.payload)
+
+        self.assertEqual(len(mail.outbox), 2)
+        self.assertEqual(mail.outbox[0].to, ["owner@example.com"])
 
     @override_settings(CLUB_RATE_LIMIT=1, CLUB_RATE_WINDOW=3600)
     def test_rate_limit_blocks_extra_signups(self):

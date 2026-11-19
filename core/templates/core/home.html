@@ -370,6 +370,11 @@
             {{ club_form.phone }}
             {{ club_form.phone.errors }}
           </div>
+          <div class="field">
+            <label for="{{ club_form.email.id_for_label }}">{{ club_form.email.label }} <em>*</em></label>
+            {{ club_form.email }}
+            {{ club_form.email.errors }}
+          </div>
         </div>
 
         <button class="btn btn-primary btn-block" type="submit">
@@ -448,6 +453,11 @@
             <label for="{{ form.phone.id_for_label }}">{{ form.phone.label }} <em>*</em></label>
             {{ form.phone }}
             {{ form.phone.errors }}
+          </div>
+          <div class="field">
+            <label for="{{ form.email.id_for_label }}">{{ form.email.label }} <em>*</em></label>
+            {{ form.email }}
+            {{ form.email.errors }}
           </div>
           <div class="field">
             <label for="{{ form.machine.id_for_label }}">{{ form.machine.label }}</label>

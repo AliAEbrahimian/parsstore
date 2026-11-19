@@ -172,8 +172,10 @@ EMAIL_USE_TLS = env_bool("DJANGO_EMAIL_USE_TLS", True)
 DEFAULT_FROM_EMAIL = os.getenv("DJANGO_DEFAULT_FROM_EMAIL", "no-reply@localhost")
 SERVER_EMAIL = os.getenv("DJANGO_SERVER_EMAIL", DEFAULT_FROM_EMAIL)
 
-# اگر این مقدار تنظیم شود، هر استعلام با ایمیل هم اطلاع داده می‌شود
+# گیرندهٔ ایمیل اطلاعرسانی مدیر برای استعلامها و عضویتهای باشگاه
 CONTACT_NOTIFY_EMAIL = os.getenv("CONTACT_NOTIFY_EMAIL", "")
+CLUB_NOTIFY_EMAIL = os.getenv("CLUB_NOTIFY_EMAIL", "")
+# در صورت خالی بودن هر دو، views.py از ایمیل کاربران staff استفاده میکند.
 
 # ---------------------------------------------------------------- امنیت
 SECURE_CONTENT_TYPE_NOSNIFF = True

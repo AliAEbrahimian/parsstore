@@ -32,7 +32,7 @@ class HoneypotMixin(forms.Form):
 class InquiryForm(HoneypotMixin, forms.ModelForm):
     class Meta:
         model = Inquiry
-        fields = ["name", "company", "phone", "machine", "message"]
+        fields = ["name", "company", "phone", "email", "machine", "message"]
         widgets = {
             "name": forms.TextInput(
                 attrs={
@@ -58,6 +58,16 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
                     "autocomplete": "tel",
                     "dir": "ltr",
                     "maxlength": 30,
+                }
+            ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": INPUT_CLASS,
+                    "placeholder": "name@example.com",
+                    "inputmode": "email",
+                    "autocomplete": "email",
+                    "dir": "ltr",
+                    "maxlength": 254,
                 }
             ),
             "machine": forms.TextInput(
@@ -91,6 +101,9 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
             raise forms.ValidationError("شماره تماس معتبر وارد کنید.")
         return phone
 
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()
+
     def clean_message(self):
         message = self.cleaned_data["message"].strip()
         if len(message) < 5:
@@ -105,12 +118,13 @@ class ClubSignupForm(HoneypotMixin, forms.ModelForm):
 
     class Meta:
         model = Customer
-        fields = ["first_name", "last_name", "company", "phone"]
+        fields = ["first_name", "last_name", "company", "phone", "email"]
         labels = {
             "first_name": "نام",
             "last_name": "نام خانوادگی",
             "company": "شرکت / کارگاه",
             "phone": "شماره تماس",
+            "email": "آدرس ایمیل",
         }
         widgets = {
             "first_name": forms.TextInput(
@@ -147,6 +161,16 @@ class ClubSignupForm(HoneypotMixin, forms.ModelForm):
                     "maxlength": 20,
                 }
             ),
+            "email": forms.EmailInput(
+                attrs={
+                    "class": INPUT_CLASS,
+                    "placeholder": "name@example.com",
+                    "inputmode": "email",
+                    "autocomplete": "email",
+                    "dir": "ltr",
+                    "maxlength": 254,
+                }
+            ),
         }
 
     def clean_first_name(self):
@@ -163,3 +187,6 @@ class ClubSignupForm(HoneypotMixin, forms.ModelForm):
         if not 8 <= len(phone) <= 15:
             raise forms.ValidationError("شماره تماس معتبر وارد کنید.")
         return phone
+
+    def clean_email(self):
+        return self.cleaned_data["email"].strip().lower()

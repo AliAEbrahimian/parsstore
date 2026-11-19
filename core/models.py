@@ -20,6 +20,7 @@ class Inquiry(models.Model):
     name = models.CharField("نام و نام خانوادگی", max_length=120)
     company = models.CharField("نام شرکت / کارگاه", max_length=160, blank=True)
     phone = models.CharField("تلفن تماس", max_length=30)
+    email = models.EmailField("آدرس ایمیل", max_length=254, default="")
     machine = models.CharField("مدل ماشین بافندگی", max_length=120, blank=True)
     message = models.TextField("توضیحات و قطعات مورد نیاز")
     created_at = models.DateTimeField("تاریخ ثبت", auto_now_add=True)
@@ -232,6 +233,7 @@ class Customer(models.Model):
             "unique": "این شماره قبلاً در باشگاه مشتریان ثبت شده است.",
         },
     )
+    email = models.EmailField("آدرس ایمیل", max_length=254, default="")
 
     tier = models.CharField(
         "سطح عضویت", max_length=10, choices=TIER_CHOICES, default=TIER_BRONZE

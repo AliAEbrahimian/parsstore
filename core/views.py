@@ -35,7 +35,7 @@ def home(request):
             club_form = ClubSignupForm(request.POST)
             if club_form.is_valid():
                 customer = club_form.save()
-                _notify_club(customer)
+                _notify_club_signup(customer)
                 messages.success(
                     request,
                     "درخواست عضویت شما ثبت شد. کارشناسان ما برای فعال‌سازی و اعلام کد عضویت با شما تماس می‌گیرند.",
@@ -53,7 +53,7 @@ def home(request):
             inquiry_form = InquiryForm(request.POST)
             if inquiry_form.is_valid():
                 inquiry = inquiry_form.save()
-                _notify_owner(inquiry)
+                _notify_inquiry(inquiry)
                 messages.success(
                     request,
                     "استعلام شما ثبت شد. کارشناسان ما در کمتر از ۲۴ ساعت کاری با شما تماس می‌گیرند.",
@@ -243,51 +243,117 @@ def _is_rate_limited(request, kind="inquiry"):
     return False
 
 
-def _notify_owner(inquiry):
-    """اطلاع‌رسانی اختیاری با ایمیل؛ فقط اگر CONTACT_NOTIFY_EMAIL تنظیم شده باشد."""
-    recipient = getattr(settings, "CONTACT_NOTIFY_EMAIL", "")
-    if not recipient:
+def _send_mail_safely(subject, message, recipients, failure_message):
+    """ارسال ایمیل بدون متوقف کردن ثبت فرم در صورت خرابی SMTP."""
+    recipients = [recipient for recipient in (recipients or []) if recipient]
+    if not recipients:
         return
+    try:
+        send_mail(
+            subject=subject,
+            message=message,
+            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
+            recipient_list=recipients,
+            fail_silently=False,
+        )
+    except Exception:  # خطای ایمیل نباید ثبت فرم را متوقف کند
+        logger.exception(failure_message)
 
+
+def _admin_recipient(setting_name, fallback_name="CONTACT_NOTIFY_EMAIL"):
+    """گیرندهٔ ایمیل مدیر؛ تنظیم مخصوص، پیشفرض عمومی یا کاربران staff."""
+    recipient = getattr(settings, setting_name, "") or getattr(
+        settings, fallback_name, ""
+    )
+    if recipient:
+        return [recipient]
+
+    # اگر گیرندهای تنظیم نشده، ایمیل به کاربران فعال پنل مدیریت ارسال میشود.
+    try:
+        from django.contrib.auth import get_user_model
+
+        return list(
+            get_user_model()
+            .objects.filter(is_active=True, is_staff=True)
+            .exclude(email="")
+            .values_list("email", flat=True)[:5]
+        )
+    except Exception:  # نبود جدول کاربران نباید مانع ثبت فرم شود
+        logger.exception("یافتن گیرندهٔ ایمیل مدیر ناموفق بود")
+        return []
+
+
+def _notify_inquiry(inquiry):
+    """ارسال دو ایمیل: اطلاع به مدیر و تأیید به مشتری."""
     safe_name = " ".join(inquiry.name.split())[:150]
-    try:
-        send_mail(
-            subject=f"استعلام جدید: {safe_name}",
-            message=(
-                f"نام: {inquiry.name}\n"
-                f"شرکت: {inquiry.company or '—'}\n"
-                f"تلفن: {inquiry.phone}\n"
-                f"ماشین: {inquiry.machine or '—'}\n\n"
-                f"توضیحات:\n{inquiry.message}"
-            ),
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            recipient_list=[recipient],
-            fail_silently=False,
-        )
-    except Exception:  # خطای ایمیل نباید ثبت استعلام را متوقف کند
-        logger.exception("ارسال ایمیل اطلاع‌رسانی استعلام ناموفق بود")
+
+    # ۱) ایمیل اطلاعرسانی به مدیر (اختیاری، برای سازگاری با نسخههای قبل)
+    _send_mail_safely(
+        subject=f"استعلام جدید: {safe_name}",
+        message=(
+            f"نام: {inquiry.name}\n"
+            f"شرکت: {inquiry.company or '—'}\n"
+            f"تلفن: {inquiry.phone}\n"
+            f"ایمیل: {inquiry.email}\n"
+            f"ماشین: {inquiry.machine or '—'}\n\n"
+            f"توضیحات:\n{inquiry.message}"
+        ),
+        recipients=_admin_recipient("CONTACT_NOTIFY_EMAIL"),
+        failure_message="ارسال ایمیل اطلاعرسانی استعلام به مدیر ناموفق بود",
+    )
+
+    # ۲) ایمیل تأیید به مشتری
+    _send_mail_safely(
+        subject="استعلام شما در پارس تکستایل ثبت شد",
+        message=(
+            f"{inquiry.name} عزیز،\n\n"
+            "استعلام شما با موفقیت ثبت شد. کارشناسان ما در کمتر از ۲۴ ساعت کاری "
+            "از طریق تلفن یا ایمیل با شما تماس میگیرند.\n\n"
+            "خلاصهٔ درخواست:\n"
+            f"شرکت: {inquiry.company or '—'}\n"
+            f"تلفن: {inquiry.phone}\n"
+            f"ماشین: {inquiry.machine or '—'}\n\n"
+            f"توضیحات:\n{inquiry.message}\n\n"
+            "با احترام،\nپارس تکستایل"
+        ),
+        recipients=[inquiry.email],
+        failure_message="ارسال ایمیل تأیید استعلام به مشتری ناموفق بود",
+    )
 
 
-def _notify_club(customer):
-    """اطلاع‌رسانی اختیاری عضویت جدید به مدیر فروشگاه."""
-    recipient = getattr(settings, "CONTACT_NOTIFY_EMAIL", "")
-    if not recipient:
-        return
-
+def _notify_club_signup(customer):
+    """ارسال دو ایمیل: اطلاع به مدیر و تأیید به عضو جدید."""
     safe_name = " ".join(customer.full_name.split())[:150]
-    try:
-        send_mail(
-            subject=f"درخواست عضویت باشگاه: {safe_name}",
-            message=(
-                f"نام: {customer.full_name}\n"
-                f"شرکت: {customer.company or '—'}\n"
-                f"تلفن: {customer.phone}\n"
-                f"کد موقت: {customer.code}\n\n"
-                "برای فعال‌سازی، وضعیت عضو را در پنل مدیریت روی «فعال» بگذارید."
-            ),
-            from_email=getattr(settings, "DEFAULT_FROM_EMAIL", None),
-            recipient_list=[recipient],
-            fail_silently=False,
-        )
-    except Exception:  # خطای ایمیل نباید ثبت عضویت را متوقف کند
-        logger.exception("ارسال ایمیل اطلاع‌رسانی عضویت ناموفق بود")
+
+    # ۱) ایمیل اطلاعرسانی به مدیر
+    _send_mail_safely(
+        subject=f"درخواست عضویت باشگاه: {safe_name}",
+        message=(
+            f"نام: {customer.full_name}\n"
+            f"شرکت: {customer.company or '—'}\n"
+            f"تلفن: {customer.phone}\n"
+            f"ایمیل: {customer.email}\n"
+            f"کد موقت: {customer.code}\n\n"
+            "برای فعالسازی، وضعیت عضو را در پنل مدیریت روی «فعال» بگذارید."
+        ),
+        recipients=_admin_recipient("CLUB_NOTIFY_EMAIL"),
+        failure_message="ارسال ایمیل اطلاعرسانی عضویت به مدیر ناموفق بود",
+    )
+
+    # ۲) ایمیل تأیید به مشتری
+    _send_mail_safely(
+        subject="درخواست عضویت شما در باشگاه مشتریان ثبت شد",
+        message=(
+            f"{customer.first_name} عزیز،\n\n"
+            "درخواست عضویت شما در باشگاه مشتریان پارس تکستایل ثبت شد. "
+            "پس از تأیید کارشناسان ما، کد عضویت و میزان تخفیف شما اعلام میشود.\n\n"
+            f"نام: {customer.full_name}\n"
+            f"تلفن: {customer.phone}\n"
+            f"ایمیل: {customer.email}\n\n"
+            f"کد موقت: {customer.code}\n\n"
+            "تخفیف باشگاه هنگام خرید حضوری یا تلفنی اعمال میشود.\n\n"
+            "با احترام،\nپارس تکستایل"
+        ),
+        recipients=[customer.email],
+        failure_message="ارسال ایمیل تأیید عضویت به مشتری ناموفق بود",
+    )

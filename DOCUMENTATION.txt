@@ -4,14 +4,14 @@
 ================================================================================
 
 نام پروژه      : parstextile
-نسخه           : 1.3.0
-تاریخ نگارش     : 2026-11-18  (۲۷ آبان ۱۴۰۵)
+نسخه           : 1.4.0
+تاریخ نگارش     : 2026-11-19  (۲۸ آبان ۱۴۰۵)
 نویسنده         : تیم توسعهٔ پروژه
 مجوز            : MIT
 زبان رابط       : فارسی (راست‌به‌چپ)
 پشتهٔ فناوری     : Python 3.13.5 ، Django 5.2.4 ، Pillow 11 ، SQLite ، HTML5 ، CSS3 ، JavaScript (بدون کتابخانه)
 وابستگی‌ها      : Django>=5.2,<6.0 و Pillow>=11.0,<13.0
-وضعیت آزمون‌ها   : 30 تست — همه موفق
+وضعیت آزمونها   : 36 تست — همه موفق
 وضعیت check     : System check identified no issues
 وضعیت deploy    : System check identified no issues (با متغیرهای محیطی تولید)
 
@@ -168,15 +168,16 @@ core/         → تنها اپ کاربردی: مدل، فرم، ویو، اد�
   core/content.py                         251 خط
   core/context_processors.py               20 خط
   core/urls.py                             11 خط
-  core/forms.py                           165 خط
-  core/views.py                           293 خط
+  core/forms.py                           192 خط
+  core/views.py                           344 خط
   core/middleware.py                       47 خط
-  core/admin.py                           161 خط
-  core/tests.py                           380 خط
+  core/admin.py                           170 خط
+  core/tests.py                           443 خط
   core/migrations/__init__.py               0 خط
   core/migrations/0001_initial.py          32 خط
   core/migrations/0002_customer_product_productspec.py  77 خط
   core/migrations/0003_product_product_active_feat_idx_and_more.py  25 خط
+  core/migrations/0004_customer_email_inquiry_email.py  23 خط
 
 قالب‌ها:
   core/templates/core/base.html           176 خط
@@ -252,7 +253,7 @@ core/         → تنها اپ کاربردی: مدل، فرم، ویو، اد�
   python manage.py check
   python manage.py test
   python manage.py makemigrations --check --dry-run
-  انتظار: ۳۰ تست موفق و «No changes detected».
+  انتظار: ۳۶ تست موفق و «No changes detected».
 
 ۳.۵ آزمون امنیتی استقرار
   در ویندوز PowerShell:
@@ -300,7 +301,9 @@ DJANGO_EMAIL_HOST_PASSWORD       خالی
 DJANGO_EMAIL_USE_TLS             1
 DJANGO_DEFAULT_FROM_EMAIL        no-reply@localhost
 DJANGO_SERVER_EMAIL              = DEFAULT_FROM_EMAIL
-CONTACT_NOTIFY_EMAIL             خالی          اگر پر شود، ایمیل اطلاع‌رسانی می‌رود
+CONTACT_NOTIFY_EMAIL             خالی          گیرندهٔ ایمیل استعلام به مدیر
+CLUB_NOTIFY_EMAIL                خالی          گیرندهٔ ایمیل عضویت (پیشفرض: CONTACT_NOTIFY_EMAIL)
+                                              اگر هر دو خالی باشند: کاربران is_staff
 DJANGO_LOG_LEVEL                 INFO
 
 نکتهٔ امنیتی: DJANGO_TRUST_PROXY_HEADERS را فقط زمانی 1 کنید که سرور قطعاً
@@ -452,11 +455,14 @@ POST / (فرم باشگاه)
 خطوط 156-161 MESSAGE_TAGS: نگاشت سطح پیام جنگو به کلاس CSS
             (success/error/warning/info) برای رنگ‌بندی flash.
 
-خطوط 163-176 ایمیل:
-  - EMAIL_BACKEND پیش‌فرض console است؛ ایمیل‌ها در ترمینال چاپ می‌شوند
-            (برای توسعه کافی است و خطای SMTP نمی‌دهد).
+خطوط 163-177 ایمیل:
+  - EMAIL_BACKEND پیشفرض console است؛ ایمیلها در ترمینال چاپ میشوند
+    (برای توسعه کافی است و خطای SMTP نمیدهد).
   - HOST/PORT/USER/PASSWORD/TLS/FROM/SERVER_EMAIL از محیط.
-  - CONTACT_NOTIFY_EMAIL: اگر خالی باشد هیچ ایمیلی ارسال نمی‌شود.
+  - CONTACT_NOTIFY_EMAIL گیرندهٔ اطلاعرسانی استعلام و CLUB_NOTIFY_EMAIL
+    گیرندهٔ اطلاعرسانی عضویت است؛ اگر دومی خالی باشد از اولی استفاده میشود.
+    اگر هر دو خالی باشند، ایمیل به کاربران فعال is_staff ارسال میشود.
+  - ایمیل تأیید به مشتری همیشه ارسال میشود و به گیرندههای مدیر وابسته نیست.
 
 خطوط 179-182 امنیت پایه (در هر دو حالت):
   - SECURE_CONTENT_TYPE_NOSNIFF = True (جلوگیری از MIME sniffing).
@@ -861,14 +867,14 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
       * 28-33 محدودیت نرخ با kind="club" پیش از اعتبارسنجی (۴ در ساعت)؛
         پیام خطا و redirect به /#club.
       * 35-43 اگر معتبر: club_form.save() یک Customer با وضعیت پیش‌فرض
-        «در انتظار تأیید» می‌سازد، _notify_club اختیاری اجرا می‌شود، پیام
-        موفقیت نمایش داده و به /#club ریدایرکت می‌شود (POST/Redirect/GET).
+         «در انتظار تأیید» میسازد، _notify_club_signup دو ایمیل میفرستد، پیام
+         موفقیت نمایش داده و به /#club ریدایرکت میشود (POST/Redirect/GET).
       * 44    اگر نامعتبر: پیام خطای عمومی؛ خطاهای فیلد در همان صفحه.
   - خطوط 45-62 مسیر استعلام:
       * 46-51 محدودیت نرخ با kind="inquiry" (۶ در ۱۰ دقیقه) و redirect
         به /#contact.
-      * 53-61 ذخیرهٔ Inquiry، اطلاع‌رسانی ایمیل اختیاری، پیام موفقیت و
-        redirect به /#contact.
+       * 53-61 ذخیرهٔ Inquiry، ارسال دو ایمیل (تأیید به مشتری و اطلاع به
+         مدیر در صورت تنظیم گیرنده)، پیام موفقیت و redirect به /#contact.
       * 62    پیام خطای عمومی برای فرم نامعتبر.
   - خطوط 64-69 پرس‌وجوی محصولات صفحهٔ اصلی:
       * limit از PRODUCTS_HOME_LIMIT (پیش‌فرض ۶).
@@ -950,17 +956,18 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
     در دسترس بودن مهم‌تر از سخت‌گیری کامل است).
   - خروجی False یعنی «محدود نیست».
 
-خطوط 246-268 _notify_owner(inquiry):
-  - اگر CONTACT_NOTIFY_EMAIL خالی باشد، فوراً return (هیچ ایمیل و هیچ خطایی).
-  - safe_name: فشرده‌سازی و برش نام به ۱۵۰ نویسه برای موضوع ایمیل.
-  - send_mail با موضوع فارسی و بدنهٔ متنی شامل همهٔ فیلدها (— برای خالی‌ها).
-  - fail_silently=False چون خطا در try/except گرفته و لاگ می‌شود؛ ثبت استعلام
-    هرگز به‌خاطر SMTP شکست نمی‌خورد.
+خطوط 246-306 کمکرسانهای ایمیل و _notify_inquiry:
+  - _send_mail_safely: send_mail را در try/except میکند؛ گیرندههای خالی را
+    حذف مینماید و خطای SMTP را فقط لاگ میکند (ارسال فرم متوقف نمیشود).
+  - _admin_recipient: ابتدا تنظیم مخصوص و سپس CONTACT_NOTIFY_EMAIL را
+    پیشفرض میگیرد.
+  - _notify_inquiry: دو ایمیل میفرستد—اطلاع به مدیر (اختیاری) با نام،
+    ایمیل، تلفن و توضیحات؛ سپس ایمیل تأیید به نشانی inquiry.email.
 
-خطوط 271-293 _notify_club(customer):
-  - همان الگوی ایمیل ولی برای عضویت جدید؛ نام کامل، شرکت، تلفن و کد موقت
-    عضویت را می‌فرستد و یادآوری می‌کند که فعال‌سازی در ادمین انجام شود.
-  - خطای SMTP فقط لاگ می‌شود و ثبت عضویت را متوقف نمی‌کند.
+خطوط 309-344 _notify_club_signup:
+  - همان الگوی دو ایمیل: اطلاع به مدیر (CLUB_NOTIFY_EMAIL یا پیشفرض
+    CONTACT_NOTIFY_EMAIL) و تأیید به عضو شامل نام، تلفن و کد موقت.
+  - خطای SMTP فقط لاگ میشود و ثبت عضویت را متوقف نمیکند.
 
 نکته: ویو در هیچ مسیری درصد تخفیف یا وضعیت عضویت را از ورودی کاربر
 نمی‌پذیرد؛ این مقادیر فقط از ادمین قابل تغییرند.
@@ -1057,12 +1064,11 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
 ادمین جنگو). هیچ ویو عمومی برای ویرایش محصول یا عضو وجود ندارد.
 
 --------------------------------------------------------------------------------
-۶.۱۷ core/tests.py  (380 خط) — ۳۰ تست خودکار
+۶.۱۷ core/tests.py  (443 خط) — ۳۶ تست خودکار
 --------------------------------------------------------------------------------
-خطوط 1-12  ایمپورت shutil/tempfile/BytesIO/Path، cache، SimpleUploadedFile،
-            TestCase/override_settings، reverse، Image از Pillow و مدل‌ها.
-خطوط 14-20 VALID_PAYLOAD: دادهٔ معتبر مشترک استعلام (تلفن لاتین و پیام
-            بیش از ۵ نویسه).
+خطوط 1-12 ایمپورت shutil/tempfile/BytesIO/Path، mail، cache،
+           SimpleUploadedFile، TestCase/override_settings، reverse، Image و مدلها.
+خطوط 15-22 VALID_PAYLOAD: دادهٔ معتبر استعلام شامل ایمیل، تلفن لاتین و پیام.
 
 کلاس HomePageTests (خطوط 23-68) — ۵ تست:
   - test_home_page_loads: کد ۲۰۰، وجود «پارس تکستایل» و «PICANOL».
@@ -1076,19 +1082,24 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
   - test_csp_allows_no_inline_scripts: تنها یک script-src وجود دارد و
     'unsafe-inline' در آن نیست.
 
-کلاس InquiryFormTests (خطوط 71-125) — ۶ تست:
+کلاس InquiryFormTests (خطوط 73-160) — ۹ تست:
   - setUp: cache.clear() تا شمارندهٔ نرخ بین تست‌ها تداخل نکند.
   - test_inquiry_form_saves_request: POST معتبر → ریدایرکت به /#contact،
-    یک ردیف Inquiry، پیام موفقیت و صحت نام/تلفن.
+    یک ردیف Inquiry، پیام موفقیت و صحت نام/تلفن/ایمیل ذخیرهشده.
   - test_company_and_machine_are_optional: فقط سه فیلد الزامی با تلفن فارسی
     → ذخیره می‌شود (اعتبارسنجی ارقام فارسی).
   - test_invalid_phone_is_rejected: تلفن «12» → کد ۲۰۰، بدون ذخیره و خطای تلفن.
   - test_short_message_is_rejected: پیام «سلام» → رد و پیام کوتاه‌بودن.
   - test_honeypot_blocks_bots: پر کردن website → رد، بدون ذخیره.
   - test_rate_limit_blocks_extra_submissions: با override_settings محدودیت ۲؛
-    دو ارسال ذخیره و ارسال سوم رد می‌شود.
+    دو ارسال ذخیره و ارسال سوم رد میشود.
+  - test_inquiry_always_emails_customer: بدون گیرندهٔ مدیر، دقیقاً یک ایمیل
+    به آدرس مشتری ارسال میشود.
+  - test_inquiry_emails_customer_and_admin: با CONTACT_NOTIFY_EMAIL دو ایمیل
+    (ابتدا مدیر، سپس مشتری) فرستاده میشود.
+  - test_invalid_email_is_rejected: ایمیل نامعتبر → کد ۲۰۰ و بدون ذخیره.
 
-کلاس ProductTests (خطوط 128-182) — ۳ تست:
+کلاس ProductTests (خطوط 163-217) — ۳ تست:
   - setUp: MEDIA_ROOT موقت با tempfile و override_settings؛ پاک‌سازی خودکار
     در teardown (تست‌ها media/ واقعی را آلوده نمی‌کنند).
   - _sample_image: تصویر PNG در حافظه (۱۲۰۰×۹۰۰) می‌سازد.
@@ -1101,7 +1112,7 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
     می‌شود، فایل روی دیسک هست، فرمت WEBP است و بزرگ‌ترین بُعد ≤ ۹۶۰.
     این تست رگرسیونِ باگ «محصول تازه بندانگشتی نمی‌ساخت» را پوشش می‌دهد.
 
-کلاس ProductCatalogTests (خطوط 185-310) — ۱۰ تست:
+کلاس ProductCatalogTests (خطوط 220-345) — ۱۰ تست:
   - _product: ساخت سریع محصول فعال با دادهٔ پیش‌فرض قابل بازنویسی؛ بدون
     تصویر تا تست‌ها به media وابسته نباشند.
   - test_catalog_page_lists_only_active_products: /products/ کد ۲۰۰، عنوان
@@ -1127,8 +1138,8 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
     فقط ۲ محصول در صفحهٔ اصلی و متن «مشاهده همهٔ محصولات (4 قطعه)» نمایش
     داده می‌شود.
 
-کلاس ClubTests (خطوط 313-372) — ۵ تست:
-  - payload: form_type=club و چهار فیلد عمومی با تلفن فارسی.
+کلاس ClubTests (خطوط 348-452) — ۸ تست:
+  - payload: form_type=club و پنج فیلد عمومی شامل ایمیل با تلفن فارسی.
   - test_club_section_and_form_are_rendered: وجود بخش باشگاه و
     name="form_type" value="club".
   - test_signup_creates_pending_member: ریدایرکت به /#club، یک Customer،
@@ -1138,13 +1149,18 @@ reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ �
     جدید و پیام «قبلاً در باشگاه مشتریان ثبت شده است».
   - test_honeypot_blocks_bots: website پر → رد و بدون رکورد.
   - test_rate_limit_blocks_extra_signups: با CLUB_RATE_LIMIT=1؛ ارسال دوم
-    رد و پیام محدودیت عضویت نمایش داده می‌شود.
+    رد و پیام محدودیت عضویت نمایش داده میشود.
+  - test_signup_always_emails_customer: دقیقاً یک ایمیل تأیید به عضو ارسال میشود.
+  - test_signup_emails_customer_and_admin: با CLUB_NOTIFY_EMAIL دو ایمیل فرستاده میشود.
+  - test_signup_admin_email_falls_back_to_contact_recipient: گیرندهٔ خالی باشگاه
+    به CONTACT_NOTIFY_EMAIL برمیگردد.
+  - تست ایمیل نامعتبر استعلام و سه تست ایمیل یادشده، پوشش کامل ارسالهااند.
 
-کلاس ErrorPageTests (خطوط 375-380) — ۱ تست:
+کلاس ErrorPageTests (خطوط 455-459) — ۱ تست:
   - test_unknown_page_returns_404: مسیر ناموجود → ۴۰۴ و متن
     «این صفحه پیدا نشد».
 
-جمع: ۵ + ۶ + ۳ + ۱۰ + ۵ + ۱ = ۳۰ تست. تست‌ها به ترتیب اجرا وابسته نیستند؛ هر
+جمع: ۵ + ۹ + ۳ + ۱۰ + ۸ + ۱ = ۳۶ تست. تستها به ترتیب اجرا وابسته نیستند؛ هر
 تست دیتابیس تست جدا دارد، کش در setUp پاک می‌شود و رسانهٔ محصول در پوشهٔ
 موقت ساخته و حذف می‌شود.
 
@@ -1928,7 +1944,7 @@ CHANGELOG.md
 ================================================================================
 ۱۱.۱ آزمون خودکار (Django TestCase)
   فرمان: python manage.py test
-  نتیجه: Ran 30 tests — OK
+  نتیجه: Ran 36 tests — OK
   پوشش: صفحهٔ اصلی، هدرهای امنیتی، حضور فرم/Honeypot، ذخیرهٔ موفق استعلام،
   فیلدهای اختیاری، تلفن نامعتبر، پیام کوتاه، Honeypot، محدودیت نرخ استعلام،
   ۴۰۴، رندر کلید سه‌حالتهٔ تم، نبود 'unsafe-inline' در script-src؛
@@ -1994,10 +2010,10 @@ CHANGELOG.md
 ۱۱.۳ بررسی ایستا
   - manage.py check: بدون مشکل.
   - check --deploy: بدون مشکل با تنظیمات تولید.
-  - makemigrations --check: «No changes detected» (مهاجرت‌های 0001، 0002 و
-    0003 اعمال شده‌اند).
+  - makemigrations --check: «No changes detected» (مهاجرتهای 0001 تا 0004
+    اعمال شدهاند).
   - خروجی HTML: بدون style attribute و بدون inline script (سازگار با CSP).
-  - تست‌ها: Ran 30 tests — OK (exit code 0).
+  - تستها: Ran 36 tests — OK (exit code 0).
 
 ۱۱.۴ دسترسی‌پذیری
   - lang=fa، dir=rtl، skip-link، aria-label روی دکمه‌ها و لینک‌های آیکونی،
@@ -2138,7 +2154,7 @@ CHANGELOG.md
   مشابه در views.product_detail (برش [:4]) تعیین می‌شود.
 - تغییر عنوان/توضیح متای کاتالوگ و جزئیات: بلوک title/description همان دو
   قالب.
-- ایمیل: DJANGO_EMAIL_* و CONTACT_NOTIFY_EMAIL.
+- ایمیل: DJANGO_EMAIL_*، CONTACT_NOTIFY_EMAIL و CLUB_NOTIFY_EMAIL.
 - مسیر ادمین: DJANGO_ADMIN_PATH (مثلاً panel-x7k2).
 - عنوان‌های ادمین: parstextile/urls.py (site_header/site_title/index_title).
 - افزودن صفحهٔ جدید: ویو در core/views.py + مسیر در core/urls.py + قالب.
@@ -2167,8 +2183,8 @@ CHANGELOG.md
 - خروجی CSV/Excel از استعلام‌ها و اعضای باشگاه در ادمین می‌تواند مفید باشد.
 - افزودن sitemap.xml/robots.txt و Open Graph image برای سئوی کامل‌تر.
 - اگر چند زبان لازم شد: i18n و قالب‌های جدا؛ ساختار فعلی تک‌زبانه است.
-- تست خودکار برای رندر ۵۰۰، ارسال ایمیل (با locmem backend) و اکشن بازسازی
-  بندانگشتی افزوده شود.
+- تست ارسال ایمیل (locmem) اکنون وجود دارد و هر دو گیرنده را پوشش میدهد.
+  تست رندر ۵۰۰ و اکشن بازسازی بندانگشتی هنوز افزوده نشده است.
 - پایش خطا (Sentry) در تولید توصیه می‌شود.
 - اطلاعات تماس، آمار و درصدهای نمایشی باشگاه نمونه‌اند و باید واقعی شوند.
 - تم در سمت مرورگر و با localStorage مدیریت می‌شود؛ اگر ترجیح تم کاربر باید
