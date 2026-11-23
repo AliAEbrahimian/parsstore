@@ -1,2200 +1,382 @@
 ================================================================================
-                 پارس تکستایل — مستند فنی کامل پروژه
-        سایت بروشوری قطعات یدکی ماشین‌های بافندگی (Django)
+                              ParsStore
+                 Project documentation and operations guide
 ================================================================================
 
-نام پروژه      : parstextile
-نسخه           : 1.4.0
-تاریخ نگارش     : 2026-11-19  (۲۸ آبان ۱۴۰۵)
-نویسنده         : تیم توسعهٔ پروژه
-مجوز            : MIT
-زبان رابط       : فارسی (راست‌به‌چپ)
-پشتهٔ فناوری     : Python 3.13.5 ، Django 5.2.4 ، Pillow 11 ، SQLite ، HTML5 ، CSS3 ، JavaScript (بدون کتابخانه)
-وابستگی‌ها      : Django>=5.2,<6.0 و Pillow>=11.0,<13.0
-وضعیت آزمونها   : 36 تست — همه موفق
-وضعیت check     : System check identified no issues
-وضعیت deploy    : System check identified no issues (با متغیرهای محیطی تولید)
+Project:      parsstore (successor of the former parstextile project)
+Version:      2.0.0
+License:      MIT
+Purpose:      Brochure website for a supplier of weaving-machine spare parts
+Interface:    English (default) and German, both left-to-right
+Stack:        Python 3.11-3.13, Django 5.2, Pillow 11, SQLite
+Frontend:     Server-rendered HTML, CSS, vanilla JavaScript (no build step)
+Repository:   https://github.com/AliAEbrahimian/parsstore
 
-این فایل، مستند «چه چیزهایی در پروژه استفاده شده» و «هر بخش کد چه کاری می‌کند»
-به‌صورت خط‌به‌خط / بلوک‌به‌بلوک است. برای مطالعهٔ آن نیازی به دانش عمیق جنگو نیست،
-اما آشنایی مقدماتی با پایتون و HTML کمک می‌کند.
+This file is the source of truth for how the project is structured, how a
+request is processed, how to configure it, and how to deploy it safely.
+For a short introduction see README.md; for the maintainer profile see
+RESUME.txt.
 
 --------------------------------------------------------------------------------
-فهرست
+1. Scope and product decisions
 --------------------------------------------------------------------------------
-۰.  این فایل چیست و چه چیزی را پوشش می‌دهد
-۱.  شناسنامه و تصمیم‌های معماری
-۲.  درخت کامل فایل‌ها و تعداد خطوط
-۳.  نصب، اجرا و آزمون
-۴.  متغیرهای محیطی (کامل)
-۵.  جریان یک درخواست از مرورگر تا پاسخ
-۶.  توضیح خط‌به‌خط فایل‌های پایتون
-    ۶.۱  manage.py
-    ۶.۲  parstextile/settings.py
-    ۶.۳  parstextile/urls.py
-    ۶.۴  parstextile/wsgi.py و parstextile/asgi.py
-    ۶.۵  core/apps.py
-    ۶.۶  core/models.py
-    ۶.۷  core/images.py
-    ۶.۸  core/utils.py
-    ۶.۹  core/migrations/0001، 0002 و 0003 (ایندکس‌های کاتالوگ)
-    ۶.۱۰ core/content.py
-    ۶.۱۱ core/context_processors.py
-    ۶.۱۲ core/urls.py
-    ۶.۱۳ core/forms.py
-    ۶.۱۴ core/views.py
-    ۶.۱۵ core/middleware.py
-    ۶.۱۶ core/admin.py
-    ۶.۱۷ core/tests.py
-۷.  قالب‌ها (Templates)
-    ۷.۱  core/templates/core/base.html
-    ۷.۲  core/templates/core/home.html
-    ۷.۳  core/templates/core/products.html
-    ۷.۴  core/templates/core/product_detail.html
-    ۷.۵  core/templates/core/_product_card.html
-    ۷.۶  core/templates/core/_icons.html
-    ۷.۷  core/templates/core/404.html و 500.html
-۸.  استایل و رفتار سمت مرورگر
-    ۸.۱  static/core/css/style.css
-    ۸.۲  static/core/js/main.js
-    ۸.۳  static/core/js/theme.js
-    ۸.۴  static/core/img/favicon.svg
-۹.  فایل‌های گیت‌هاب و مستندات
-۱۰. امنیت: تحلیل، کنترل‌ها و نتیجهٔ بررسی
-۱۱. کیفیت، آزمون‌ها و نتایج واقعی
-۱۲. استقرار در تولید
-۱۳. سفارشی‌سازی
-۱۴. محدودیت‌های شناخته‌شده و پیشنهادهای آینده
 
-================================================================================
-۰. این فایل چیست
-================================================================================
-DOCUMENTATION.txt یک سند «منبع حقیقت» برای پروژه است و شامل این موارد می‌شود:
+ParsStore is an informational site, not an online shop. There is no shopping
+cart, no checkout and no public user account. Visitors can:
 
-- فهرست دقیق همهٔ فایل‌ها و نقش هرکدام.
-- توضیح خط‌به‌خط یا بلوک‌به‌بلوک کدهای پایتون.
-- توضیح ساختار قالب‌ها، شناسه‌ها و کلاس‌های CSS.
-- توضیح رفتار جاوااسکریپت (منوی موبایل، انیمیشن، پیام‌ها و انتخاب تم).
-- فهرست کامل تنظیمات محیطی و مقادیر پیش‌فرض.
-- اقدامات امنیتی و تحلیل تهدیدهای باقی‌مانده.
-- نتایج واقعی آزمون‌ها، بررسی مرورگر و پیشنهادهای استقرار.
+  * browse the home page sections and a full catalogue at /products/;
+  * open part detail pages at /products/<id>/;
+  * submit a price inquiry (stored as an Inquiry row);
+  * apply for the customer club (stored as a Customer row).
 
-نکته: این پروژه «بروشور آنلاین» است، نه فروشگاه اینترنتی. هیچ سبد خرید،
-درگاه پرداخت یا حساب کاربری عمومی وجود ندارد. نوشتن در پایگاه‌داده فقط از سه
-راه انجام می‌شود: ثبت فرم «استعلام قیمت»، ثبت «درخواست عضویت باشگاه» و
-مدیریت محصولات/اعضا از پنل ادمین. از نسخهٔ 1.3.0 کاتالوگ کامل در صفحهٔ
-جداگانهٔ /products/ و صفحهٔ جزئیات هر قطعه در /products/&lt;id&gt;/ است؛ صفحهٔ
-اصلی فقط چند قطعهٔ منتخب را نشان می‌دهد. تخفیف باشگاه هنگام خرید حضوری یا تلفنی
-اعمال می‌شود، نه در یک سبد خرید آنلاین.
+Prices and stock are confirmed by phone or email. The club discount is applied
+to an offline or telephone proforma invoice, not in a web checkout.
 
-================================================================================
-۱. شناسنامه و تصمیم‌های معماری
-================================================================================
-۱.۱ چرا این ساختار؟
-- «صفحهٔ اصلی تک‌صفحه‌ای»: بخش‌های معرفی در یک قالب (home.html) با لنگرهای
-  #about ، #products ، #brands ، #why ، #faq ، #club و #contact جمع شده‌اند
-  تا ناوبری سریع باشد، اما کاتالوگ کامل به صفحهٔ مستقل /products/ منتقل شده
-  است. صفحهٔ اصلی فقط PRODUCTS_HOME_LIMIT قطعهٔ منتخب را نشان می‌دهد؛ نمایش
-  هم‌زمان ۸۰۰ تا ۱۲۰۰ قطعه در یک صفحه نه برای کاربر قابل مرور است و نه برای
-  پاسخ سرور بهینه.
-- «کاتالوگ صفحه‌بندی‌شده به‌جای فهرست یک‌جا»: ویو product_list با
-  Paginator جنگو هر بار فقط PRODUCTS_PAGE_SIZE قطعه (پیش‌فرض ۲۴) می‌خواند؛
-  جست‌وجو و فیلترها روی همان کوئری اعمال می‌شوند و شمارش کل با count انجام
-  می‌شود. صفحهٔ جزئیات همهٔ مشخصات یک قطعه را نشان می‌دهد تا کارت‌های کوچک
-  شلوغ نشوند.
-- «ایندکس برای رشد کاتالوگ»: سه ایندکس روی Product (فعال/منتخب/ترتیب، دسته و
-  برند) اضافه شده تا فیلتر و مرتب‌سازی با ۸۰۰ تا ۱۲۰۰ ردیف هم سریع بماند.
-- «محتوای ثابت بدون پایگاه‌داده»: متن‌ها، برندها، آمار و سؤالات در
-  core/content.py هستند. مزیت: ویرایش بدون پنل، سرعت بالا، عدم نیاز به مهاجرت
-  برای تغییر متن. از نسخهٔ 1.2.0 محصولات و اعضای باشگاه در پایگاه‌داده‌اند،
-  چون باید از پنل ادمین اضافه/ویرایش شوند.
-- «چهار مدل کوچک»: Inquiry (استعلام)، Product + ProductSpec (کاتالوگ و مشخصات)
-  و Customer (باشگاه). هیچ جدول سفارش، سبد خرید یا پرداخت وجود ندارد.
-- «تصویر سبک و سریع»: تصویر اصلی محصول نگه داشته می‌شود، ولی هنگام ذخیره یک
-  بندانگشتی WebP (حداکثر ۹۶۰×۹۶۰) ساخته می‌شود و قالب همان را با
-  loading="lazy" و ابعاد مشخص نمایش می‌دهد. نتیجه: بدون تأخیر محسوس و بدون
-  ارسال فایل چندمگابایتی به موبایل.
-- «بدون CDN»: فونت وزیرمتن و آیکون‌ها محلی هستند. به همین دلیل CSP می‌تواند
-  کاملاً سخت‌گیرانه باشد و سایت در شبکهٔ محدود/فیلترشده هم کار کند.
-- «رنگ‌بندی صنعتی + کهربایی»: پس‌زمینهٔ تیرهٔ #080b0e و رنگ تأکیدی #eda33f،
-  مناسب فضای صنعتی و خوانایی بالا. از نسخهٔ 1.1.0 یک پالت روشن کاغذی
-  (#f6f3ee) هم وجود دارد و کاربر می‌تواند بین تاریک، روشن و خودکار انتخاب کند.
-- «تم بدون پرش رنگ»: theme.js در <head> و پیش از رنگ‌آمیزی اجرا می‌شود؛
-  انتخاب کاربر در localStorage می‌ماند و حالت خودکار ترجیح سیستم را دنبال می‌کند.
+Data is split deliberately:
 
-۱.۲ نسخه‌ها
-- Python 3.13.5 (تست‌شده). CI روی 3.11، 3.12 و 3.13 اجرا می‌شود.
-- Django 5.2.4 (requirements: >=5.2,<6.0).
-- Pillow 11.3 (requirements: >=11.0,<13.0) برای ساخت بندانگشتی WebP.
-- SQLite 3 (پیش‌فرض؛ برای تولید PostgreSQL توصیه می‌شود).
-- بدون npm، بدون build step، بدون وب‌فونت آنلاین.
+  * Static marketing copy (brands, categories, features, FAQ, club tiers) is
+    Python data in core/content.py. Editing text needs no migration.
+  * Products, specifications, inquiries and club members live in SQLite and are
+    managed from the Django admin.
+  * All user-facing strings (labels, messages, emails, admin actions) are in
+    core/i18n.py, with English and German values.
 
-۱.۳ ساختار اپ‌ها
-parstextile/  → پیکربندی پروژه (settings، urls، wsgi/asgi)
-core/         → تنها اپ کاربردی: مدل، فرم، ویو، ادمین، محتوا، تست، قالب‌ها
+--------------------------------------------------------------------------------
+2. Quick start (local development)
+--------------------------------------------------------------------------------
 
-================================================================================
-۲. درخت کامل فایل‌ها و تعداد خطوط
-================================================================================
-(تعداد خطوط بر اساس نسخهٔ حاضر؛ فایل‌های باینری خط ندارند)
-
-ریشهٔ پروژه:
-  manage.py                                22 خط
-  requirements.txt                          2 خط
-  README.md                               328 خط
-  SECURITY.md                              66 خط
-  CONTRIBUTING.md                          90 خط
-  CHANGELOG.md                            179 خط
-  DOCUMENTATION.txt                      همین فایل
-  LICENSE                                  21 خط
-  .env.example                             70 خط
-  .editorconfig                            21 خط
-  .gitattributes                           29 خط
-  .gitignore                               29 خط
-
-پیکربندی:
-  parstextile/__init__.py                   0 خط
-  parstextile/settings.py                 231 خط
-  parstextile/urls.py                      20 خط
-  parstextile/wsgi.py                      16 خط
-  parstextile/asgi.py                      16 خط
-
-اپ core:
-  core/__init__.py                          0 خط
-  core/apps.py                              7 خط
-  core/models.py                          291 خط
-  core/images.py                           48 خط
-  core/utils.py                            17 خط
-  core/content.py                         251 خط
-  core/context_processors.py               20 خط
-  core/urls.py                             11 خط
-  core/forms.py                           192 خط
-  core/views.py                           344 خط
-  core/middleware.py                       47 خط
-  core/admin.py                           170 خط
-  core/tests.py                           443 خط
-  core/migrations/__init__.py               0 خط
-  core/migrations/0001_initial.py          32 خط
-  core/migrations/0002_customer_product_productspec.py  77 خط
-  core/migrations/0003_product_product_active_feat_idx_and_more.py  25 خط
-  core/migrations/0004_customer_email_inquiry_email.py  23 خط
-
-قالب‌ها:
-  core/templates/core/base.html           176 خط
-  core/templates/core/home.html           476 خط
-  core/templates/core/products.html       131 خط
-  core/templates/core/product_detail.html 109 خط
-  core/templates/core/_product_card.html   64 خط
-  core/templates/core/_icons.html         105 خط
-  core/templates/core/404.html             17 خط
-  core/templates/core/500.html             17 خط
-  templates/.gitkeep                        1 خط  (پوشهٔ قالب‌های سراسری، فعلاً خالی)
-
-استاتیک:
-  static/core/css/style.css              3027 خط
-  static/core/js/main.js                   105 خط
-  static/core/js/theme.js                  104 خط
-  static/core/img/favicon.svg               5 خط
-  static/core/fonts/Vazirmatn-Regular.woff2    (باینری)
-  static/core/fonts/Vazirmatn-Medium.woff2     (باینری)
-  static/core/fonts/Vazirmatn-SemiBold.woff2   (باینری)
-  static/core/fonts/Vazirmatn-Bold.woff2       (باینری)
-  static/core/fonts/Vazirmatn-ExtraBold.woff2  (باینری)
-
-گیت‌هاب:
-  .github/workflows/ci.yml                 55 خط
-  .github/dependabot.yml                   21 خط
-  .github/pull_request_template.md         28 خط
-  .github/ISSUE_TEMPLATE/bug_report.yml    65 خط
-  .github/ISSUE_TEMPLATE/feature_request.yml  36 خط
-
-فایل‌های تولیدشده در زمان اجرا (کامیت نمی‌شوند):
-  db.sqlite3      پایگاه‌دادهٔ SQLite
-  staticfiles/    خروجی collectstatic
-  media/          آپلودهای محصولات:
-                    products/<سال>/<ماه>/         تصویر اصلی
-                    products/thumbs/<سال>/<ماه>/  بندانگشتی WebP خودکار
-  .env            تنظیمات محلی/محرمانه
-
-================================================================================
-۳. نصب، اجرا و آزمون
-================================================================================
-۳.۱ نصب (ویندوز)
   python -m venv .venv
-  .venv\Scripts\activate
+  .venv\Scripts\activate          # Windows
+  # source .venv/bin/activate     # macOS / Linux
+
   pip install -r requirements.txt
+  cp .env.example .env
+  # In .env set DJANGO_DEBUG=1 and a local DJANGO_SECRET_KEY.
+
   python manage.py migrate
   python manage.py createsuperuser
   python manage.py runserver
 
-۳.۲ نصب (لینوکس/مک)
-  python3 -m venv .venv
-  source .venv/bin/activate
-  pip install -r requirements.txt
-  python manage.py migrate
-  python manage.py createsuperuser
-  python manage.py runserver
+Open http://127.0.0.1:8000. The admin lives at /admin/ unless DJANGO_ADMIN_PATH
+is changed. The .env file, db.sqlite3, media/ and staticfiles/ are gitignored.
 
-۳.۳ آدرس‌ها
-  سایت            http://127.0.0.1:8000/
-  کاتالوگ کامل      http://127.0.0.1:8000/products/   (جست‌وجو، فیلتر، صفحه‌بندی)
-  جزئیات قطعه       http://127.0.0.1:8000/products/<id>/
-  پنل مدیریت       http://127.0.0.1:8000/admin/     (یا مقدار DJANGO_ADMIN_PATH)
-  صفحهٔ ۴۰۴        هر مسیر ناموجود، مثلاً /not-found/
-  صفحهٔ ۵۰۰        فقط هنگام خطای داخلی سرور (در DEBUG=True نمایش داده نمی‌شود)
-  فایل‌های مدیا    http://127.0.0.1:8000/media/...  (فقط در DEBUG=True؛ در تولید Nginx)
+Verification commands:
 
-پس از اجرا و ساخت کاربر ادمین، از بخش «محصولات» می‌توانید محصول با تصویر و
-مشخصات اضافه کنید و از بخش «باشگاه مشتریان» اعضا را تأیید/تعیین تخفیف کنید.
-محصولات منتخب بلافاصله در بخش #products صفحهٔ اصلی و همهٔ محصولات فعال در
-کاتالوگ /products/ دیده می‌شوند.
-
-۳.۴ آزمون
   python manage.py check
-  python manage.py test
   python manage.py makemigrations --check --dry-run
-  انتظار: ۳۶ تست موفق و «No changes detected».
-
-۳.۵ آزمون امنیتی استقرار
-  در ویندوز PowerShell:
-    $env:DJANGO_DEBUG='0'
-    $env:DJANGO_SECRET_KEY='<کلید تصادفی ۵۰+ نویسه‌ای>'
-    $env:DJANGO_ALLOWED_HOSTS='example.com'
-    $env:DJANGO_SECURE_SSL_REDIRECT='1'
-    $env:DJANGO_SECURE_HSTS_SECONDS='31536000'
-    $env:DJANGO_SECURE_HSTS_PRELOAD='1'
-    python manage.py check --deploy
-
-================================================================================
-۴. متغیرهای محیطی (کامل)
-================================================================================
-settings.py خودش فایل .env را می‌خواند (بدون python-dotenv). اولویت با متغیر
-محیطی واقعی سیستم است؛ .env فقط مقادیر «تعریف‌نشده» را پر می‌کند.
-
-نام                              پیش‌فرض        توضیح
---------------------------------------------------------------------------------
-DJANGO_DEBUG                     1             0 = حالت تولید
-DJANGO_SECRET_KEY                —             در DEBUG=0 اجباری؛ کلید امنیتی
-DJANGO_ALLOWED_HOSTS             localhost,127.0.0.1,[::1]
-DJANGO_CSRF_TRUSTED_ORIGINS      خالی          مثل https://example.com
-DJANGO_ADMIN_PATH                admin         مسیر پنل، بدون اسلش ابتدا/انتها
-DJANGO_DB_PATH                   db.sqlite3    مسیر کامل یا نسبی پایگاه‌داده
-DJANGO_SECURE_SSL_REDIRECT       0             اجبار HTTPS (فقط DEBUG=0)
-DJANGO_SESSION_COOKIE_SECURE     0             کوکی نشست فقط HTTPS
-DJANGO_CSRF_COOKIE_SECURE        0             کوکی CSRF فقط HTTPS
-DJANGO_SECURE_HSTS_SECONDS       0             مدت HSTS (ثانیه)
-DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS  0/خودکار
-DJANGO_SECURE_HSTS_PRELOAD       0
-DJANGO_BEHIND_PROXY              0             تنظیم SECURE_PROXY_SSL_HEADER
-DJANGO_TRUST_PROXY_HEADERS       0             خواندن X-Forwarded-For
-INQUIRY_RATE_LIMIT               6             تعداد مجاز استعلام در پنجره
-INQUIRY_RATE_WINDOW              600           طول پنجره (ثانیه)
-CLUB_RATE_LIMIT                  4             تعداد مجاز درخواست عضویت در پنجره
-CLUB_RATE_WINDOW                 3600          طول پنجرهٔ عضویت (ثانیه)
-PRODUCTS_HOME_LIMIT              6             تعداد محصولات نمایشی صفحهٔ اصلی
-PRODUCTS_PAGE_SIZE               24            تعداد قطعه در هر صفحهٔ کاتالوگ (۶ تا ۹۶)
-DJANGO_EMAIL_BACKEND             console       برای تولید: SMTP
-DJANGO_EMAIL_HOST                خالی
-DJANGO_EMAIL_PORT                587
-DJANGO_EMAIL_HOST_USER           خالی
-DJANGO_EMAIL_HOST_PASSWORD       خالی
-DJANGO_EMAIL_USE_TLS             1
-DJANGO_DEFAULT_FROM_EMAIL        no-reply@localhost
-DJANGO_SERVER_EMAIL              = DEFAULT_FROM_EMAIL
-CONTACT_NOTIFY_EMAIL             خالی          گیرندهٔ ایمیل استعلام به مدیر
-CLUB_NOTIFY_EMAIL                خالی          گیرندهٔ ایمیل عضویت (پیشفرض: CONTACT_NOTIFY_EMAIL)
-                                              اگر هر دو خالی باشند: کاربران is_staff
-DJANGO_LOG_LEVEL                 INFO
-
-نکتهٔ امنیتی: DJANGO_TRUST_PROXY_HEADERS را فقط زمانی 1 کنید که سرور قطعاً
-پشت پراکسی معتبر است؛ در غیر این صورت مهاجم می‌تواند با جعل X-Forwarded-For
-محدودیت نرخ را دور بزند.
-
-================================================================================
-۵. جریان یک درخواست از مرورگر تا پاسخ
-================================================================================
-GET /
-  1) SecurityMiddleware → هدرهای امنیتی پایه
-  2) SessionMiddleware → نشست (برای پیام‌های flash)
-  3) CommonMiddleware → مسیرها/اسلش
-  4) CsrfMiddleware → آماده‌سازی توکن
-  5) AuthenticationMiddleware → کاربر (فقط برای ادمین مهم است)
-  6) MessageMiddleware → پشتیبانی پیام‌ها
-  7) XFrameOptionsMiddleware → X-Frame-Options: DENY
-  8) core.middleware.SecurityHeadersMiddleware → CSP و Permissions-Policy
-  9) URL resolver → core.urls → views.home
- 10) home() → _inquiry_prefill (اختیاری از ?product=) + هر دو فرم + context
- 11) Product.objects.filter(is_active=True) با prefetch_related("specs") و
-     محدودیت PRODUCTS_HOME_LIMIT (پیش‌فرض ۶) و شمارش کل فعال‌ها
- 12) render("core/home.html") → base.html + home.html + context_processors
- 13) پاسخ HTML (۲۰۰) + هدرهای امنیتی
-
-GET /products/  (کاتالوگ)
-  1) همان زنجیرهٔ میدل‌ور تا URL resolver
-  2) core.urls → views.product_list
-  3) اعتبارسنجی q/category/brand؛ ساخت فهرست برندهای فعال
-  4) Product.objects.filter(is_active=True).prefetch_related("specs") +
-     جست‌وجوی icontains + فیلتر دسته/برند + ترتیب منتخب‌ها
-  5) Paginator(products, PRODUCTS_PAGE_SIZE محدود به ۶ تا ۹۶)
-     → get_page(request.GET["page"]) و شمارش کل
-  6) render("core/products.html") → کارت‌ها + صفحه‌بندی
-
-GET /products/<id>/  (جزئیات)
-  1) core.urls → views.product_detail
-  2) get_object_or_404 روی Product فعال با prefetch_related("specs")
-  3) حداکثر ۴ قطعهٔ فعال هم‌دسته به‌عنوان related
-  4) render("core/product_detail.html") + دکمهٔ استعلام با ?product=<id>#contact
-
-POST / (فرم استعلام)
-  1) همان زنجیرهٔ بالا + بررسی CSRF
-  2) home() → تشخیص form_type؛ مقدار «club» نباشد یعنی استعلام
-  3) InquiryForm(request.POST)
-  4) _is_rate_limited(request, "inquiry")؟ → اگر بله: پیام خطا + redirect به /#contact
-  5) form.is_valid()؟ → clean_website (Honeypot)، clean_phone، clean_message …
-  6) اگر معتبر: form.save() → ردیف Inquiry → _notify_owner() (اختیاری)
-     → پیام موفقیت → redirect به /#contact (الگوی POST/Redirect/GET)
-  7) اگر نامعتبر: همان صفحه با خطاهای فیلدها (۲۰۰)
-
-POST / (فرم باشگاه)
-  1) تشخیص form_type=club
-  2) _is_rate_limited(request, "club") با پنجرهٔ جدا (۴ در ساعت)
-  3) ClubSignupForm(request.POST) → clean_phone (ارقام فارسی → لاتین، یکتا)
-  4) اگر معتبر: Customer با وضعیت «در انتظار تأیید» و کد PT-XXXXXX ذخیره می‌شود،
-     _notify_club() اختیاری و redirect به /#club
-  5) اگر نامعتبر (مثلاً تلفن تکراری): همان صفحه با خطای فیلد
-
-خطای ۴۰۴ → handler404 = core.views.page_not_found → قالب 404.html
-خطای ۵۰۰ → handler500 = core.views.server_error → قالب 500.html
-
-================================================================================
-۶. توضیح خط‌به‌خط فایل‌های پایتون
-================================================================================
+  python manage.py test
+  python manage.py check --deploy   # with production-like variables (section 9)
 
 --------------------------------------------------------------------------------
-۶.۱ manage.py  (22 خط)
+3. Architecture at a glance
 --------------------------------------------------------------------------------
-خط 1        shebang؛ اجرای مستقیم در یونیکس (در ویندوز بی‌اثر است).
-خط 2        توضیح تک‌خطی فایل.
-خطوط 3-4    ایمپورت os و sys.
-خط 7        تعریف main().
-خط 9        تنظیم متغیر محیطی DJANGO_SETTINGS_MODULE روی parstextile.settings.
-خطوط 10-17  ایمپورت execute_from_command_line با پیام خطای راهنما در صورت نبود جنگو
-            (مثلاً فراموشی فعال‌سازی محیط مجازی).
-خط 18       اجرای دستور خط فرمان با آرگومان‌های sys.argv.
-خطوط 21-22  اجرای main() فقط وقتی فایل مستقیم اجرا شود.
 
---------------------------------------------------------------------------------
-６.۲ parstextile/settings.py  (231 خط)
---------------------------------------------------------------------------------
-خطوط 1-7    رشتهٔ توضیح ماژول: نام پروژه، هدف، روش پیکربندی با .env.
-خط 9        import os برای خواندن متغیرهای محیطی.
-خط 10       from pathlib import Path برای مسیرهای مستقل از سیستم‌عامل.
-خط 12       ایمپورت ثابت‌های پیام جنگو برای نگاشت MESSAGE_TAGS.
-خط 14       BASE_DIR = ریشهٔ پروژه (یک پله بالاتر از پوشهٔ parstextile).
+Request path:
 
-خطوط 17-34  تابع _load_env_file:
-  - خط 20   اگر فایل .env وجود نداشت، بی‌صدا خارج می‌شود.
-  - خط 22   خواندن فایل با UTF-8 و تقسیم به خطوط.
-  - خطوط 23-25  حذف خطوط خالی، کامنت (#) و خطوط بدون «=».
-  - خط 26   جداسازی کلید و مقدار با partition (فقط اولین =).
-  - خطوط 27-29  پشتیبانی از قالب «export KEY=VALUE».
-  - خط 30   حذف کوتیشن‌های ابتدا/انتها.
-  - خط 31   os.environ.setdefault → متغیر واقعی سیستم اولویت دارد.
-خط 34       فراخوانی loader روی BASE_DIR/.env.
+  browser
+    -> SecurityMiddleware / SessionMiddleware
+    -> core.middleware.SecurityHeadersMiddleware
+    -> core.middleware.LanguageMiddleware        (sets ?lang= / cookie language)
+    -> URL resolution (parsstore/urls.py, core/urls.py)
+    -> view (core/views.py)                       (query, form handling, email)
+    -> context processor (core/context_processors.py) adds LANG, T, SITE, NAV,
+       LANGUAGES, SWITCH_URLS, BRANDS_FOOTER
+    -> template (core/templates/core/*.html)
+    -> response with CSP, Permissions-Policy and Content-Language headers
 
-خطوط 37-41  env_bool: تبدیل 1/true/yes/on (بدون حساسیت به حروف) به True.
-خطوط 44-48  env_int: تبدیل امن به عدد؛ در صورت خطا مقدار پیش‌فرض.
-خطوط 51-55  env_list: تقسیم رشته با کاما، حذف فاصله‌ها و آیتم‌های خالی.
+Language model:
 
-خط 59       DEBUG از DJANGO_DEBUG با پیش‌فرض True (راحتی توسعهٔ محلی).
-خطوط 61-68  SECRET_KEY:
-  - اگر متغیر محیطی موجود باشد، همان استفاده می‌شود.
-  - اگر نباشد و DEBUG=False باشد → RuntimeError (جلوگیری از اجرای ناامن).
-  - اگر نباشد و DEBUG=True باشد → کلید «django-insecure-...» مخصوص توسعه.
-            این کلید هرگز نباید در تولید استفاده شود.
-
-خطوط 70-71  ALLOWED_HOSTS و CSRF_TRUSTED_ORIGINS از محیط.
-خطوط 74-75 ADMIN_PATH: حذف اسلش‌های ابتدا/انتها و افزودن یک اسلش پایانی.
-            مقدار «admin» → «admin/» که در urls.py داخل path() استفاده می‌شود.
-            با DJANGO_ADMIN_PATH=panel-x7k2 آدرس پنل /panel-x7k2/ می‌شود.
-
-خطوط 77-86  INSTALLED_APPS: ادمین، auth، contenttypes، sessions، messages،
-            staticfiles، humanize (برای قالب‌بندی اعداد در صورت نیاز) و core.
-
-خطوط 88-97  MIDDLEWARE: ترتیب استاندارد جنگو + SecurityHeadersMiddleware در انتها.
-            قرار گرفتن در انتها یعنی پاسخ همهٔ ویوها (از جمله ۴۰۴/۵۰۰) هدر می‌گیرد.
-
-خط 99       ROOT_URLCONF = parstextile.urls.
-
-خطوط 101-115 TEMPLATES:
-  - DIRS: پوشهٔ templates در ریشه (برای بازنویسی قالب‌ها).
-  - APP_DIRS=True: قالب‌های core/templates/core/ پیدا می‌شوند.
-  - context processors: request، auth، messages و site_content (سفارشی).
-            site_content باعث می‌شود SITE و NAV در همهٔ قالب‌ها بدون پاس دادن
-            دستی در دسترس باشند.
-
-خط 117      WSGI_APPLICATION برای سرورهای WSGI (Gunicorn/uWSGI).
-
-خطوط 119-124 DATABASES: SQLite با مسیر قابل تغییر از DJANGO_DB_PATH.
-
-خطوط 126-133 CACHES: LocMemCache درون‌فرآیندی برای شمارش نرخ فرم.
-            محدودیت: بین چند worker مشترک نیست؛ در تولید Redis/Memcached لازم است.
-
-خطوط 135-140 AUTH_PASSWORD_VALIDATORS: چهار اعتبارسنج استاندارد رمز ادمین.
-
-خطوط 142-145 زبان fa-ir، منطقهٔ زمانی Asia/Tehran، i18n و timezone فعال.
-
-خطوط 147-152 STATIC_URL/STATICFILES_DIRS/STATIC_ROOT و MEDIA_URL/MEDIA_ROOT.
-            STATIC_URL و MEDIA_URL با اسلش ابتدایی («/static/» و «/media/»)
-            تعریف شده‌اند تا مسیر تصاویر در همهٔ صفحات و لنگرها مطلق بماند.
-            MEDIA_ROOT = BASE_DIR/media محل تصاویر محصول و بندانگشتی است.
-            STATIC_ROOT مقصد collectstatic است و در .gitignore قرار دارد.
-
-خط 154      DEFAULT_AUTO_FIELD: BigAutoField برای کلیدهای اصلی.
-
-خطوط 156-161 MESSAGE_TAGS: نگاشت سطح پیام جنگو به کلاس CSS
-            (success/error/warning/info) برای رنگ‌بندی flash.
-
-خطوط 163-177 ایمیل:
-  - EMAIL_BACKEND پیشفرض console است؛ ایمیلها در ترمینال چاپ میشوند
-    (برای توسعه کافی است و خطای SMTP نمیدهد).
-  - HOST/PORT/USER/PASSWORD/TLS/FROM/SERVER_EMAIL از محیط.
-  - CONTACT_NOTIFY_EMAIL گیرندهٔ اطلاعرسانی استعلام و CLUB_NOTIFY_EMAIL
-    گیرندهٔ اطلاعرسانی عضویت است؛ اگر دومی خالی باشد از اولی استفاده میشود.
-    اگر هر دو خالی باشند، ایمیل به کاربران فعال is_staff ارسال میشود.
-  - ایمیل تأیید به مشتری همیشه ارسال میشود و به گیرندههای مدیر وابسته نیست.
-
-خطوط 179-182 امنیت پایه (در هر دو حالت):
-  - SECURE_CONTENT_TYPE_NOSNIFF = True (جلوگیری از MIME sniffing).
-  - SECURE_REFERRER_POLICY = same-origin.
-  - SECURE_CROSS_ORIGIN_OPENER_POLICY = same-origin.
-  - X_FRAME_OPTIONS = DENY (ضد Clickjacking).
-
-خطوط 184-194 فقط در DEBUG=False:
-  - SSL redirect، کوکی‌های Secure، HttpOnly برای نشست و CSRF.
-  - HSTS و زیردامنه/Preload (پیش‌فرض 0؛ برای فعال‌سازی صریح باید تنظیم شوند).
-
-خطوط 196-197 اگر DJANGO_BEHIND_PROXY=1 → SECURE_PROXY_SSL_HEADER برای تشخیص
-            درست HTTPS پشت پراکسی.
-
-خطوط 199-200 TRUST_PROXY_HEADERS: اجازهٔ خواندن X-Forwarded-For (پیش‌فرض خاموش).
-
-خطوط 202-211 محدودیت فرم‌ها و کاتالوگ:
-  - INQUIRY_RATE_LIMIT=6 و INQUIRY_RATE_WINDOW=600 (۶ بار در ۱۰ دقیقه).
-  - CLUB_RATE_LIMIT=4 و CLUB_RATE_WINDOW=3600 (۴ بار در یک ساعت).
-    دو شمارندهٔ کش جدا هستند تا ارسال استعلام، عضویت را مسدود نکند و برعکس.
-  - PRODUCTS_HOME_LIMIT=6: حداکثر محصول فعال نمایش‌داده‌شده در صفحهٔ اصلی.
-  - PRODUCTS_PAGE_SIZE=24: تعداد قطعه در هر صفحهٔ کاتالوگ؛ در _products_page_size
-    با max(6, min(96, n)) بسته می‌شود.
-
-خطوط 213-227 LOGGING:
-  - فرمت ساده شامل سطح، زمان، نام لاگر و پیام.
-  - handler کنسول (مناسب systemd/Docker؛ لاگ‌ها به stdout می‌روند).
-  - سطح ریشه از DJANGO_LOG_LEVEL.
-  - لاگر django.security با سطح WARNING و propagate=False.
+  * Only two language codes exist: en (default) and de.
+  * core/i18n.py defines LANGUAGES and DEFAULT_LANGUAGE = "en".
+  * The short helper _(en, de) returns {"en": ..., "de": ...}.
+  * t(key) and flat(lang) read from the UI dictionary; get_content(lang) in
+    core/content_i18n.py returns the display content for the active language.
+  * LanguageMiddleware accepts ?lang=en|de, remembers the choice in the
+    parsstore_lang cookie for one year, and activates Django translations.
+  * Unsupported values fall back to English. All pages render dir="ltr".
+  * The language switcher keeps the current path and all non-language query
+    parameters, so search results and filters survive a language change.
 
 --------------------------------------------------------------------------------
-۶.۳ parstextile/urls.py  (20 خط)
+4. File map
 --------------------------------------------------------------------------------
-خطوط 1-4    ایمپورت settings، static (فقط توسعه)، admin و include/path.
-خطوط 6-8    سفارشی‌سازی عنوان‌های پنل مدیریت (site_header، site_title، index_title).
-خطوط 10-14  urlpatterns:
-  - خط 12   path(settings.ADMIN_PATH, admin.site.urls)
-            مسیر پنل از تنظیمات خوانده می‌شود تا آدرس پیش‌فرض حدس‌پذیر نباشد.
-  - خط 13   path("", include("core.urls")) → همهٔ مسیرهای اپ core.
-خطوط 16-17  در DEBUG=True، سرو فایل‌های MEDIA توسط جنگو (در تولید Nginx).
-خطوط 19-20  handler404 و handler500 به توابع core.views.
 
-نکته: ADMIN_PATH با اسلش پایانی ذخیره می‌شود (مثل «admin/») و بدون اسلش ابتدا؛
-این شکل با path() سازگار است. آدرس /admin بدون اسلش به /admin/ ریدایرکت می‌شود.
+Root:
+  manage.py                 Django command-line entry point
+  requirements.txt          Django>=5.2,<6.0 and Pillow>=11.0,<13.0
+  .env.example              Documented environment template (safe to commit)
+  .env                      Local configuration (never commit)
+  README.md                 English overview
+  README_de.md              German overview
+  README_fa.md              Persian overview of the project
+  DOCUMENTATION.txt         This file
+  RESUME.txt                Maintainer profile / CV
+  LICENSE                   MIT licence
+  .github/workflows/ci.yml  Tests on Python 3.11/3.12/3.13 and deploy check
+  .github/ISSUE_TEMPLATE/   Bug report and feature request forms
 
---------------------------------------------------------------------------------
-۶.۴ wsgi.py و asgi.py  (هرکدام 16 خط)
---------------------------------------------------------------------------------
-خطوط 1-8    توضیح و لینک مستندات رسمی.
-خطوط 10-12  ایمپورت os و get_wsgi_application / get_asgi_application.
-خط 14       تنظیم DJANGO_SETTINGS_MODULE.
-خط 16       ساخت callable به نام application برای سرور.
+Project package parsstore/:
+  settings.py               Env loading, security, languages, cache, email,
+                            database, logging, admin path
+  urls.py                   Admin route, core routes, custom 404/500 handlers
+  wsgi.py / asgi.py         WSGI and ASGI application entry points
 
-تفاوت: WSGI برای Gunicorn/uWSGI (همگام) و ASGI برای uvicorn/daphne (ناهمگام).
-این پروژه قابلیت async ندارد؛ هر دو فقط برای سازگاری با میزبان‌های مختلف‌اند.
+App core/:
+  apps.py                   App configuration (name: "core")
+  models.py                 Inquiry, Product, ProductSpec, Customer
+  migrations/               Schema history; 0005 sets English admin metadata
+  content.py                English source content (SITE, BRANDS, FAQ, ...)
+  content_i18n.py           German overrides and get_content(lang) merge logic
+  i18n.py                   Bilingual UI strings, current_language(), t(), flat()
+  middleware.py             LanguageMiddleware and SecurityHeadersMiddleware
+  context_processors.py     Common template context for every page
+  views.py                  Home, catalogue, detail, error views and helpers
+  forms.py                  InquiryForm, ClubSignupForm, honeypot, validation
+  admin.py                  Admin layout, thumbnail rebuild, membership actions
+  images.py                 Pillow-based WebP thumbnail generation
+  utils.py                  Digit normalisation and phone-number cleaning
+  tests.py                  Automated test suite
+  templatetags/i18n_extra.py  Category labels, safe dict access, pagination text
+  templates/core/           base, home, products, product_detail, cards, errors
+  static/core/              css/style.css, js/main.js, js/theme.js, fonts, images
 
---------------------------------------------------------------------------------
-۶.۵ core/apps.py  (7 خط)
---------------------------------------------------------------------------------
-خط 4       کلاس CoreConfig از AppConfig.
-خط 5       default_auto_field = BigAutoField.
-خط 6       name = "core".
-خط 7       verbose_name = «سایت معرفی فروشگاه» (در پنل ادمین دیده می‌شود).
-
---------------------------------------------------------------------------------
-۶.۶ core/models.py  (291 خط)
---------------------------------------------------------------------------------
-خطوط 1-13  ایمپورت‌ها: secrets و uuid برای کد عضویت، Path برای نام فایل،
-            MaxValueValidator، models، post_delete/receiver، make_thumbnail
-            از images.py و normalize_digits از utils.py.
-
-کلاس Inquiry (خطوط 16-33):
-  - همان مدل استعلام نسخهٔ قبل: name، company، phone، machine، message،
-    created_at و is_processed.
-  - Meta: verbose_name/plural فارسی و ordering = ["-created_at"].
-  - __str__: «نام — تلفن» برای فهرست ادمین.
-
-کلاس Product (خطوط 37-175) — محصول کاتالوگ، بدون سبد خرید:
-  - خطوط 39-55 شش دستهٔ ثابت: mechanical، electronic، weft، drive، weaving،
-    tools با برچسب فارسی. این مقدار در فیلتر ادمین و برچسب روی کارت استفاده می‌شود.
-  - خطوط 57-66 name (۱۶۰)، brand (۸۰)، machine_models (۲۰۰)، category،
-    summary (۲۴۰) و description (متن کامل، اختیاری).
-  - خطوط 69-83 image: ImageField با upload_to="products/%Y/%m/"؛ راهنمای
-    ادمین نسبت ۴:۳ و حجم کمتر از ۴۰۰ کیلوبایت را پیشنهاد می‌کند.
-    image_thumb: ImageField با upload_to="products/thumbs/%Y/%m/"،
-    editable=False و blank=True؛ کاربر آن را دستی پر نمی‌کند.
-    image_alt: متن جایگزین؛ اگر خالی باشد قالب نام محصول را می‌گذارد.
-  - خطوط 87-91 is_featured (محصول منتخب)، is_active (نمایش در سایت)،
-    sort_order (ترتیب صعودی) و created_at/updated_at.
-  - خطوط 93-106 Meta: نام فارسی، ordering = ["sort_order", "name"] و سه ایندکس
-    برای کاتالوگ بزرگ:
-      * product_active_feat_idx روی (is_active, is_featured, sort_order) —
-        کوئری اصلی کاتالوگ و صفحهٔ اصلی (فقط فعال‌ها، منتخب‌ها اول، ترتیب).
-      * product_category_idx روی category — فیلتر دسته‌بندی.
-      * product_brand_idx روی brand — فیلتر برند و ساخت فهرست برندها.
-    ایندکس‌ها با مهاجرت 0003 ساخته می‌شوند و با ۸۰۰ تا ۱۲۰۰ ردیف هم کوئری
-    صفحه را از اسکن کامل جدول بی‌نیاز می‌کنند.
-  - خطوط 108-116 سازنده: نام فایل تصویر و بندانگشتی قبلی را نگه می‌دارد.
-    برای رکورد تازه (_state.adding) مقدار اولیه خالی است تا تصویری که همان
-    لحظه در ادمین انتخاب شده «جدید» شناخته شود؛ اشتباه رایجی که باعث می‌شد
-    برای محصول تازه بندانگشتی ساخته نشود.
-  - خطوط 118-121 display_image: ابتدا image_thumb و در نبود آن image؛
-    قالب همیشه از همین property استفاده می‌کند.
-  - خطوط 123-124 get_absolute_url: reverse("core:product_detail", args=[pk])؛
-    قالب‌ها به‌جای ساخت دستی لینک، از همین متد استفاده می‌کنند و تغییر مسیر
-    فقط در core/urls.py انجام می‌شود.
-  - خطوط 126-163 save:
-      * image_field._committed=False یعنی فایل تازه آپلود شده است؛ در غیر این
-        صورت تغییر نام فایل نسبت به مقدار اولیه هم «تغییر تصویر» محسوب می‌شود.
-      * اگر تصویر جدید باشد، make_thumbnail(self.image) اجرا و در صورت موفقیت
-        با نام "<نام اصلی>-thumb.webp" در image_thumb ذخیره می‌شود (save=False).
-      * اگر update_fields پاس شده باشد، image_thumb به آن اضافه می‌شود تا
-        ذخیرهٔ محدود، فیلد بندانگشتی را جا نیندازد.
-      * اگر تصویر پاک شود، image_thumb هم خالی می‌شود.
-      * پس از super().save، فایل‌های قبلی (تصویر و بندانگشتی) با _delete_file
-        حذف می‌شوند؛ خطای حذف فایل ذخیرهٔ محصول را نمی‌شکند.
-  - خطوط 165-175 _delete_file با storage همان فیلد حذف می‌کند و __str__ نام
-    محصول را برمی‌گرداند.
-
-کلاس ProductSpec (خطوط 178-194) — یک ردیف مشخصهٔ فنی:
-  - product: ForeignKey به Product با related_name="specs" و CASCADE؛
-    با حذف محصول، مشخصات هم حذف می‌شوند.
-  - label (۶۰)، value (۱۲۰) و sort_order؛ Meta با ترتیب صعودی.
-  - در ادمین به‌صورت TabularInline کنار محصول ویرایش می‌شود.
-
-کلاس Customer (خطوط 197-280) — عضو باشگاه مشتریان:
-  - خطوط 198-208 سه سطح برنزی/نقره‌ای/طلایی و TIER_DISCOUNTS (۵/۸/۱۲٪) که
-    فقط پیشنهاد نمایشی است؛ درصد واقعی هر عضو در فیلد discount_percent است.
-  - خطوط 210-217 وضعیت‌ها: pending (در انتظار تأیید، پیش‌فرض ثبت عمومی)،
-    active (فعال) و blocked (مسدود).
-  - خط 219 CODE_ALPHABET بدون حروف شبیه‌به‌هم (I/O/0/1) برای خوانایی تلفنی.
-  - خطوط 221-251 فیلدها: code (یکتا، editable=False)، first_name، last_name،
-    company، phone (یکتا با پیام خطای فارسی)، tier، discount_percent
-    (پیش‌فرض ۵، اعتبارسنج ۰ تا ۱۰۰)، status، notes و زمان‌ها.
-    phone یکتاست تا یک شماره دو بار عضو نشود؛ ارقام فارسی/عربی در save نرمال
-    می‌شوند.
-  - خطوط 253-256 Meta: نام فارسی «باشگاه مشتریان» و ترتیب جدیدترین‌ها.
-  - خطوط 258-260 full_name: نام و نام خانوادگی با یک فاصله.
-  - خطوط 262-267 save: نرمال‌سازی phone و ساخت کد در اولین ذخیره.
-  - خطوط 269-280 _generate_code: ۱۰ تلاش برای کد یکتای "PT-" + شش نویسه؛
-    در صورت برخورد، fallback با uuid. کد برای اعلام تلفنی هنگام خرید است.
-
-سیگنال حذف محصول (خطوط 283-291):
-  - @receiver(post_delete, sender=Product) تصویر اصلی و بندانگشتی را از
-    storage حذف می‌کند تا فایل یتیم در media/ نماند. خطای فایل نادیده گرفته
-    می‌شود تا حذف رکورد شکست نخورد.
-
-نکته: ایندکس‌های کاتالوگ در Meta محصول تعریف شده‌اند؛ phone در Customer
-به‌خاطر unique=True خودش ایندکس یکتا دارد. دادهٔ Customer شخصی است؛ فقط در
-ادمین دیده می‌شود و نباید در مخزن/لاگ بیاید.
+Generated/ignored:
+  staticfiles/              Output of collectstatic
+  media/                    Uploaded product images and thumbnails
+  db.sqlite3                Local development database
 
 --------------------------------------------------------------------------------
-۶.۷ core/images.py  (48 خط) — ساخت بندانگشتی WebP
+5. Modules in detail
 --------------------------------------------------------------------------------
-خطوط 1-6   docstring: تصویر اصلی با کیفیت کامل می‌ماند و نسخهٔ کوچک‌تر برای
-            کارت صفحهٔ اصلی ساخته می‌شود تا مرورگر فایل سبک بگیرد.
-خط 8       ایمپورت BytesIO برای نگهداری خروجی در حافظه (بدون فایل موقت).
-خطوط 10-11 ایمپورت ContentFile از جنگو و Image/ImageOps از Pillow.
-خط 13      THUMB_MAX_SIZE = (960, 960): سقف ابعاد بندانگشتی؛ نسبت تصویر حفظ
-            می‌شود و تصویر بزرگ‌تر از این کادر کوچک می‌شود.
-خط 14      THUMB_QUALITY = 82: کیفیت WebP؛ تعادل خوب حجم و شفافیت برای عکس قطعه.
-خط 17      def make_thumbnail(image_field) -> ContentFile | None
-خطوط 19-20 اگر فیلد خالی باشد None برمی‌گردد (محصول بدون تصویر خطا نمی‌دهد).
-خطوط 22-23 باز کردن فایل آپلودشده با حالت «rb»؛ Image.open خودش فرمت را
-            تشخیص می‌دهد (JPEG، PNG، WebP، BMP و…).
-خط 25      ImageOps.exif_transpose: چرخش تصویر موبایل بر اساس متادیتای EXIF
-            اصلاح می‌شود تا عکس کج ذخیره نشود.
-خطوط 27-32 اگر تصویر کانال شفافیت داشته باشد (RGBA/LA/P)، روی پس‌زمینهٔ سفید
-            تخت می‌شود؛ WebP بدون آلفا حجم کمتری دارد و کارت محصول پس‌زمینهٔ
-            یکدست می‌گیرد. سایر حالت‌ها فقط به RGB تبدیل می‌شوند.
-خط 34      image.thumbnail(...) با الگوریتم LANCZOS: کوچک‌سازی باکیفیت و
-            بدون تغییر نسبت ابعاد.
-خطوط 35-37 ذخیره در BytesIO با format="WEBP" ، quality=82 و method=6
-            (method بالاتر = فشرده‌سازی بهتر با هزینهٔ پردازش بیشتر؛ چون فقط
-            یک‌بار هنگام ذخیره در ادمین اجرا می‌شود، انتخاب بهینه است).
-خط 39      ContentFile(buffer.getvalue()) برای تحویل به ImageField ذخیره می‌شود.
-خطوط 40-47 except (OSError, ValueError): فایل خراب/غیرتصویری خطای ۵۰۰ نمی‌دهد؛
-            None برمی‌گردد و محصول بدون بندانگشتی ذخیره می‌شود. بلوک finally
-            فایل را به ابتدا برمی‌گرداند تا بقیهٔ پردازش‌ها (مثلاً ذخیرهٔ اصلی)
-            درست کار کنند.
 
-کاربرد و کارایی: این تابع در Product.save فقط زمانی صدا زده می‌شود که تصویر
-عوض شده باشد؛ بنابراین هر بار ویرایش متن محصول، پردازش تصویر تکرار نمی‌شود.
-فایل خروجی معمولاً چند ده کیلوبایت است (در تست، تصویر ۱۲۰۰×۹۰۰ فقط ۱٫۳
-کیلوبایت WebP تولید کرد) و همین موضوع سرعت بارگذاری صفحه را تعیین می‌کند.
-اگر تصویری نامعتبر باشد، بندانگشتی ساخته نمی‌شود و قالب به تصویر اصلی یا
-placeholder برمی‌گردد.
+5.1 parsstore/settings.py
+  A tiny .env parser loads KEY=VALUE pairs without any third-party package.
+  env_bool(), env_int() and env_list() convert values with safe defaults.
+  DEBUG defaults to False. When DEBUG is False, DJANGO_SECRET_KEY is required.
+  Language configuration is LANGUAGE_CODE="en" and LANGUAGES = en, de.
+  The admin slug comes from DJANGO_ADMIN_PATH and is not hard-coded.
+  Cache selection: Redis backend when DJANGO_CACHE_BACKEND or DJANGO_REDIS_URL
+  is set, otherwise LocMemCache (local development only).
+  Security settings are applied in the `if not DEBUG` block; proxy headers are
+  trusted only when DJANGO_BEHIND_PROXY / DJANGO_TRUST_PROXY_HEADERS are set.
 
---------------------------------------------------------------------------------
-۶.۸ core/utils.py  (17 خط) — نرمال‌سازی ارقام
---------------------------------------------------------------------------------
-خط 1       docstring: کمک‌تابع‌های مشترک پاک‌سازی ورودی.
-خطوط 3-7   _DIGIT_MAP با str.maketrans: نگاشت ۱۰ رقم فارسی (۰-۹) و ۱۰ رقم
-            عربی (٠-٩) به ارقام لاتین. یک جدول ترجمهٔ آماده و سریع است.
-خطوط 10-12 normalize_digits(value): اگر مقدار None باشد رشتهٔ خالی، سپس
-            translate با جدول بالا. برای یکسان‌سازی شماره‌ها در فرم‌ها.
-خطوط 15-17 phone_digits(value): ابتدا نرمال‌سازی و سپس فقط نویسه‌های isdigit
-            را نگه می‌دارد؛ فاصله، خط تیره، پرانتز و پیش‌شمارهٔ + حذف می‌شوند.
-            از این تابع در فرم‌ها برای شمردن تعداد ارقام و یکتاسازی تلفن
-            استفاده می‌شود (مثلاً «۰۹۱۲ ۳۴۵-۶۷۸۹» → «09123456789»).
+5.2 core/models.py
+  Inquiry: name, company, phone, email, machine, message, created_at,
+           is_processed. Used by the contact form.
+  Product: name, brand, machine_models, category, summary, description, image,
+           generated image_thumb, image_alt, flags and sort_order. Includes
+           database indexes for active/featured/sort ordering, category and
+           brand. save() builds a WebP thumbnail and deletes replaced files
+           with transaction.on_commit().
+  ProductSpec: label, value, sort_order; related to Product via `specs`.
+  Customer: membership code, name, contact data, tier, discount_percent,
+            status, notes and timestamps. A unique, readable PT- code is
+            generated on save with collision retry. Phone numbers are cleaned
+            and localised digits normalised before the uniqueness check.
 
-نکته: هر دو تابع خالص (pure) و بدون وابستگی به جنگو هستند؛ بنابراین تست و
-استفادهٔ مجدد ساده است و رفتارشان مستقل از پایگاه‌داده است.
+5.3 core/content.py and core/content_i18n.py
+  content.py holds the English source dictionaries SITE, BRANDS, CATEGORIES,
+  FEATURES, STATS, STEPS, CLUB and FAQ. content_i18n.py holds German overrides
+  in _DE and get_content(lang): English is deep-copied as the base, German
+  replaces translated fields while inheriting shared values such as links and
+  phone numbers. Change demo text here, not in templates.
 
---------------------------------------------------------------------------------
-۶.۹ core/migrations/0001، 0002 و 0003 (مجموعاً 134 خط: 32 + 77 + 25)
---------------------------------------------------------------------------------
-فایل 0001_initial.py (32 خط) — تاریخ 2026-11-17:
-  خط 1       هدر تولیدشده توسط Django 5.2.4.
-  خطوط 3-6   ایمپورت migrations/models و کلاس Migration.
-  خط 8       initial = True.
-  خطوط 10-11 dependencies خالی (اولین مهاجرت).
-  خطوط 13-31 operations شامل CreateModel برای Inquiry با همهٔ فیلدها،
-             id از نوع BigAutoField و options فارسی (verbose_name، ordering).
-  کاربرد: جدول استعلام‌ها را می‌سازد.
+5.4 core/i18n.py
+  UI contains every visible label and message as _(english, german). Helpers:
+    current_language()  active code, validated against LANGUAGES
+    t(key, lang=None)   one translated string
+    flat(lang=None)     all strings as a flat dict for templates
+  To add text: add a key with both translations, then use {{ T.key }} in a
+  template or t("key") in Python.
 
-فایل 0002_customer_product_productspec.py (77 خط) — تاریخ 2026-11-18:
-  خط 1       هدر تولید خودکار Django 5.2.4.
-  خطوط 3-5   ایمپورت validators و deletion برای بازتولید دقیق فیلدها.
-  خطوط 10-12 dependency به core.0001_initial (ترتیب اجرا تضمین می‌شود).
-  خطوط 15-35 CreateModel برای Customer: کد یکتا/editable=False، نام،
-             نام خانوادگی، شرکت، تلفن یکتا با پیام خطای فارسی، سطح، درصد
-             تخفیف با MaxValueValidator(100)، وضعیت، یادداشت و زمان‌ها؛
-             options فارسی و ordering = ["-created_at"].
-  خطوط 38-72 CreateModel برای Product: نام، برند، مدل‌های سازگار، دسته،
-             خلاصه، توضیح، image (upload_to="products/%Y/%m/")،
-             image_thumb (upload_to="products/thumbs/%Y/%m/"، blank)،
-             image_alt، is_featured، is_active، sort_order و زمان‌ها؛
-             options با ordering = ["sort_order", "name"].
-  خطوط 74-77 CreateModel برای ProductSpec با ForeignKey به Product،
-             related_name="specs" و on_delete=CASCADE.
+5.5 core/middleware.py
+  SecurityHeadersMiddleware sets a strict CSP (default-src 'self', no inline
+  scripts, no remote origins), Permissions-Policy, and leaves Django's other
+  security headers in place. LanguageMiddleware resolves the language from
+  ?lang=, then the cookie, then the default, activates it with
+  django.utils.translation.activate(), sets Content-Language, and writes the
+  cookie when requested.
 
-فایل 0003_product_product_active_feat_idx_and_more.py (25 خط) — 2026-11-18:
-  خط 1       هدر تولید خودکار Django 5.2.4.
-  خطوط 8-10 dependency به core.0002 (پس از ساخت جدول محصول اجرا می‌شود).
-  خطوط 13-16 AddIndex برای product_active_feat_idx روی
-             (is_active, is_featured, sort_order).
-  خطوط 17-20 AddIndex برای product_category_idx روی category.
-  خطوط 21-24 AddIndex برای product_brand_idx روی brand.
-  کاربرد: کاتالوگ ۸۰۰ تا ۱۲۰۰ قطعه بدون اسکن کامل جدول برای فیلتر/ترتیب
-  پاسخ می‌دهد. این مهاجرت فقط ایندکس می‌سازد و داده را تغییر نمی‌دهد.
+5.6 core/context_processors.py
+  Provides every template with LANG, LANGUAGES, T, SITE, NAV, BRANDS_FOOTER
+  and SWITCH_URLS. Navigation links include the active language and home
+  anchors. Switch URLs preserve non-language GET parameters.
 
-نکته: هر سه فایل باید در مخزن باشند تا نصب روی سرور جدید فقط با
-«python manage.py migrate» کامل شود. پس از هر تغییر مدل، مهاجرت جدید بسازید
-و همان را کامیت کنید؛ فایل‌های مهاجرت را دستی ویرایش نکنید مگر برای
-انتقال داده (data migration) که در این پروژه لازم نشده است.
-بررسی هم‌خوانی: «python manage.py makemigrations --check --dry-run» باید
-«No changes detected» بدهد (در حال حاضر همین‌طور است).
+5.7 core/views.py
+  home(): renders the landing page, handles both POST forms with rate limits,
+          emails and messages, and prefills the inquiry box from ?product=<id>.
+  product_list(): validates q/category/brand, filters active products,
+                  paginates with Paginator and builds elided page links.
+  product_detail(): shows one active product, its specs and related parts.
+  Error handlers render core/404.html and core/500.html.
+  Private helpers handle IP selection (opt-in X-Forwarded-For), atomic cache
+  counters, safe email sending, recipient resolution and notification bodies.
+
+5.8 core/forms.py
+  HoneypotMixin rejects filled hidden fields. InquiryForm and ClubSignupForm
+  set translated labels/placeholders, strip whitespace, clean phone numbers,
+  validate message length and use the active-language duplicate-phone message.
+
+5.9 core/images.py and core/utils.py
+  make_thumbnail() opens an uploaded image, applies EXIF orientation, flattens
+  transparency on white, and saves a WebP of at most 960x960 with quality 82.
+  normalize_digits() maps non-Latin digits to ASCII; phone_digits() keeps only
+  digits, giving a consistent, comparable phone number format.
+
+5.10 core/admin.py
+  Product admin: searchable/filterable list, spec inline, image preview,
+  rebuild-thumbnails action. Customer admin: tier/status editing and activate
+  / block actions. Action messages are translated through i18n.py.
+
+5.11 Templates, CSS and JavaScript
+  base.html defines the LTR document shell, header switcher, theme buttons,
+  navigation, footer, WhatsApp button and message area. home.html contains the
+  anchored sections; products.html and product_detail.html cover the catalogue.
+  style.css implements dark/light/auto themes and responsive layouts with local
+  assets only. theme.js runs synchronously in <head> to avoid a colour flash.
+  main.js handles the mobile menu, scroll effects, reveal animations, inquiry
+  prefill and dismissible messages.
 
 --------------------------------------------------------------------------------
-۶.۱۰ core/content.py  (251 خط) — قلب محتوای سایت
+6. Environment variables
 --------------------------------------------------------------------------------
-خطوط 1-4   docstring: همهٔ متن‌ها و داده‌های نمایشی اینجاست.
-خطوط 6-26  SITE (دیکشنری):
-  - name «پارس تکستایل» و name_en «PARS TEXTILE».
-  - slogan «قطعات یدکی ماشین‌های بافندگی» و since «۱۳۸۵».
-  - description (دو خط به‌هم‌چسبیده) برای فوتر، متای OG و JSON-LD.
-  - phone «۰۲۱ - ۵۵۰۰ ۰۰۰۰» برای نمایش و phone_link «+982155000000» برای tel:.
-  - mobile / mobile_link / whatsapp (لینک wa.me).
-  - email، address (کامل)، address_short، hours، instagram، map_url.
-  ⚠ همهٔ این‌ها «نمونه» هستند و باید با اطلاعات واقعی فروشگاه جایگزین شوند.
 
-خطوط 29-86 BRANDS — فهرست ۸ برند. هر آیتم:
-  - name (فارسی)، latin (نام لاتین برای نمایش LTR)، country،
-  - models (فهرست مدل‌ها، در قالب چیپ‌های LTR)،
-  - note (توضیح کوتاه).
-  ترتیب: Picanol، Itema، Somet، Vamatex، Dornier، Sulzer، Toyota، Tsudakoma.
-  نکته: برند Itema مالک Somet و Vamatex است؛ به همین دلیل هر سه جدا فهرست
-  شده‌اند تا مشتری مدل خودش را سریع پیدا کند.
+Variable                       Default                    Purpose
+DJANGO_DEBUG                   0                          Debug mode; local only
+DJANGO_SECRET_KEY              (required if DEBUG=0)      Signing key
+DJANGO_ALLOWED_HOSTS           localhost,127.0.0.1,[::1]  Host header allowlist
+DJANGO_CSRF_TRUSTED_ORIGINS    empty                      e.g. https://example.com
+DJANGO_ADMIN_PATH              admin                      Admin URL slug
+DJANGO_DB_PATH                 db.sqlite3                 Database location
+DJANGO_CACHE_BACKEND           empty                      Custom cache backend
+DJANGO_REDIS_URL               empty                      Shared Redis cache
+DJANGO_BEHIND_PROXY            0                          Trust HTTPS proxy headers
+DJANGO_TRUST_PROXY_HEADERS     0                          Read X-Forwarded-For
+DJANGO_TRUSTED_PROXY_COUNT     1                          Trusted proxy hops
+DJANGO_SECURE_SSL_REDIRECT     0                          Force HTTPS (prod)
+DJANGO_SESSION_COOKIE_SECURE   follows SSL redirect       Secure session cookie
+DJANGO_CSRF_COOKIE_SECURE      follows SSL redirect       Secure CSRF cookie
+DJANGO_SECURE_HSTS_SECONDS     0                          HSTS max age
+DJANGO_SECURE_HSTS_INCLUDE_SUBDOMAINS  follows HSTS       HSTS subdomains
+DJANGO_SECURE_HSTS_PRELOAD     0                          HSTS preload
+INQUIRY_RATE_LIMIT             6                          Inquiries per window
+INQUIRY_RATE_WINDOW            600                        Window in seconds
+CLUB_RATE_LIMIT                4                          Signups per window
+CLUB_RATE_WINDOW               3600                       Window in seconds
+PRODUCTS_HOME_LIMIT            6                          Featured products home
+PRODUCTS_PAGE_SIZE             24                         Catalogue page size
+DJANGO_EMAIL_BACKEND           console.EmailBackend       Email delivery
+DJANGO_EMAIL_HOST              empty                      SMTP host
+DJANGO_EMAIL_PORT              587                        SMTP port
+DJANGO_EMAIL_HOST_USER         empty                      SMTP user
+DJANGO_EMAIL_HOST_PASSWORD     empty                      SMTP password
+DJANGO_EMAIL_USE_TLS           1                          SMTP TLS
+DJANGO_EMAIL_TIMEOUT           10                         SMTP timeout (seconds)
+DJANGO_DEFAULT_FROM_EMAIL      no-reply@localhost         From address
+DJANGO_SERVER_EMAIL            DEFAULT_FROM_EMAIL         Error sender
+CONTACT_NOTIFY_EMAIL           empty                      Inquiry notification
+CLUB_NOTIFY_EMAIL              empty                      Signup notification
+DJANGO_LOG_LEVEL               INFO                       Root log level
 
-خطوط 89-126 CATEGORIES — ۶ دستهٔ قطعات. هر آیتم:
-  - title، icon (کلید نماد SVG)، desc، tags (۳ برچسب).
-  دسته‌ها: مکانیکی/سایشی، الکترونیکی/بردها، وفت/نوزل/پمپ، تسمه/موتور/گیربکس،
-  بافندگی/مصرفی، ابزار/لوازم فنی.
-  iconها باید با symbolهای _icons.html هم‌نام باشند:
-  gear، chip، nozzle، belt، thread، tool.
-
-خطوط 129-160 FEATURES — ۶ مزیت رقابتی با icon/title/desc:
-  shield (اصالت)، box (تنوع موجودی)، truck (ارسال)، headset (پشتیبانی)،
-  tag (قیمت شفاف)، clock (سابقه).
-
-خطوط 163-168 STATS — ۴ آمار: ۱۹ سال تجربه، ۱۲٬۰۰۰+ قلم، ۸ برند، ۲۴ ساعت پاسخ.
-  این اعداد باید با واقعیت فروشگاه هماهنگ شوند.
-
-خطوط 171-188 STEPS — ۴ مرحلهٔ سفارش: ارسال استعلام، بررسی فنی، تأیید قیمت،
-  ارسال کالا. هر مرحله title/desc دارد و شمارهٔ آن با forloop.counter ساخته می‌شود.
-
-خطوط 191-228 CLUB — دادهٔ نمایشی باشگاه مشتریان (متن‌ها فقط معرفی‌اند؛
-  درصد واقعی هر عضو در مدل Customer است):
-  - title و intro: توضیح این‌که تخفیف در خرید حضوری/تلفنی اعمال می‌شود،
-    نه در سبد خرید آنلاین.
-  - perks: ۴ مزیت (تخفیف روی خرید، اطلاع از موجودی، پشتیبانی فنی،
-    قیمت‌گذاری ویژهٔ کارگاه‌ها) با icon/title/desc.
-  - tiers: ۳ سطح برنزی/نقره‌ای/طلایی با درصد نمایشی ۵/۸/۱۲ و توضیح کوتاه.
-  - note: یادآوری رایگان‌بودن عضویت و تأیید تلفنی.
-  اگر درصدهای نمایشی را تغییر دادید، مقادیر پیش‌فرض مدل را هم هماهنگ کنید.
-
-خطوط 230-251 FAQ — ۵ پرسش و پاسخ: شناسایی قطعه، ارسال شهرستان/خارج،
-  گارانتی، حداقل سفارش و «آیا باشگاه مشتریان تخفیف می‌دهد؟». پاسخ مورد آخر
-  صریح می‌گوید تخفیف روی خرید حضوری/تلفنی اعمال می‌شود و سایت فروشگاه
-  اینترنتی نیست. در قالب، اولین مورد باز (open) است.
-
-قاعدهٔ ویرایش: هر متن جدید باید فارسی، بدون کشیده (ـ)، با نیم‌فاصله و اعداد
-فارسی باشد. کلیدهای دیکشنری را تغییر ندهید مگر قالب را هم به‌روز کنید.
+If both notification recipients are empty, notifications are sent to active
+staff users. If there are none, only the customer confirmation is sent.
 
 --------------------------------------------------------------------------------
-۶.۱۱ core/context_processors.py  (20 خط)
+7. Forms, email and rate limiting
 --------------------------------------------------------------------------------
-خط 1       ایمپورت reverse از django.urls.
-خط 3       ایمپورت content.
-خط 6       تابع site_content(request).
-خطوط 7-20  دیکشنری برگشتی:
-  - home_url = reverse("core:home") یک‌بار محاسبه می‌شود.
-  - SITE: اطلاعات تماس/نام.
-  - NAV: فهرست ۶ آیتم منو با label و href، استفاده‌شده در هدر و فوتر.
-    لنگرهای صفحهٔ اصلی با home_url ساخته می‌شوند (مثل "/#about") تا از
-    /products/ و صفحهٔ جزئیات هم درست کار کنند؛ «محصولات» به
-    reverse("core:product_list") یعنی /products/ اشاره می‌کند.
-  - BRANDS_FOOTER: همان BRANDS برای ستون برندها در فوتر.
-کاربرد: بدون پاس دادن دستی این داده‌ها در هر ویو، در همهٔ قالب‌ها در دسترس‌اند.
-نکته: در صفحهٔ خطای ۵۰۰ هم اجرا می‌شود و به پایگاه‌داده وابسته نیست (فقط
-reverse و دیکشنری‌های content)، بنابراین قالب ۵۰۰ امن می‌ماند.
 
---------------------------------------------------------------------------------
-۶.۱۲ core/urls.py  (11 خط)
---------------------------------------------------------------------------------
-خط 1       ایمپورت path.
-خط 3       ایمپورت views.
-خط 5       app_name = "core" (برای reverse("core:home") و …).
-خطوط 7-11  urlpatterns:
-  - ""                   → views.home           نام home
-  - "products/"          → views.product_list   نام product_list
-  - "products/<int:pk>/" → views.product_detail نام product_detail
-مسیرهای لنگر (#about و…) بخشی از URL نیستند و به ویو نمی‌رسند.
-شناسهٔ محصول در مسیر عدد صحیح است؛ مقدار غیرعددی به ۴۰۴ می‌رسد و در ویو
-فقط محصول فعال برگردانده می‌شود.
+Inquiry POST:
+  1. Honeypot and rate limit checked.
+  2. InquiryForm validated; localised phone digits normalised.
+  3. Inquiry saved; admin notification and customer confirmation sent through
+     _send_mail_safely(), which logs SMTP errors without losing the form data.
+  4. Translated success/error message, redirect to /?lang=<code>#contact.
+
+Club POST:
+  Same flow with CLUB_* limits, a pending Customer, a generated code, and a
+  redirect to /?lang=<code>#club. Admin activation sets status to active.
+
+Rate limiting uses cache.add() + cache.incr(), which is atomic. With multiple
+workers, configure Redis; LocMemCache would give each worker its own counter.
+TRUST_PROXY_HEADERS must be enabled only behind a proxy you control.
 
 --------------------------------------------------------------------------------
-۶.۱۳ core/forms.py  (165 خط) — فرم استعلام و عضویت باشگاه
+8. Security controls
 --------------------------------------------------------------------------------
-خط 1       ایمپورت forms.
-خط 3       ایمپورت Customer و Inquiry از models.
-خط 4       ایمپورت phone_digits از utils (نرمال‌سازی ارقام).
-خط 6       INPUT_CLASS = "field-input" (کلاس مشترک ورودی‌ها، جلوگیری از تکرار).
 
-خطوط 9-29 کلاس HoneypotMixin(forms.Form):
-  - یک فیلد website مشترک برای هر دو فرم؛ به‌جای تکرار در دو کلاس.
-  - required=False تا فرم کاربر واقعی معتبر بماند.
-  - label خالی، widget متنی با کلاس hp-input، tabindex=-1 (خارج از ترتیب تب)،
-    autocomplete=off و aria-hidden=true.
-  - در CSS با clip-path و موقعیت مطلق پنهان می‌شود؛ کاربر واقعی نمی‌بیند.
-  - clean_website: اگر مقدار پر باشد → ValidationError «درخواست نامعتبر است.»
-    و در غیر این صورت رشتهٔ خالی برمی‌گرداند.
-  - ربات‌های ساده همهٔ فیلدها را پر می‌کنند؛ کاربر واقعی آن را نمی‌بیند.
-
-خطوط 32-100 کلاس InquiryForm(HoneypotMixin, forms.ModelForm):
-  - Meta: مدل Inquiry و فیلدهای name/company/phone/machine/message؛
-    فیلد website عمداً در fields نیست و در مدل ذخیره نمی‌شود.
-  - Widgetها (36-79): placeholder فارسی، autocomplete مناسب
-    (name/organization/tel)، inputmode=tel برای کیبورد عددی، dir=ltr برای
-    تلفن، maxlength هماهنگ با مدل، textarea چهار ردیفی با سقف ۲۰۰۰.
-  - clean_name (81-82): فشرده‌سازی فاصله‌های تکراری با split/join.
-  - clean_company (84-85): همان کار برای فیلد اختیاری.
-  - clean_phone (87-92): strip، سپس phone_digits؛ کمتر از ۸ رقم → خطای
-    «شماره تماس معتبر وارد کنید.»؛ رشتهٔ اصلی (با فاصله/خط تیره) ذخیره
-    می‌شود تا خوانا بماند، ولی اعتبارسنجی روی ارقام نرمال‌شده است.
-  - clean_message (94-100): strip، حداقل ۵ و حداکثر ۲۰۰۰ نویسه با پیام فارسی.
-
-خطوط 103-165 کلاس ClubSignupForm(HoneypotMixin, forms.ModelForm):
-  - برخلاف استعلام، این فرم یک رکورد Customer می‌سازد؛ اما فقط چهار فیلد
-    عمومی را می‌پذیرد (first_name، last_name، company، phone). status، tier،
-    discount_percent و code از این فرم قابل تغییر نیستند و ادمین آن‌ها را
-    تعیین می‌کند؛ جلوی دستکاری تخفیف از سمت کاربر گرفته می‌شود.
-  - labels فارسی برای برچسب‌های فرم (109-114).
-  - Widgetها (115-150): مشابه استعلام؛ maxlength تلفن ۲۰ (هماهنگ با مدل).
-  - clean_first_name / clean_last_name / clean_company (152-159):
-    فشرده‌سازی فاصله‌ها.
-  - clean_phone (161-165): phone_digits، بازهٔ ۸ تا ۱۵ رقم، و خروجی
-    فقط ارقام لاتین است تا شمارهٔ فارسی و لاتین یکتایی را درست تشخیص دهد.
-    یکتایی نهایی توسط unique=True مدل و پیام خطای فارسی آن انجام می‌شود.
-
-نکتهٔ امنیتی: خروجی همهٔ فیلدها در قالب با escape جنگو نمایش داده می‌شود؛
-هیچ‌جا safe/mark_safe استفاده نشده است. هیچ فیلد «درصد تخفیف» یا «وضعیت» در
-فرم عمومی وجود ندارد؛ بنابراین کاربر نمی‌تواند خودش را فعال یا تخفیف‌دار کند.
+  * DEBUG defaults to False and a secret key is mandatory outside debug.
+  * Strict CSP: only self-hosted assets, no inline scripts, form-action self.
+  * Permissions-Policy and Django security middleware are enabled.
+  * CSRF protection on every POST; hidden honeypot fields on both forms.
+  * Server-side validation for all input; GET filters are length-limited and
+    validated against known category/brand values.
+  * Per-IP atomic throttling for inquiries and club signups.
+  * X-Forwarded-For is ignored unless explicitly trusted.
+  * Uploaded images are processed by Pillow; thumbnails are regenerated and old
+    files removed only after the database transaction commits.
+  * Configurable admin path; no public accounts or payment flow.
+  * check --deploy is part of CI.
 
 --------------------------------------------------------------------------------
-۶.۱۴ core/views.py  (293 خط)
+9. Production deployment checklist
 --------------------------------------------------------------------------------
-خطوط 1-14  ایمپورت logging، settings، messages، cache، send_mail، Paginator،
-            Q، get_object_or_404/redirect/render، reverse، content، دو فرم و
-            Product.
-خط 16      logger = logging.getLogger(__name__) برای لاگ خطاهای داخلی.
 
-خطوط 19-85 تابع home — یک ویو برای GET و POST هر دو فرم:
-  - خطوط 20-22 پیش‌پر کردن اختیاری فرم استعلام با _inquiry_prefill(request)
-             (مثلاً ورود از /products/3/ با ?product=3#contact) و ساخت فرم
-             باشگاه خالی.
-  - خط 24    بررسی متد POST.
-  - خط 25    تشخیص فرم از فیلد پنهان form_type؛ فقط مقدار «club» فرم
-             عضویت است و هر چیز دیگری استعلام (پیش‌فرض امن).
-  - خطوط 27-44 مسیر باشگاه:
-      * 28-33 محدودیت نرخ با kind="club" پیش از اعتبارسنجی (۴ در ساعت)؛
-        پیام خطا و redirect به /#club.
-      * 35-43 اگر معتبر: club_form.save() یک Customer با وضعیت پیش‌فرض
-         «در انتظار تأیید» میسازد، _notify_club_signup دو ایمیل میفرستد، پیام
-         موفقیت نمایش داده و به /#club ریدایرکت میشود (POST/Redirect/GET).
-      * 44    اگر نامعتبر: پیام خطای عمومی؛ خطاهای فیلد در همان صفحه.
-  - خطوط 45-62 مسیر استعلام:
-      * 46-51 محدودیت نرخ با kind="inquiry" (۶ در ۱۰ دقیقه) و redirect
-        به /#contact.
-       * 53-61 ذخیرهٔ Inquiry، ارسال دو ایمیل (تأیید به مشتری و اطلاع به
-         مدیر در صورت تنظیم گیرنده)، پیام موفقیت و redirect به /#contact.
-      * 62    پیام خطای عمومی برای فرم نامعتبر.
-  - خطوط 64-69 پرس‌وجوی محصولات صفحهٔ اصلی:
-      * limit از PRODUCTS_HOME_LIMIT (پیش‌فرض ۶).
-      * فقط is_active=True (محصول مخفی نمایش داده نمی‌شود).
-      * prefetch_related("specs") برای جلوگیری از N+1 در نمایش مشخصات.
-      * ترتیب: منتخب‌ها اول (-is_featured)، سپس sort_order و name.
-      * برش [:limit] در سطح پایگاه‌داده انجام می‌شود.
-  - خطوط 71-84 context: محتوای content.py (شامل CLUB)، محصولات پیش‌نمایش،
-             products_total (شمارش فعال‌ها برای متن «مشاهده همه»)، فرم
-             استعلام با نام form و فرم باشگاه با نام club_form.
-  - خط 85    render قالب core/home.html.
+ 1. Use PostgreSQL (recommended) or a managed SQLite volume; set DJANGO_DB_PATH.
+ 2. Set DEBUG=0, a random 50+ character DJANGO_SECRET_KEY, real
+    DJANGO_ALLOWED_HOSTS and DJANGO_CSRF_TRUSTED_ORIGINS.
+ 3. Enable HTTPS settings: SECURE_SSL_REDIRECT, secure cookies and HSTS. Set
+    DJANGO_BEHIND_PROXY if traffic arrives through a trusted proxy.
+ 4. Configure a shared Redis cache via DJANGO_REDIS_URL when running more than
+    one worker.
+ 5. Run: python manage.py migrate
+          python manage.py collectstatic --noinput
+ 6. Serve staticfiles/ and media/ with Nginx; deny script execution in media/.
+ 7. Run Gunicorn/uvicorn behind HTTPS. Keep the admin path secret.
+ 8. Set SMTP variables and notification recipients; test both email flows.
+ 9. Back up the database, media/ and the .env file separately.
+10. Run python manage.py check --deploy before going live.
 
-خطوط 88-154 تابع product_list — کاتالوگ کامل، جست‌وجو/فیلتر/صفحه‌بندی:
-  - خطوط 94-96 خواندن q/category/brand از query string؛ q و brand حداکثر
-            ۸۰ نویسه و strip می‌شوند.
-  - خطوط 98-100 اعتبارسنجی دسته: فقط مقدارهای CATEGORY_CHOICES پذیرفته
-            می‌شوند؛ مقدار ناشناخته به «همه» تبدیل می‌شود.
-  - خطوط 102-110 ساخت فهرست برندهای موجود از محصولات فعال
-            (values_list + distinct + order_by، بدون رکورد تکراری) و
-            اعتبارسنجی برند انتخابی با همین فهرست.
-  - خط 112    کوئری پایه: Product.objects.filter(is_active=True) با
-            prefetch_related("specs") تا مشخصات هر کارت در یک کوئری اضافه
-            خوانده شود.
-  - خطوط 113-119 جست‌وجوی q با Q و icontains روی name، brand،
-            machine_models و summary (بدون حساسیت به بزرگی/کوچکی حروف
-            لاتین).
-  - خطوط 120-123 فیلترهای category و brand روی همان queryset.
-  - خط 124    ترتیب: منتخب‌ها اول (-is_featured)، سپس sort_order و name؛
-            با ایندکس product_active_feat_idx هم‌خوان است.
-  - خطوط 126-127 Paginator با _products_page_size() و get_page؛ شمارهٔ
-            نامعتبر یا خارج از بازه به اولین/آخرین صفحه می‌افتد.
-  - خطوط 129-131 ساخت querystring بدون page برای نگه‌داشتن فیلترها در
-            لینک‌های صفحه‌بندی.
-  - خطوط 133-138 ساخت شماره‌های صفحه با get_elided_page_range
-            (on_each_side=2، on_ends=1) و علامت «…»؛ در قالب حلقه می‌شود.
-  - خطوط 140-153 context: صفحهٔ جاری، page_obj، paginator، page_items،
-            querystring، مقادیر فیلتر، گزینه‌های دسته/برند، has_filters و
-            result_count = paginator.count.
-  - خط 154    render قالب core/products.html.
+Example deploy check:
 
-خطوط 157-172 تابع product_detail — صفحهٔ کامل یک قطعه:
-  - خطوط 159-161 get_object_or_404 روی Product فعال با prefetch_related
-            ("specs")؛ محصول مخفی یا شناسهٔ ناموجود ۴۰۴ می‌دهد.
-  - خطوط 162-167 حداکثر ۴ محصول فعال هم‌دسته (به‌جز خودش) با همان ترتیب
-            منتخب‌ها برای بخش «قطعات مشابه».
-  - خطوط 168-172 render قالب core/product_detail.html با product و related.
-
-خطوط 175-180 page_not_found و server_error: رندر 404.html و 500.html با
-            وضعیت متناظر؛ مستقل از پایگاه‌داده تا صفحهٔ خطا همیشه کار کند.
-
-خطوط 184-187 _products_page_size:
-  - PRODUCTS_PAGE_SIZE را از تنظیمات می‌خواند (پیش‌فرض ۲۴) و با
-    max(6, min(96, size)) در بازهٔ امن نگه می‌دارد؛ مقدار صفر/منفی یا بسیار
-    بزرگ، پاسخ غیرمنطقی نمی‌سازد.
-
-خطوط 190-202 _inquiry_prefill:
-  - پارامتر product را فقط اگر رقم باشد می‌پذیرد (isdigit).
-  - فقط محصول is_active=True را با only("name") می‌خواند (کوئری سبک).
-  - متن «استعلام قیمت برای: <نام قطعه>» را برمی‌گرداند؛ در غیر این صورت
-    رشتهٔ خالی. این متن initial فرم است و ورودی کاربر را در POST بازنویسی
-    نمی‌کند.
-
-خطوط 205-211 _client_ip:
-  - اگر TRUST_PROXY_HEADERS روشن باشد، اولین IP در X-Forwarded-For.
-  - در غیر این صورت REMOTE_ADDR (پیش‌فرض امن؛ هدر قابل جعل نیست).
-  - در نبود مقدار، «unknown» (همهٔ چنین درخواست‌ها یک سبد مشترک می‌گیرند).
-
-خطوط 214-243 _is_rate_limited(request, kind="inquiry"):
-  - انتخاب limit/window بر اساس kind: باشگاه (CLUB_RATE_LIMIT=4،
-    CLUB_RATE_WINDOW=3600) یا استعلام (INQUIRY_RATE_LIMIT=6،
-    INQUIRY_RATE_WINDOW=600). مقدار <=0 یعنی غیرفعال.
-  - کلید کش: "<kind>-throttle:<IP>"؛ دو شمارندهٔ مستقل تا فرم‌ها یکدیگر را
-    مسدود نکنند.
-  - cache.get شمارش فعلی؛ اگر >= limit → True (محدود).
-  - اگر شمارنده صفر باشد: cache.add با TTL پنجره (اتمیک‌تر از set).
-  - در غیر این صورت cache.incr؛ اگر کلید بین دو عملیات منقضی شده باشد
-    (ValueError)، مقدار جدید با TTL ست می‌شود.
-  - هر خطای کش لاگ می‌شود ولی مانع ثبت فرم نمی‌شود (fail-open آگاهانه؛
-    در دسترس بودن مهم‌تر از سخت‌گیری کامل است).
-  - خروجی False یعنی «محدود نیست».
-
-خطوط 246-306 کمکرسانهای ایمیل و _notify_inquiry:
-  - _send_mail_safely: send_mail را در try/except میکند؛ گیرندههای خالی را
-    حذف مینماید و خطای SMTP را فقط لاگ میکند (ارسال فرم متوقف نمیشود).
-  - _admin_recipient: ابتدا تنظیم مخصوص و سپس CONTACT_NOTIFY_EMAIL را
-    پیشفرض میگیرد.
-  - _notify_inquiry: دو ایمیل میفرستد—اطلاع به مدیر (اختیاری) با نام،
-    ایمیل، تلفن و توضیحات؛ سپس ایمیل تأیید به نشانی inquiry.email.
-
-خطوط 309-344 _notify_club_signup:
-  - همان الگوی دو ایمیل: اطلاع به مدیر (CLUB_NOTIFY_EMAIL یا پیشفرض
-    CONTACT_NOTIFY_EMAIL) و تأیید به عضو شامل نام، تلفن و کد موقت.
-  - خطای SMTP فقط لاگ میشود و ثبت عضویت را متوقف نمیکند.
-
-نکته: ویو در هیچ مسیری درصد تخفیف یا وضعیت عضویت را از ورودی کاربر
-نمی‌پذیرد؛ این مقادیر فقط از ادمین قابل تغییرند.
+  DJANGO_DEBUG=0 \
+  DJANGO_SECRET_KEY="<random-50+-character-key>" \
+  DJANGO_ALLOWED_HOSTS="example.com" \
+  DJANGO_SECURE_SSL_REDIRECT=1 \
+  DJANGO_SECURE_HSTS_SECONDS=31536000 \
+  DJANGO_SECURE_HSTS_PRELOAD=1 \
+  python manage.py check --deploy
 
 --------------------------------------------------------------------------------
-۶.۱۵ core/middleware.py  (47 خط)
+10. Customisation guide
 --------------------------------------------------------------------------------
-خط 1       docstring: هدرهایی که جنگو پیش‌فرض نمی‌فرستد.
-خط 3       ایمپورت settings.
-خط 6       کلاس SecurityHeadersMiddleware.
-خطوط 7-12  توضیح: پروژه هیچ منبع خارجی ندارد؛ پس CSP سخت‌گیرانه است.
 
-خطوط 14-25 ثابت CSP:
-  - default-src 'self' → پیش‌فرض همهٔ منابع فقط از همان دامنه.
-  - base-uri 'self' → جلوگیری از تغییر base tag.
-  - connect-src 'self' → fetch/XHR فقط به خود سایت.
-  - font-src 'self' → فونت محلی.
-  - form-action 'self' → فرم فقط به خود سایت (ضد ارسال به دامنهٔ مهاجم).
-  - frame-ancestors 'none' → ضد iframe (هم‌راستا با X-Frame-Options).
-  - img-src 'self' data: → تصاویر محلی و data URI (فاوآیکون/آینده).
-  - object-src 'none' → غیرفعال‌کردن pluginها (Flash/Java).
-  - script-src 'self' → فقط اسکریپت‌های محلی main.js و theme.js؛ هیچ inline
-            script اجرا نمی‌شود.
-  - style-src 'self' → فقط style.css محلی؛ هیچ style attribute در HTML نیست.
-
-خطوط 27-29 Permissions-Policy: غیرفعال‌کردن دوربین، میکروفن، موقعیت، پرداخت و USB.
-
-خطوط 31-32 سازندهٔ middleware: ذخیرهٔ get_response (قرارداد جنگو).
-خطوط 34-45 __call__:
-  - ابتدا پاسخ را از زنجیرهٔ بعدی می‌گیرد.
-  - دیکشنری هدرها: CSP (قابل بازنویسی با settings.CONTENT_SECURITY_POLICY)،
-    Permissions-Policy، Referrer-Policy (از SECURE_REFERRER_POLICY) و nosniff.
-  - فقط هدرهایی را اضافه می‌کند که از قبل وجود ندارند (if name not in response)
-    تا تنظیمات صریح جنگو بازنویسی نشود.
-خط 47      بازگرداندن پاسخ.
-
-نکته: JSON-LD از نوع application/ld+json توسط CSP «اجرا» نمی‌شود (بلوک داده است)
-و در مرورگر واقعی بدون خطا پارس می‌شود؛ این مورد تست شده است.
+Change company details: edit SITE in core/content.py and its German override
+in core/content_i18n.py.
+Change brands/categories/FAQ: edit BRANDS, CATEGORIES, FAQ in both files.
+Change labels or emails: add/update the key in core/i18n.py for both languages.
+Add a language: extend LANGUAGES in i18n.py and settings.py, add a third value
+to _(), add content overrides, then update tests and templates.
+Add a product or member: use the Django admin at /admin/.
 
 --------------------------------------------------------------------------------
-۶.۱۶ core/admin.py  (161 خط)
+11. Known limitations
 --------------------------------------------------------------------------------
-خط 1       ایمپورت Path برای ساخت نام فایل بندانگشتی.
-خط 3-4     ایمپورت admin/messages و format_html برای پیش‌نمایش تصویر.
-خط 6-7     ایمپورت make_thumbnail و چهار مدل.
 
-کلاس InquiryAdmin (خطوط 10-17):
-  - list_display: نام، شرکت، تلفن، ماشین، وضعیت، تاریخ.
-  - list_filter: is_processed و created_at.
-  - search_fields: نام، شرکت، تلفن، ماشین و متن پیام.
-  - list_editable: تیک «بررسی شده» مستقیم از فهرست.
-  - readonly_fields: created_at؛ date_hierarchy روی تاریخ.
-
-کلاس ProductSpecInline (خطوط 20-23):
-  - TabularInline برای مشخصات فنی؛ extra=3 ردیف خالی نشان می‌دهد و
-    فیلدهای label/value/sort_order قابل ویرایش در همان صفحهٔ محصول‌اند.
-
-کلاس ProductAdmin (خطوط 26-104):
-  - list_display: نام، برند، دسته، منتخب، فعال، ترتیب و آخرین ویرایش.
-  - list_filter: is_active/is_featured/category؛ جست‌وجو در نام، برند،
-    مدل‌های سازگار، خلاصه و توضیح.
-  - list_editable: منتخب/فعال/ترتیب بدون باز کردن فرم.
-  - readonly_fields: thumbnail_preview، created_at، updated_at.
-  - inlines: ProductSpecInline؛ actions: rebuild_thumbnails.
-  - list_per_page = 50 و date_hierarchy = "created_at": برای کاتالوگ
-    ۸۰۰ تا ۱۲۰۰ قطعه، فهرست ادمین در صفحه‌های ۵۰تایی و با نوار تاریخ
-    مرور می‌شود؛ نه یک جدول بسیار بلند.
-  - fieldsets (45-77): چهار گروه «اطلاعات محصول»، «تصویر» (با توضیح
-    نسبت ۴:۳ و ساخت خودکار WebP)، «نمایش در سایت» و «زمان‌ها» (collapsed).
-  - thumbnail_preview (79-86): اگر تصویری باشد (بندانگشتی در اولویت) تگ
-    <img> با ابعاد ۱۸۰×۱۳۵ و alt خالی برمی‌گرداند؛ format_html مقادیر را
-    escape می‌کند. اگر تصویر نباشد پیام متنی نشان می‌دهد.
-  - rebuild_thumbnails (88-106): اکشن گروهی؛ برای هر محصول تصویر را با
-    make_thumbnail به WebP تبدیل و در image_thumb ذخیره می‌کند
-    (update_fields=["image_thumb"] تا بقیهٔ فیلدها دست‌نخورده بمانند)،
-    تعداد موفق را با message_user گزارش می‌دهد و محصول بدون تصویر/خراب
-    را رد می‌کند.
-
-کلاس CustomerAdmin (خطوط 109-161):
-  - list_display: کد عضویت، نام، نام خانوادگی، تلفن، شرکت، سطح، درصد تخفیف،
-    وضعیت و تاریخ عضویت.
-  - list_filter: status/tier/created_at؛ جست‌وجو در کد، نام، تلفن، شرکت.
-  - list_editable: tier/discount_percent/status — دقیقاً همان جاهایی که
-    فروشنده برای اعمال تخفیف لازم دارد.
-  - readonly_fields: code (یکتا و خودکار)، created_at، updated_at.
-  - actions: activate_members و block_members برای فعال/مسدود کردن گروهی
-    با queryset.update (بدون اجرای save تکی) و گزارش تعداد.
-  - fieldsets (126-145): «هویت عضو»، «باشگاه» (با توضیح این‌که
-    discount_percent مبنای تخفیف پیش‌فاکتور است و tier فقط دسته‌بندی) و
-    «زمان‌ها».
-  - date_hierarchy: نوار تاریخ برای مرور عضویت‌های جدید.
-
-نکتهٔ امنیتی: همهٔ این کلاس‌ها فقط برای کاربران staff قابل دسترسی‌اند (پیش‌فرض
-ادمین جنگو). هیچ ویو عمومی برای ویرایش محصول یا عضو وجود ندارد.
+  * No online checkout, inventory sync or payment gateway (by design).
+  * SQLite is suitable for development/small deployments; use PostgreSQL for
+    heavier traffic.
+  * LocMemCache is per-process; use Redis for consistent rate limits.
+  * Content is static Python data; changing it requires a code deployment.
+  * demo phone numbers, email and address are placeholders.
 
 --------------------------------------------------------------------------------
-۶.۱۷ core/tests.py  (443 خط) — ۳۶ تست خودکار
+12. Maintenance notes
 --------------------------------------------------------------------------------
-خطوط 1-12 ایمپورت shutil/tempfile/BytesIO/Path، mail، cache،
-           SimpleUploadedFile، TestCase/override_settings، reverse، Image و مدلها.
-خطوط 15-22 VALID_PAYLOAD: دادهٔ معتبر استعلام شامل ایمیل، تلفن لاتین و پیام.
 
-کلاس HomePageTests (خطوط 23-68) — ۵ تست:
-  - test_home_page_loads: کد ۲۰۰، وجود «پارس تکستایل» و «PICANOL».
-  - test_home_page_has_security_headers: وجود CSP، nosniff،
-    X-Frame-Options=DENY، Referrer-Policy، Permissions-Policy و نبود «http»
-    خارجی در default-src.
-  - test_contact_form_is_present: وجود کلاس inquiry-form و hp-input.
-  - test_theme_switcher_is_rendered: data-theme="dark" و
-    data-theme-mode="dark" در HTML اولیه، ارجاع به core/js/theme.js و
-    دقیقاً سه دکمهٔ data-theme-choice برای auto/light/dark.
-  - test_csp_allows_no_inline_scripts: تنها یک script-src وجود دارد و
-    'unsafe-inline' در آن نیست.
-
-کلاس InquiryFormTests (خطوط 73-160) — ۹ تست:
-  - setUp: cache.clear() تا شمارندهٔ نرخ بین تست‌ها تداخل نکند.
-  - test_inquiry_form_saves_request: POST معتبر → ریدایرکت به /#contact،
-    یک ردیف Inquiry، پیام موفقیت و صحت نام/تلفن/ایمیل ذخیرهشده.
-  - test_company_and_machine_are_optional: فقط سه فیلد الزامی با تلفن فارسی
-    → ذخیره می‌شود (اعتبارسنجی ارقام فارسی).
-  - test_invalid_phone_is_rejected: تلفن «12» → کد ۲۰۰، بدون ذخیره و خطای تلفن.
-  - test_short_message_is_rejected: پیام «سلام» → رد و پیام کوتاه‌بودن.
-  - test_honeypot_blocks_bots: پر کردن website → رد، بدون ذخیره.
-  - test_rate_limit_blocks_extra_submissions: با override_settings محدودیت ۲؛
-    دو ارسال ذخیره و ارسال سوم رد میشود.
-  - test_inquiry_always_emails_customer: بدون گیرندهٔ مدیر، دقیقاً یک ایمیل
-    به آدرس مشتری ارسال میشود.
-  - test_inquiry_emails_customer_and_admin: با CONTACT_NOTIFY_EMAIL دو ایمیل
-    (ابتدا مدیر، سپس مشتری) فرستاده میشود.
-  - test_invalid_email_is_rejected: ایمیل نامعتبر → کد ۲۰۰ و بدون ذخیره.
-
-کلاس ProductTests (خطوط 163-217) — ۳ تست:
-  - setUp: MEDIA_ROOT موقت با tempfile و override_settings؛ پاک‌سازی خودکار
-    در teardown (تست‌ها media/ واقعی را آلوده نمی‌کنند).
-  - _sample_image: تصویر PNG در حافظه (۱۲۰۰×۹۰۰) می‌سازد.
-  - _create_product: محصول نمونه با تصویر و فیلدهای لازم.
-  - test_active_product_with_specs_is_rendered: محصول فعال با یک مشخصه →
-    کد ۲۰۰، نمایش نام، مقدار مشخصه، کلاس product-card و
-    data-inquire="…" (اتصال دکمهٔ استعلام).
-  - test_inactive_product_is_hidden: محصول is_active=False در HTML نیست.
-  - test_thumbnail_is_generated_as_webp: نام بندانگشتی به -thumb.webp ختم
-    می‌شود، فایل روی دیسک هست، فرمت WEBP است و بزرگ‌ترین بُعد ≤ ۹۶۰.
-    این تست رگرسیونِ باگ «محصول تازه بندانگشتی نمی‌ساخت» را پوشش می‌دهد.
-
-کلاس ProductCatalogTests (خطوط 220-345) — ۱۰ تست:
-  - _product: ساخت سریع محصول فعال با دادهٔ پیش‌فرض قابل بازنویسی؛ بدون
-    تصویر تا تست‌ها به media وابسته نباشند.
-  - test_catalog_page_lists_only_active_products: /products/ کد ۲۰۰، عنوان
-    «همهٔ قطعات یدکی» و محصول فعال را دارد و محصول is_active=False را ندارد.
-  - test_home_page_links_to_full_catalog: صفحهٔ اصلی به product_list لینک
-    می‌دهد.
-  - test_catalog_search_matches_name_brand_and_machine: q=«دورنیه» فقط
-    محصول دورنیه و q="GTX" فقط محصول سازگار با GTX را برمی‌گرداند.
-  - test_catalog_filters_by_category_and_brand: فیلتر هم‌زمان دسته
-    الکترونیکی و برند DORNIER فقط همان محصول را نشان می‌دهد.
-  - test_unknown_filter_values_are_ignored: category/brand نامعتبر نادیده
-    گرفته می‌شود و همهٔ محصولات فعال می‌مانند.
-  - test_catalog_pagination_limits_results: با PRODUCTS_PAGE_SIZE=6 و ۱۳
-    محصول، صفحهٔ اول ۶ کارت و لینک page=2 دارد و صفحهٔ دوم هم ۶ کارت
-    برمی‌گرداند (صفحه‌بندی واقعی، نه برش ساده).
-  - test_detail_page_shows_specs_and_inquiry_link: صفحهٔ جزئیات مقدار
-    مشخصه، دکمهٔ «استعلام قیمت این قطعه» و لینک ?product=<pk>#contact را
-    دارد.
-  - test_inactive_product_detail_returns_404: صفحهٔ محصول مخفی ۴۰۴ می‌دهد.
-  - test_home_prefills_inquiry_from_product_link: ورود به /?product=<pk>
-    متن «استعلام قیمت برای: <نام>» را در فرم می‌گذارد.
-  - test_home_limits_products_and_shows_total: با PRODUCTS_HOME_LIMIT=2
-    فقط ۲ محصول در صفحهٔ اصلی و متن «مشاهده همهٔ محصولات (4 قطعه)» نمایش
-    داده می‌شود.
-
-کلاس ClubTests (خطوط 348-452) — ۸ تست:
-  - payload: form_type=club و پنج فیلد عمومی شامل ایمیل با تلفن فارسی.
-  - test_club_section_and_form_are_rendered: وجود بخش باشگاه و
-    name="form_type" value="club".
-  - test_signup_creates_pending_member: ریدایرکت به /#club، یک Customer،
-    نام کامل صحیح، تلفن نرمال‌شدهٔ لاتین، وضعیت pending، تخفیف پیش‌فرض ۵،
-    کد شروع‌شده با PT- و پیام موفقیت.
-  - test_duplicate_phone_is_rejected: تلفن تکراری → کد ۲۰۰، بدون رکورد
-    جدید و پیام «قبلاً در باشگاه مشتریان ثبت شده است».
-  - test_honeypot_blocks_bots: website پر → رد و بدون رکورد.
-  - test_rate_limit_blocks_extra_signups: با CLUB_RATE_LIMIT=1؛ ارسال دوم
-    رد و پیام محدودیت عضویت نمایش داده میشود.
-  - test_signup_always_emails_customer: دقیقاً یک ایمیل تأیید به عضو ارسال میشود.
-  - test_signup_emails_customer_and_admin: با CLUB_NOTIFY_EMAIL دو ایمیل فرستاده میشود.
-  - test_signup_admin_email_falls_back_to_contact_recipient: گیرندهٔ خالی باشگاه
-    به CONTACT_NOTIFY_EMAIL برمیگردد.
-  - تست ایمیل نامعتبر استعلام و سه تست ایمیل یادشده، پوشش کامل ارسالهااند.
-
-کلاس ErrorPageTests (خطوط 455-459) — ۱ تست:
-  - test_unknown_page_returns_404: مسیر ناموجود → ۴۰۴ و متن
-    «این صفحه پیدا نشد».
-
-جمع: ۵ + ۹ + ۳ + ۱۰ + ۸ + ۱ = ۳۶ تست. تستها به ترتیب اجرا وابسته نیستند؛ هر
-تست دیتابیس تست جدا دارد، کش در setUp پاک می‌شود و رسانهٔ محصول در پوشهٔ
-موقت ساخته و حذف می‌شود.
-
-================================================================================
-۷. قالب‌ها (Templates)
-================================================================================
-
---------------------------------------------------------------------------------
-۷.۱ core/templates/core/base.html  (176 خط)
---------------------------------------------------------------------------------
-خط 1        load static + doctype. ویژگی‌های html: lang="fa" ، dir="rtl" ،
-            data-theme="dark" (تم پیش‌فرض سرور) و data-theme-mode="dark".
-            theme.js در head این دو ویژگی را پیش از رنگ‌آمیزی اصلاح می‌کند.
-خطوط 3-33   <head>:
-  - 4-5    charset=utf-8 و viewport برای واکنش‌گرایی.
-  - 6      title با بلوک قابل بازنویسی؛ پیش‌فرض شامل نام و موضوع سایت.
-  - 7      description قابل بازنویسی.
-  - 8      theme-color با id="theme-color-meta" (پیش‌فرض #080b0e)؛
-            theme.js هنگام تغییر تم آن را به #f6f3ee یا #080b0e تغییر می‌دهد.
-  - 9-11   متا OG (og:type/title/description) برای اشتراک‌گذاری.
-  - 12     فاوآیکون SVG.
-  - 13     preload فونت Regular با crossorigin (بارگذاری سریع‌تر فونت اصلی).
-  - 14     style.css.
-  - 15     theme.js به‌صورت همگام و بدون defer؛ دلیل: باید پیش از نخستین
-            رنگ‌آمیزی اجرا شود تا پرش رنگ (FOUC) رخ ندهد.
-  - 16-32  JSON-LD از نوع Store: نام، توضیح، تلفن، ایمیل، نشانی و ساعات کاری.
-            مقادیر از SITE می‌آیند؛ ساختار برای موتورهای جست‌وجو استاندارد است.
-
-خطوط 34-37  شروع body، لینک «پرش به محتوای اصلی» (دسترسی‌پذیری) و include
-            آیکون‌ها (یک SVG sprite در ابتدای body تا ارجاع‌های use کار کنند).
-
-خطوط 38-87  هدر چسبان:
-  - 40-52  برند: لوگوی SVG (سه خط عمودی و یک خط افقی کهربایی) + نام فارسی/لاتین.
-  - 54-60  ناوبری اصلی از NAV (۶ لینک لنگر)؛ id=main-nav برای توگل موبایل.
-  - 62-81  اقدام‌ها:
-      * 63-66  لینک تلفن (tel:) با آیکون.
-      * 68-78  کلید سه‌حالتهٔ تم: دکمه‌های auto/light/dark با
-               data-theme-choice، aria-label فارسی، title و aria-pressed.
-               آیکون‌ها از symbolهای i-auto / i-sun / i-moon می‌آیند.
-               حالت فعال در CSS از data-theme-mode خوانده می‌شود، نه از
-               aria-pressed، تا پیش از اجرای JS هم درست دیده شود.
-      * 80     دکمهٔ استعلام قیمت.
-  - 83-85  دکمهٔ همبرگری با aria-expanded و aria-controls (دسترسی‌پذیر).
-
-خطوط 89-99  پیام‌ها: اگر messages وجود داشته باشد، flash-stack با
-            role=status و aria-live=polite؛ هر پیام کلاس flash-<tag> دارد
-            (success/error/…) و دکمهٔ بستن.
-
-خطوط 101-103 main#main و بلوک content (محل قالب صفحه).
-
-خطوط 105-167 فوتر چهارستونی:
-  - 107-133 برند، توضیح، شبکه‌های اجتماعی (واتساپ، اینستاگرام، ایمیل) با rel=noopener.
-  - 135-142 دسترسی سریع (همان NAV).
-  - 144-151 شش برند اول از BRANDS_FOOTER.
-  - 153-160 تلفن، ایمیل و نشانی با آیکون.
-  - 163-166 نوار پایانی: سال جاری با {% now "Y" %} و یادداشت معرفی.
-
-خطوط 169-172 دکمهٔ شناور واتساپ (wa-float) با aria-label.
-
-خط 174      main.js با defer (اجرا پس از parse، بدون مسدودکردن رندر).
-خطوط 175-176 بستن body و html.
-
-نکته: هیچ style attribute یا script inline ندارد؛ به همین دلیل با CSP سازگار است.
-theme.js نیز یک فایل خارجی از همان دامنه است و با script-src 'self' مجاز می‌شود.
-
---------------------------------------------------------------------------------
-۷.۲ core/templates/core/home.html  (476 خط)
---------------------------------------------------------------------------------
-خط 1        extends base.html.
-خط 3        title اختصاصی صفحه.
-خط 5        شروع بلوک content.
-
-بخش هیرو (خطوط 6-93):
-  - 6-8    section#home با hero و hero-glow (هالهٔ نور پس‌زمینه).
-  - 10-13  pill «تأمین قطعات از سال {{ SITE.since }}» با نقطهٔ کهربایی.
-  - 15-19  h1 سلسله‌مراتبی: «قطعات یدکی» + span.grad «ماشین‌های بافندگی» +
-            span.hero-line «پیکانول، ایتما و دیگر برندها».
-  - 21-24  پاراگراف معرفی و روش ارسال درخواست.
-  - 26-32  دو دکمه: مشاهدهٔ دسته‌بندی‌ها (#products) و استعلام (#contact).
-  - 34-38  سه مزیت کوتاه با آیکون تیک.
-  - 41-80  کارت بصری قطعه (aria-hidden چون تزئینی است):
-      * 43-46  هدر کارت: برند و مدل.
-      * 48-69  SVG بافت: گرادیان‌ها، تارهای افقی، دایرهٔ مرکزی و خطوط چین.
-      * 71-75  سه ردیف اطلاعات نمونه: شناسه، وضعیت موجود، زمان ارسال.
-      * 78-79  دو چیپ شناور: «اصالت تضمینی» و «+۱۲٬۰۰۰ قلم قطعه».
-  - 83-92  نوار برندها: حلقه روی brands و نمایش نام لاتین (dir=ltr) + فارسی.
-
-بخش درباره ما (95-142):
-  - 97-128 ستون متن: eyebrow، h2، دو پاراگراف (یکی با SITE.name و since)،
-            فهرست سه‌گانهٔ مزیت‌ها و لینک گفتگو با کارشناس.
-  - 130-140 کارت واقعیت: «۱۹ سال»، یادداشت و dl با چهار ردیف (حوزه، انبار،
-            پاسخ‌دهی، فروش). عدد ۱۹ در قالب ثابت است؛ اگر STATS تغییر کرد،
-            اینجا را هم به‌روز کنید.
-
-نوار آمار (144-153): حلقه روی STATS؛ هر آیتم b (عدد) + span (برچسب).
-
-محصولات (155-208) — پیش‌نمایش کاتالوگ + دسته‌بندی‌ها:
-  - 157-164 سرتیتر بخش و توضیح این‌که نمونه‌ای از قطعات با تصویر و مشخصات
-            فنی نمایش داده می‌شود و مسیر کامل، صفحهٔ کاتالوگ است.
-  - 166-183 اگر محصولی وجود داشته باشد:
-      * 167-171 grid کارت محصول: برای هر Product در products (حداکثر
-        PRODUCTS_HOME_LIMIT) از include "core/_product_card.html" با
-        product=product استفاده می‌کند. چون detail_url پاس نشده، کارت
-        صفحهٔ اصلی دکمهٔ «استعلام قیمت» با data-inquire دارد (نه لینک
-        جزئیات).
-      * 173-177 دکمهٔ «مشاهده همهٔ محصولات» به {% url 'core:product_list' %}
-        با تعداد کل محصولات فعال (products_total) در صورت وجود.
-      * 179-182 زیرعنوان «دسته‌بندی قطعات» فقط وقتی محصولی هست نمایش داده
-        می‌شود تا ارتباط کاتالوگ و دسته‌ها روشن باشد.
-  - 185-201 دسته‌بندی‌ها: برای هر CATEGORY، آیکون از symbol، شمارهٔ دو رقمی
-            با stringformat:"02d"، عنوان، توضیح و برچسب‌ها.
-  - 203-206 یادداشت «قطعه در فهرست نیست؟» با لینک استعلام.
-
-برندها (210-234):
-  - 212-216 سرتیتر.
-  - 218-232 برای هر BRAND: نام لاتین LTR + کشور، نام فارسی، note و چیپ‌های مدل.
-
-چرا ما (236-260): ستون معرفی + grid شش ویژگی از FEATURES (آیکون، عنوان، توضیح).
-
-مراحل (262-280): ol با چهار step؛ شماره از forloop.counter و عنوان/توضیح.
-
-سؤالات متداول (282-306):
-  - 284-292 ستون معرفی + لینک tel:.
-  - 294-304 برای هر FAQ یک details؛ اولین مورد open است تا محتوا دیده شود.
-            summary شامل پرسش و آیکون chevron.
-
-باشگاه مشتریان (308-384) — بدون سبد خرید/پرداخت:
-  - 309 container.club-grid دوستونی.
-  - 310-335 ستون معرفی:
-      * 311-313 eyebrow/title/lead از CLUB.
-      * 315-324 چهار مزیت عضویت از CLUB.perks (آیکون + عنوان + توضیح).
-      * 326-334 سه سطح عضویت از CLUB.tiers با aria-label «سطوح عضویت»؛
-        درصدها نمایشی‌اند و درصد واقعی هر عضو در ادمین است.
-  - 337-382 کارت فرم عضویت:
-      * 338-339 عنوان و راهنمای «پس از ثبت، کارشناس تماس می‌گیرد».
-      * 341    فرم POST به {% url 'core:home' %}#club با novalidate.
-      * 342    csrf_token.
-      * 343    فیلد پنهان form_type=club؛ همین مقدار ویو را به شاخهٔ
-               باشگاه می‌برد و مانع پردازش استعلام می‌شود.
-      * 346-350 بلوک Honeypot.
-      * 352-373 چهار فیلد عمومی: نام*، نام خانوادگی*، شرکت/کارگاه و تلفن*.
-               هیچ فیلد وضعیت/سطح/درصد تخفیف در فرم نیست (ضد دستکاری).
-      * 375-378 دکمهٔ «ثبت درخواست عضویت».
-      * 380    یادداشت CLUB.note دربارهٔ رایگان‌بودن و تأیید تلفنی.
-
-تماس (386-475):
-  - 388-419 ستون اطلاعات:
-      * 389-394 eyebrow، h2 و توضیح.
-      * 396-413 چهار ردیف تماس: تلفن (tel:)، واتساپ (target=_blank,
-                rel=noopener)، ایمیل (mailto:) و نشانی.
-      * 415-418 کارت ساعات کاری.
-  - 421-473 کارت فرم استعلام:
-      * 422-423 عنوان «فرم استعلام قیمت» و راهنمای فیلدهای الزامی.
-      * 425    فرم POST به {% url 'core:home' %}#contact با novalidate
-               (اعتبارسنجی نهایی سمت سرور است؛ novalidate فقط حباب‌های
-               مرورگر را خاموش می‌کند تا پیام‌های فارسی خودمان نمایش داده شوند).
-      * 426    csrf_token.
-      * 427    فیلد پنهان form_type=inquiry (صریح برای خوانایی؛ ویو هر
-               مقدار غیر club را استعلام می‌داند).
-      * 428    خطاهای غیرفیلدی.
-      * 430-434 بلوک Honeypot: label مخفی، فیلد website، خطاهای آن.
-      * 436-462 شبکهٔ دوستونی فیلدها: نام*، شرکت، تلفن*، ماشین، توضیحات*.
-               هر فیلد label با id_for_label، خود فیلد و errors.
-      * 464-467 دکمهٔ ارسال تمام‌عرض با آیکون.
-      * 469-471 یادداشت حریم خصوصی.
-
-خط 476      پایان بلوک content.
-
-نکته: فیلدهای اجباری با ستاره و em مشخص شده‌اند؛ em در CSS رنگ کهربایی دارد.
-دکمهٔ «استعلام قیمت» کارت‌های صفحهٔ اصلی با data-inquire به main.js وصل است و
-پیام فرم را پیش‌پر می‌کند؛ هیچ ارسال خودکار یا خرید آنلاینی انجام نمی‌شود.
-کارت‌های کاتالوگ و صفحهٔ جزئیات به‌جای prefill، به صفحهٔ همان قطعه لینک
-می‌دهند.
-
---------------------------------------------------------------------------------
-۷.۳ core/templates/core/products.html  (131 خط) — کاتالوگ کامل
--------------------------------------------------------------------------------
-خط 1        extends base.html.
-خط 3        title «همهٔ محصولات | نام سایت».
-خط 4        description کوتاه برای موتورهای جست‌وجو.
-خط 6        شروع بلوک content.
-
-بخش سرصفحه (7-21):
-  - 7-13   section.page-head + container + breadcrumbs (خانه › محصولات)؛
-           صفحهٔ جاری aria-current="page" دارد.
-  - 14-19  eyebrow «کاتالوگ قطعات»، h1 «همهٔ قطعات یدکی» و توضیح lead-sm
-           دربارهٔ جست‌وجو و صفحهٔ جزئیات.
-
-بخش کاتالوگ (23-130):
-  - 25-65  فرم GET به product_list با role="search" (بدون JS):
-      * 26-37  input type=search با name=q، maxlength=80، placeholder فارسی
-               و value="{{ q }}" برای حفظ عبارت پس از submit؛
-               id="filter-q" با label صریح.
-      * 39-47  select دسته با گزینهٔ «همهٔ دستهها» و حلقهٔ category_choices؛
-               مقدار فعلی selected می‌شود.
-      * 49-57  select برند با گزینهٔ «همهٔ برندها» و حلقهٔ brand_options
-               (فقط برندهای محصولات فعال).
-      * 59-64  دکمهٔ submit و لینک «پاک کردن» فقط وقتی has_filters درست است.
-  - 67-76  catalog-meta: تعداد نتیجه (result_count) و خلاصهٔ فیلترهای فعال
-           (q، دسته و برند با dir=ltr برای برند).
-  - 78-110 اگر محصولی در صفحه باشد:
-      * 79-83   grid کارت‌ها؛ include _product_card.html با
-                detail_url=product.get_absolute_url (لینک به صفحهٔ جزئیات).
-      * 85-110  اگر بیش از یک صفحه باشد: nav.pager با aria-label؛ دکمهٔ
-                قبلی/بعدی (لینک یا span غیرفعال با aria-disabled)، حلقهٔ
-                page_items شامل شماره‌ها و «…» (aria-hidden)، صفحهٔ جاری
-                با aria-current="page" و متن «صفحهٔ X از Y».
-                هر لینک querystring فعلی را نگه می‌دارد و فقط page را
-                عوض می‌کند؛ page=1 همیشه لینک معتبر است.
-  - 111-123 حالت خالی: اگر فیلتر فعال باشد پیام «قطعهای با این مشخصات پیدا
-            نشد» و دکمهٔ نمایش همه؛ اگر کاتالوگ خالی باشد پیام تماس و لینک
-            استعلام.
-  - 125-128 یادداشت پایانی «قطعهٔ مورد نظر در فهرست نیست؟» با لینک به
-            #contact صفحهٔ اصلی.
-  - 130-131 بستن section و بلوک content.
-
-نکته: فرم GET است تا نتیجه قابل اشتراک و بوکمارک باشد و با CSP (بدون inline
-script) کار کند. صفحه‌بندی فقط لینک است و هیچ درخواست AJAX یا اسکریپت اضافه
-ندارد.
-
---------------------------------------------------------------------------------
-۷.۴ core/templates/core/product_detail.html  (109 خط) — صفحهٔ یک قطعه
--------------------------------------------------------------------------------
-خط 1        extends base.html.
-خط 3-4      title با نام محصول و description از summary محصول.
-خط 6        شروع بلوک content.
-
-سرصفحه و مسیر (7-17):
-  - 7-17   section.page-head + breadcrumbs سه‌سطحی (خانه › محصولات › نام
-           قطعه)؛ نام فعلی aria-current دارد. لینک «محصولات» به کاتالوگ
-           برمی‌گردد، نه به لنگر صفحهٔ اصلی.
-
-بدنهٔ محصول (19-92):
-  - 20      container.product-detail-grid دوستونی (تصویر / اطلاعات).
-  - 21-39   ستون تصویر:
-      * 22-37  display_image (بندانگشتی WebP در اولویت) با alt از
-               image_alt یا نام، ابعاد صریح ۹۶۰×۷۲۰، loading="eager"
-               (تصویر اصلی صفحه است و باید سریع دیده شود) و
-               decoding="async"؛ در نبود تصویر placeholder چرخ‌دنده.
-      * 38     برچسب دسته با get_category_display.
-  - 41-90   ستون اطلاعات:
-      * 42-45  برند با dir=ltr (اختیاری).
-      * 45-46  h1 نام محصول و lead-sm خلاصه.
-      * 48-71  dl.detail-specs: ردیف دسته، برند (اختیاری)، مدل‌های سازگار
-               (اختیاری) و سپس همهٔ مشخصات فنی از product.specs.all
-               (بدون برش؛ برخلاف کارت که فقط ۳ ردیف نشان می‌دهد).
-      * 73-77  توضیح کامل با linebreaks (پاراگراف‌های امن و escape‌شده).
-      * 79-85  دکمهٔ اصلی «استعلام قیمت این قطعه» با لینک
-               {% url 'core:home' %}?product={{ product.pk }}#contact
-               (ویو home آن را به initial فرم تبدیل می‌کند) و دکمهٔ
-               «بازگشت به کاتالوگ».
-      * 86-89  یادداشت شفاف‌سازی: قیمت/موجودی تلفنی یا ایمیلی اعلام می‌شود
-               و سایت پرداخت آنلاین ندارد.
-
-قطعات مشابه (94-108):
-  - 94      شرط related (حداکثر ۴ قطعهٔ فعال هم‌دسته از ویو).
-  - 95-107  section.related-section با سرتیتر «در همین دسته» و grid کارت‌ها؛
-            هر کارت با include _product_card.html و detail_url خودش.
-  - 109     پایان بلوک content.
-
-نکته: محصول مخفی یا شناسهٔ ناموجود به ۴۰۴ می‌رسد (ویو)؛ این قالب هیچ‌گاه
-محصول is_active=False را نمایش نمی‌دهد.
-
---------------------------------------------------------------------------------
-۷.۵ core/templates/core/_product_card.html  (64 خط) — کارت مشترک محصول
--------------------------------------------------------------------------------
-این partial در سه جا استفاده می‌شود:
-  - home.html با product تنها → دکمهٔ «استعلام قیمت» و data-inquire.
-  - products.html با product + detail_url → لینک تصویر/عنوان و «جزئیات قطعه».
-  - product_detail.html (قطعات مشابه) با product + detail_url.
-
-خط 1        article.product-card.reveal (انیمیشن ورود مشترک).
-خطوط 2-24   media کارت:
-  - 3-5 و 22  اگر detail_url باشد، تصویر داخل <a class="product-media-link">
-              با tabindex="-1" و aria-hidden="true" قرار می‌گیرد تا لینک
-              تکراری برای صفحه‌خوان ایجاد نشود؛ عنوان هم لینک دارد.
-  - 6-21      display_image با alt، ابعاد ۹۶۰×۷۲۰، loading="lazy" و
-              decoding="async"؛ placeholder در نبود تصویر.
-  - 23        برچسب دسته روی تصویر.
-خطوط 26-63  بدنه:
-  - 27-29   برند LTR (اختیاری).
-  - 30-36   h3 نام محصول؛ در حالت detail_url داخل لینک، وگرنه متن ساده.
-  - 37      خلاصه.
-  - 39-47   حداکثر ۳ مشخصهٔ فنی (specs|slice:":3") در dl.product-specs.
-  - 49-62   ردیف پایانی: مدل‌های سازگار (اختیاری) + دکمه؛ اگر detail_url
-            باشد «جزئیات قطعه» و در غیر این صورت «استعلام قیمت» با
-            href="#contact" و data-inquire="{{ product.name }}".
-
-نکته: منطق کارت فقط یک‌بار نوشته شده است؛ تغییر ظاهر/دکمه در هر سه صفحه
-هم‌زمان اعمال می‌شود. هیچ‌کدام از دو دکمه سبد خرید یا ارسال خودکار نیست:
-یکی لینک صفحهٔ قطعه و دیگری پیش‌پر کردن فرم استعلام است.
-
---------------------------------------------------------------------------------
-۷.۶ core/templates/core/_icons.html  (105 خط)
---------------------------------------------------------------------------------
-یک SVG sprite با ۲۶ نماد (symbol). هر symbol با id قابل ارجاع است:
-  i-gear (3)      چرخ‌دنده — دستهٔ مکانیکی
-  i-chip (7)      تراشه — الکترونیکی
-  i-nozzle (11)   نازل/قطره — وفت و نوزل
-  i-belt (15)     تسمه/پولی — انتقال قدرت
-  i-thread (20)   نخ/شانه — بافندگی
-  i-tool (24)     آچار — ابزار
-  i-shield (27)   سپر — اصالت
-  i-box (31)      جعبه — موجودی
-  i-truck (35)    کامیون — ارسال
-  i-headset (41)  هدست — پشتیبانی
-  i-tag (47)      برچسب — قیمت
-  i-clock (51)    ساعت — سابقه/ساعات
-  i-phone (55)    تلفن
-  i-mail (58)     ایمیل
-  i-pin (62)      مکان
-  i-whatsapp (66) واتساپ
-  i-instagram (70) اینستاگرام
-  i-arrow (75)    فلش
-  i-check (78)    تیک
-  i-chevron (81)  شِورون (آکاردئون)
-  i-send (84)     ارسال
-  i-menu (87)     منو (ذخیره برای آینده)
-  i-close (90)    بستن (ذخیره برای آینده)
-  i-sun (93)      خورشید — انتخاب تم روشن
-  i-moon (97)     ماه — انتخاب تم تاریک
-  i-auto (100)    نمایشگر — تم خودکار (هماهنگ با سیستم)
-خط 1        svg ریشه با کلاس icon-sprite و aria-hidden.
-خط 2 و 104  defs باز/بسته.
-خط 105      بستن svg.
-استایل خطوط از CSS می‌آید (.icon با stroke=currentColor و fill=none)؛ به همین
-دلیل آیکون‌ها با رنگ متن هماهنگ می‌شوند.
-
---------------------------------------------------------------------------------
-۷.۷ 404.html و 500.html  (هرکدام 17 خط)
---------------------------------------------------------------------------------
-هر دو:
-  - extends base.html (هدر/فوتر یکسان).
-  - title اختصاصی.
-  - section.section.error-page با container.error-inner.
-  - eyebrow («خطای ۴۰۴» / «خطای ۵۰۰») + h1 + توضیح + دکمهٔ بازگشت به خانه.
-تفاوت متن: ۴۰۴ «این صفحه پیدا نشد» با توضیح نشانی اشتباه؛ ۵۰۰ «مشکلی در سرور
-پیش آمد» با پیشنهاد تلاش دوباره یا تماس.
-نکته: 500.html هنگام خطای داخلی رندر می‌شود؛ چون به context processor ساده
-وابسته است و از دیتابیس نمی‌خواند، در بیشتر خطاها قابل رندر است.
-
-================================================================================
-۸. استایل و رفتار سمت مرورگر
-================================================================================
-
---------------------------------------------------------------------------------
-۸.۱ static/core/css/style.css  (3027 خط)
---------------------------------------------------------------------------------
-ساختار فایل با کامنت‌های بخش‌بندی شده است. نقشهٔ خطوط:
-
-خط 6-46    @font-face برای پنج وزن وزیرمتن (400/500/600/700/800) با
-            font-display: swap تا متن تا بارگذاری فونت دیده شود.
-
-خط 47-252 متغیرها و دو پالت رنگ:
-  - 48-153  :root → پالت تاریک + color-scheme: dark.
-            توکن‌های اصلی: --bg #080b0e، --bg-soft #0b0f14، --panel #0f141a،
-            --card #0c1116، --line #212932، --text #e8edf1، --muted #97a3ad،
-            --accent #eda33f، --accent-bright #f7c47f، --accent-deep #c9832c،
-            --accent-soft، --ok #4ade80، --danger، --shadow، --header-bg،
-            --input-bg، --footer-*، --radius 18px، --container 1180px،
-            --header-h 74px، easing و فونت.
-            همچنین توکن‌های گرادیان: --card-grad، --part-grad، --form-grad،
-            --fact-grad، --grad-text، --btn-grad (برای پرهیز از رنگ ثابت).
-  - 155-251 [data-theme="light"] → پالت روشن با color-scheme: light.
-            زمینهٔ کاغذی #f6f3ee، کارت سفید #ffffff، متن #1f252b،
-            کهربایی تیره‌تر #a4630f (برای کنتراست کافی روی زمینهٔ روشن)،
-            فوتر #e9e3d9 و توکن‌های متن/خط/سایه/وضعیت هم‌خوان.
-  نکته: theme.js مقدار data-theme را پیش از رندر روی <html> می‌گذارد؛
-  بنابراین هر دو پالت از یک ساختار توکن مشترک استفاده می‌کنند و هیچ
-  قاعده‌ای رنگ ثابت مخصوص یک تم ندارد.
-
-خط 253-406 پایه: box-sizing، اسکرول نرم، بدنه با var(--bg)، تیترها، حذف
-            list-style، لینک‌ها، تصاویر، فرم‌ها، focus-visible (دسترسی‌پذیری)،
-            scroll-padding برای هدر چسبان.
-  - 280-292 @media (prefers-reduced-motion: no-preference) → کلاس موقت
-            html.theme-fade؛ theme.js هنگام کلیک کاربر آن را اضافه می‌کند تا
-            رنگ‌ها/حاشیه‌ها/متن‌ها ۰٫۲۸ ثانیه گذار نرم داشته باشند و سپس
-            (پس از ۳۲۰ms) حذف می‌شود. در حالت کاهش حرکت اعمال نمی‌شود.
-خط 407-425 آیکون‌ها: .icon با اندازه/رنگ، .icon-sprite مخفی.
-خط 426-519 دکمه‌ها: btn، btn-primary (کهربایی با --btn-grad)، btn-ghost،
-            btn-outline، btn-sm، btn-block و حالت hover/focus.
-خط 520-647 هدر: sticky، شفاف‌سازی/blur پس‌زمینه، nav، لینک‌ها، دکمهٔ تلفن،
-            nav-toggle، حالت is-scrolled و is-open.
-خط 648-732 کلید تم: .theme-switch (قاب پیل‌شکل با --surface-1 و --line)،
-            .theme-btn (۳۰×۳۰، آیکون ۱۶px)، حالت hover، focus-visible، و
-            قاعدهٔ فعال:
-            [data-theme-mode="auto|light|dark"] .theme-btn[data-theme-choice="…"]
-            → پس‌زمینهٔ --accent-soft، رنگ --accent و حاشیهٔ داخلی
-            --accent-border. چون انتخاب از ویژگی <html> خوانده می‌شود،
-            حتی پیش از اجرای JS هم دکمهٔ درست برجسته است.
-خط 733-1044 هیرو: چیدمان دوستونی، pill، h1 بزرگ، گرادیان متن (--grad-text)،
-            دکمه‌ها، نقاط، کارت قطعه با --part-grad، SVG بافت،
-            چیپ‌های شناور، نوار برندها.
-خط 1045-1181 درباره: grid، فهرست تیک‌ها، لینک متنی، کارت fact با شمارهٔ بزرگ.
-خط 1182-1218 آمار: نوار افقی چهارستونی با جداکننده.
-خط 1219-1313 محصولات (دسته‌بندی‌ها): section-head، card-grid، cat-card،
-            آیکون، شماره، برچسب‌ها.
-خط 1314-1490 کارت محصول (مشترک صفحهٔ اصلی/کاتالوگ/جزئیات):
-  - .product-grid: سه ستون در دسکتاپ، gap ۱۸px و فاصلهٔ پایین.
-  - .product-card: flex ستونی، overflow:hidden، border/background کارت و
-    hover با بالا آمدن ملایم.
-  - .product-media: نسبت ۴:۳، پس‌زمینهٔ تیره، overflow:hidden؛ img با
-    width:100%، object-fit:cover و transition مقیاس هنگام hover.
-  - .product-placeholder: نمایش آیکون چرخ‌دنده وقتی تصویر نیست.
-  - .product-cat: برچسب دسته روی تصویر (گوشهٔ بالا).
-  - .product-body / h3 / .product-summary: متن کارت با فونت فارسی.
-  - .product-specs: dl فشرده؛ هر ردیف div با dt (برچسب) و dd (مقدار) و
-    خط جداکنندهٔ نرم؛ حداکثر ۳ ردیف از قالب می‌آید.
-  - .product-brand و .product-models: نام برند/مدل با dir=ltr و رنگ ملایم.
-  - .product-foot: ردیف پایانی با چیدمان فضاباز و دکمهٔ کوچک استعلام.
-  - .products-subhead: عنوان «دسته‌بندی قطعات» بین کاتالوگ و کارت‌های دسته.
-  - .products-all: ردیف وسط‌چین دکمهٔ «مشاهده همهٔ محصولات» در صفحهٔ اصلی.
-  - .product-media-link: لینک تمام‌اندازهٔ تصویر در کارت‌های کاتالوگ/جزئیات.
-  - .product-body h3 a: لینک عنوان با رنگ متن و hover کهربایی.
-  - .products-note: یادداشت پایانی و لینک استعلام.
-  - همهٔ رنگ‌ها از توکن‌ها می‌آیند؛ بنابراین کارت محصول در هر دو تم درست است.
-خط 1491-1526 سرصفحهٔ صفحات داخلی: page-head (فاصله از هدر چسبان، خط پایین،
-            گرادیان شعاعی ملایم)، page-head h1 و breadcrumbs (ردیف لینک‌های
-            مسیر با رنگ ملایم و hover کهربایی).
-خط 1527-1683 کاتالوگ محصولات (صفحهٔ /products/):
-  - .catalog: فاصلهٔ بالای کمتر نسبت به section عمومی.
-  - .catalog-filters: grid چهارستونی (جست‌وجو ۲fr + دسته + برند + دکمه‌ها)
-    با کارت پس‌زمینه؛ در ۹۸۰px دو ستون و در ۷۲۰px یک ستون می‌شود.
-  - .filter-field / label / .field-input: برچسب کوچک بالای ورودی و عرض کامل.
-  - .filter-actions: ردیف دکمه‌های جست‌وجو/پاک کردن.
-  - .catalog-meta: تعداد نتیجه و خلاصهٔ فیلترها؛ عدد نتیجه کهربایی و بزرگ‌تر.
-  - .catalog-hint / .catalog-note: متن‌های کم‌رنگ راهنما.
-  - .catalog-empty: کادر خط‌چین وسط‌چین با آیکون، عنوان، توضیح و دکمه.
-  - .pager / .page-link: ردیف وسط‌چین شماره‌های صفحه؛ حداقل ۳۸px، حاشیه،
-    حالت hover، is-current (کهربایی) و is-disabled (کم‌رنگ، cursor پیش‌فرض).
-  - .page-ellipsis و .pager-info: «…» و متن «صفحهٔ X از Y».
-خط 1684-1775 صفحهٔ جزئیات محصول:
-  - .product-detail-section: فاصلهٔ بالای بخش.
-  - .product-detail-grid: دو ستون 1.05fr/1fr با gap واکنش‌گرا؛ در ۹۸۰px
-    تک‌ستونی می‌شود.
-  - .product-detail-media: نسبت ۴:۳، حاشیه و پس‌زمینهٔ figure؛ img با
-    object-fit:cover.
-  - .product-detail-info h1: اندازهٔ متعادل و line-height مناسب فارسی.
-  - .detail-specs: ردیف‌های مشخصات با خط جداکنندهٔ نرم؛ dt کم‌رنگ و dd با
-    text-align:end.
-  - .product-description: متن توضیح کامل با line-height ۲ و فاصلهٔ پاراگراف.
-  - .detail-actions: ردیف دکمه‌های استعلام/بازگشت.
-  - .detail-note: یادداشت ریز دربارهٔ اعلام قیمت تلفنی و نبود پرداخت آنلاین.
-  - .related-section: بخش قطعات مشابه با خط بالایی.
-خط 1776-1853 برندها: brand-grid، brand-card، نام لاتین/کشور، model-chips.
-خط 1854-1925 چرا ما: why-grid، feature-grid، feature و آیکون.
-خط 1926-1984 مراحل: ol چهارستونی، step-num دایره‌ای.
-خط 1985-2056 سؤالات: faq-grid، details/summary، چرخش chevron، متن پاسخ.
-خط 2057-2157 باشگاه مشتریان (جدید):
-  - .club: بخش با border بالا و گرادیان شعاعی کهربایی در گوشه.
-  - .club-grid: دو ستون 0.95fr/1.05fr با gap واکنش‌گرا.
-  - .club-copy h2، .club-perks (grid عمودی)، .club-perks li (flex با
-    آیکون ۴۰×۴۰ گوشه‌گرد).
-  - .club-perk-icon: قاب کهربایی ملایم با --accent-soft و --accent.
-  - .club-tiers: flex wrap؛ .club-tier کارت کوچک با نام سطح، درصد
-    کهربایی و توضیح ریز.
-  - .club-form .btn: فاصلهٔ بالای دکمهٔ عضویت.
-  - در عرض ≤ 980px، club-grid تک‌ستونی می‌شود (پایین، بخش واکنش‌گرا).
-خط 2158-2390 تماس و فرم: contact-grid، contact-list، hours-card، form-card،
-            form-grid، field، field-input، focus ring، errorlist،
-            و Honeypot:
-              خط 2369-2381 .hp-field → position:absolute; top:0; left:-9999px;
-                            1×1، clip-path: inset(50%)، overflow:hidden.
-              خط 2383-2390 .hp-field label و .hp-input → 1×1 بدون border/padding.
-            این روش استاندارد «screen-reader-only + off-screen» است؛ کاربر
-            عادی چیزی نمی‌بیند و tab هم روی آن نمی‌ایستد (tabindex=-1).
-خط 2391-2448 پیام‌ها: flash-stack ثابت زیر هدر، flash، flash-error، دکمهٔ بستن.
-خط 2449-2559 فوتر: grid چهارستونی، برند، ستون‌ها، لینک‌ها، شبکه‌های اجتماعی،
-            نوار پایانی (رنگ‌ها از --footer-*).
-خط 2560-2589 دکمهٔ شناور واتساپ: پایین/چپ (در RTL)، hover و مخفی‌شدن در چاپ.
-            رنگ سبز واتساپ عمداً ثابت است و به تم وابسته نیست.
-خط 2590-2608 صفحهٔ خطا: ارتفاع حداقلی، مرکزچین، تیتر بزرگ.
-خط 2609-2622 انیمیشن: @media (prefers-reduced-motion: no-preference) برای
-            .reveal (شفافیت و جابه‌جایی) و .is-visible.
-خط 2623-2903 واکنش‌گرا:
-            1080px (2624) → brand-grid دوستونی، brand-logos چهارستونی،
-                            card-grid و product-grid دوستونی
-            1200px (2651) → منوی موبایل (nav-toggle)، پنهان‌شدن تلفن هدر؛
-                            نقطهٔ شکست از ۱۰۴۰ به ۱۲۰۰ منتقل شد تا شش
-                            آیتم منو در تبلت افقی هم جا شوند.
-            980px  (2704) → تک‌ستونی‌شدن hero/about/why/contact/club/faq،
-                            steps دوستونی، product-detail-grid تک‌ستونی،
-                            catalog-filters دوستونی، فوتر ۱٫۲fr/۰٫۸fr
-            720px  (2761) → تیترها، فرم تک‌ستونی، card/product/feature/brand
-                            تک‌ستونی، catalog-filters تک‌ستونی (دکمه‌ها
-                            تمام‌عرض)، فوتر تک‌ستونی، کلید تم ۲۸×۲۸
-            520px  (2858) → ریزتنظیم‌ها برای موبایل کوچک
-            (کلید تم در همهٔ عرض‌ها باقی می‌ماند؛ در موبایل فقط جمع‌وجور می‌شود.)
-            نتایج بررسی واقعی: در عرض‌های 320 تا 1440 هیچ سرریز افقی نبود؛
-            محصولات ۱ ستون تا ۷۲۰، ۲ ستون تا ۱۰۸۰ و ۳ ستون بالاتر؛
-            club-grid در ۹۸۱ تک‌ستون و منو دقیقاً در ۱۲۰۰/۱۲۰۱ عوض می‌شود.
-            در صفحهٔ کاتالوگ، فرم فیلتر در ۹۸۰ دو ستون و در ۷۲۰ یک ستون
-            می‌شود؛ در صفحهٔ جزئیات، تصویر و اطلاعات در ۹۸۰ زیر هم می‌آیند.
-خط 2904-3027 چاپ: حذف هدر/دکمه شناور/فرم؛ بازنویسی کامل توکن‌های رنگ با
-            پالت روشن (سفید/مشکی) تا کارت‌های تیره روی کاغذ خوانا بمانند.
-            گرادیان عنوان هیرو نیز به رنگ ثابت قهوه‌ای تبدیل می‌شود.
-
---------------------------------------------------------------------------------
-۸.۲ static/core/js/main.js  (105 خط)
---------------------------------------------------------------------------------
-خط 2-3     IIFE با "use strict" → جلوگیری از آلودگی scope globale.
-خط 5       افزودن کلاس js-ready به html (قلاب برای حالت بدون JS).
-خطوط 7-34  منوی موبایل:
-  - 8-10   گرفتن هدر، دکمه و nav با id.
-  - 12-16  تابع closeNav: حذف is-open و aria-expanded=false.
-  - 18-21  کلیک توگل: toggle کلاس و همگام‌سازی aria-expanded با Boolean.
-  - 23-25  کلیک روی هر لینک داخل nav → بستن منو (برای لنگرها).
-  - 27-29  کلید Escape → بستن.
-  - 31-33  تغییر عرض > 1200 → بستن (هم‌راستا با نقطهٔ شکست CSS؛
-           جلوگیری از منوی بازِ باقی‌مانده).
-خطوط 36-43 سایهٔ هدر:
-  - onScroll کلاس is-scrolled را وقتی scrollY > 10 است اضافه می‌کند.
-  - یک‌بار اجرای اولیه + listener با passive:true برای کارایی.
-خطوط 45-76 نمایش تدریجی:
-  - 46     انتخاب همهٔ .reveal.
-  - 47     احترام به prefers-reduced-motion.
-  - 49-67  اگر IntersectionObserver موجود و حرکت مجاز است:
-      * observer با rootMargin پایین -8% و threshold 0.12.
-      * برای هر ورودی: محاسبهٔ index در گروه هم‌خانواده (تا ۴) و
-        transitionDelay پله‌ای ۷۰ میلی‌ثانیه.
-      * افزودن is-visible، unobserve و پس از ۱۱۰۰ms حذف کلاس‌های reveal و
-        is-visible و پاک‌کردن delay (پاک‌سازی حافظه/استایل).
-  - 72-76  در غیر این صورت همه بلافاصله is-visible می‌شوند (بدون انیمیشن).
-            توجه: این کار برای جلوگیری از «نامرئی‌ماندن» محتوا در مرورگرهای
-            قدیمی یا حالت reduced-motion است.
-خطوط 78-88 پیش‌پر کردن پیام استعلام (جدید):
-  - 79     یک listener کلیک مشترک روی document (event delegation).
-  - 80     نزدیک‌ترین عنصر دارای data-inquire؛ اگر نبود کاری نمی‌کند.
-  - 83-84  فیلد id_message و شرط «خالی بودن»: اگر کاربر از قبل متنی
-            نوشته باشد، پیام او بازنویسی نمی‌شود (احترام به ورودی کاربر).
-  - 86     مقدار «استعلام قیمت برای: <نام محصول>» از data-inquire.
-  - 87     dispatchEvent(new Event("input")) تا بقیهٔ شنونده‌ها هم باخبر شوند.
-  - چون دکمه یک لینک href="#contact" است، اسکرول طبیعی مرورگر هم انجام
-    می‌شود؛ JS فقط پیام را آماده می‌کند و هیچ ارسال/خریدی رخ نمی‌دهد.
-خطوط 90-104 پیام‌ها:
-  - 91     همهٔ [data-flash].
-  - 92-100 تابع hide: transition، opacity=0، translateY(-6px) و حذف DOM
-            پس از ۳۲۰ms.
-  - 102    کلیک دکمهٔ بستن → hide.
-  - 103    مخفی‌سازی خودکار پس از ۷ ثانیه.
-نکته: انیمیشن‌ها با transform/opacity هستند (بدون layout thrash) و هیچ
-کتابخانهٔ بیرونی استفاده نشده است.
-
---------------------------------------------------------------------------------
-۸.۳ static/core/js/theme.js  (104 خط) — انتخاب تم تاریک/روشن/خودکار
---------------------------------------------------------------------------------
-این فایل مستقل و بدون هیچ inline script است تا با CSP سخت‌گیرانه سازگار بماند.
-در <head> به‌صورت همگام بارگذاری می‌شود؛ بنابراین پیش از نخستین رنگ‌آمیزی بدن،
-ویژگی‌های <html> را تنظیم می‌کند و پرش رنگ (FOUC) رخ نمی‌دهد.
-
-خطوط 1-4   توضیح فارسی: هدف، دلیل بارگذاری همگام و دلیل نبود کد inline.
-خط 5       IIFE با "use strict" → جلوگیری از آلودگی scope globale.
-خط 8       STORAGE_KEY = "parstextile.theme" (کلید localStorage).
-خط 9       MODES = ["dark", "light", "auto"] (اعتبارسنجی مقدار ذخیره‌شده).
-خط 10      root = document.documentElement.
-خطوط 12-14 systemLight: matchMedia("(prefers-color-scheme: light)") با
-           بررسی وجود matchMedia (محیط‌های قدیمی).
-
-خطوط 16-24 readMode:
-  - خواندن localStorage در try/catch (حالت خصوصی ممکن است مسدود باشد).
-  - اگر مقدار یکی از سه حالت معتبر بود، همان برگردانده می‌شود.
-  - در غیر این صورت «auto» → پیش‌فرض کاربران بدون انتخاب قبلی.
-
-خطوط 26-31 resolveMode: در حالت auto، اگر سیستم روشن باشد «light» و
-           در غیر این صورت «dark»؛ دو حالت دیگر بدون تغییر برمی‌گردند.
-
-خطوط 33-39 syncButtons: برای هر [data-theme-choice] مقدار aria-pressed را
-           با حالت فعلی هم‌گام می‌کند (فقط برای دسترسی‌پذیری؛ ظاهر دکمهٔ
-           فعال از data-theme-mode در CSS می‌آید).
-
-خطوط 41-53 fadeTheme: افزودن کلاس theme-fade، اجبار بازچینش با خواندن
-           offsetWidth (تا گذار از رنگ فعلی شروع شود) و حذف کلاس پس از
-           ۳۲۰ میلی‌ثانیه؛ تایمر قبلی پاک می‌شود تا کلیک‌های سریع تداخل نکنند.
-
-خطوط 55-61 updateMeta: تغییر content متای theme-color به #f6f3ee (روشن)
-           یا #080b0e (تاریک) تا نوار مرورگر موبایل هماهنگ بماند.
-
-خطوط 63-76 applyMode(mode, persist):
-  - resolved = resolveMode(mode)
-  - root.dataset: data-theme = resolved و data-theme-mode = mode
-    (اولی رنگ واقعی، دومی انتخاب کاربر).
-  - به‌روزرسانی متا و aria-pressed.
-  - اگر persist=true، ذخیره در localStorage با try/catch.
-
-خط 78      applyMode(readMode(), false) → اجرای فوری پیش از رندر body.
-
-خطوط 80-88 یک listener کلیک مشترک روی document:
-  - target.closest("[data-theme-choice]") → دکمهٔ تم (هر جای صفحه).
-  - fadeTheme() سپس applyMode(choice, true) → ذخیرهٔ انتخاب کاربر.
-  - استفاده از event delegation یعنی افزودن کلید تم در آینده (مثلاً منوی
-    موبایل) بدون تغییر JS کار می‌کند.
-
-خطوط 90-92 پس از DOMContentLoaded، aria-pressed دکمه‌ها با مقدار
-           ذخیره‌شده هم‌گام می‌شود.
-
-خطوط 94-104 onSystemChange: اگر حالت فعلی auto باشد و ترجیح سیستم عوض شود،
-           تم دوباره اعمال می‌شود (persist=false تا انتخاب کاربر تغییر نکند).
-           هم addEventListener و هم addListener قدیمی پشتیبانی می‌شوند.
-
-نکته: اگر JavaScript غیرفعال باشد، HTML با data-theme="dark" رندر می‌شود و
-سایت با تم تاریک کار می‌کند؛ فقط امکان تغییر تم وجود ندارد.
-
---------------------------------------------------------------------------------
-۸.۴ static/core/img/favicon.svg  (5 خط)
---------------------------------------------------------------------------------
-یک SVG کوچک با پس‌زمینهٔ تیره، سه خط عمودی (نماد تار) و یک خط کهربایی افقی
-(نماد پود) — هم‌خوان با لوگوی هدر. به‌صورت image/svg+xml در head ارجاع شده است.
-
-================================================================================
-۹. فایل‌های گیت‌هاب و مستندات
-================================================================================
-LICENSE
-  مجوز MIT با سال 2026 و نام Pars Textile. اجازهٔ استفاده/تغییر/توزیع با
-  حفظ متن مجوز؛ بدون ضمانت.
-
-README.md
-  معرفی، نشان‌های CI/Python/Django/License، ویژگی‌ها (کاتالوگ کامل /products/،
-  صفحهٔ جزئیات، باشگاه مشتریان، سه حالت تم)، نصب، تنظیمات محیطی (شامل
-  CLUB_RATE_*، PRODUCTS_HOME_LIMIT و PRODUCTS_PAGE_SIZE)، ساختار، راهنمای
-  محصول/تصویر WebP/کاتالوگ بزرگ و ایندکس‌ها، گردش‌کار باشگاه و تخفیف،
-  سفارشی‌سازی (توکن‌های رنگ و theme.js)، امنیت، استقرار، مشارکت و مجوز.
-  جای USERNAME در نشان CI باید با نام مخزن واقعی عوض شود.
-
-SECURITY.md
-  نسخه‌های پشتیبانی، روش گزارش خصوصی آسیب‌پذیری (ایمیل، ۷۲ ساعت پاسخ)،
-  فهرست ۱۲ کنترل امنیتی (شامل آپلود فقط از ادمین، دادهٔ شخصی باشگاه و
-  محدودبودن اسکریپت‌ها به main.js/theme.js) و چک‌لیست قبل از استقرار
-  (شامل سرو امن media/ و پشتیبان‌گیری از آن).
-
-CONTRIBUTING.md
-  راه‌اندازی محیط، دستورهای check/test/makemigrations، قواعد کد (متن‌ها در
-  content.py به‌جز محصول/عضو که دادهٔ پایگاه‌داده‌اند، بدون CDN، بدون inline
-  script/style، تغییر هم‌زمان هر دو پالت تم و آزمون سه حالت)، قواعد کارت
-  مشترک محصول و صفحه‌بندی/ایندکس کاتالوگ، قواعد آپلود تصویر، حریم خصوصی
-  دادهٔ باشگاه و قواعد PR/گزارش باگ.
-
-CHANGELOG.md
-  نسخهٔ 1.3.0 (کاتالوگ کامل و صفحه‌بندی، صفحهٔ جزئیات، کارت مشترک، ایندکس‌ها
-  و ۱۰ تست جدید)، نسخهٔ 1.2.0 (کاتالوگ محصولات، بندانگشتی WebP، باشگاه
-  مشتریان و تخفیف)، نسخهٔ 1.1.0 (سه حالت تم، theme.js، پالت روشن) و نسخهٔ
-  1.0.0 بر پایهٔ Keep a Changelog.
-
-.env.example
-  نمونهٔ کامل همهٔ متغیرها با توضیح فارسی (پایه، امنیت تولید، ایمیل،
-  محدودیت استعلام، محدودیت باشگاه، تعداد محصولات صفحهٔ اصلی و اندازهٔ
-  صفحهٔ کاتالوگ)؛ باید به .env کپی شود (نه کامیت).
-
-.editorconfig
-  UTF-8، LF، حذف فاصلهٔ انتهایی، تودرتوی ۴ فاصله برای پایتون و ۲ برای
-  HTML/CSS/JS/MD.
-
-.gitattributes
-  اجبار LF برای فایل‌های متنی، علامت‌گذاری woff2/تصاویر/sqlite به‌عنوان
-  باینری و زبان‌شناسی GitHub.
-
-.gitignore
-  __pycache__، *.pyc، محیط‌های مجازی، db.sqlite3، staticfiles/، media/،
-  .env، پوشه‌های IDE و فایل‌های سیستم‌عامل.
-
-.github/workflows/ci.yml
-  روی push/PR به main/master؛ ماتریس Python 3.11/3.12/3.13؛ نصب requirements
-  با cache؛ اجرای check، makemigrations --check --dry-run، test -v2 و
-  check --deploy با متغیرهای تولید. permissions: contents: read.
-
-.github/dependabot.yml
-  به‌روزرسانی هفتگی pip و ماهانه GitHub Actions با برچسب dependencies.
-
-.github/ISSUE_TEMPLATE/*.yml
-  فرم‌های ساختاریافتهٔ گزارش باگ (توضیح، مراحل، نسخه، مرورگر، لاگ، چک‌لیست)
-  و پیشنهاد ویژگی.
-
-.github/pull_request_template.md
-  چه/چرا/چگونه آزمایش شد، نوع تغییر و چک‌لیست فارسی/امنیت/تست.
-
-================================================================================
-۱۰. امنیت: تحلیل، کنترل‌ها و نتیجهٔ بررسی
-================================================================================
-۱۰.۱ سطح تهدید
-سایت یک بروشور عمومی است: بدون ورود مشتری، بدون سبد خرید، بدون پرداخت و
-بدون API عمومی. آپلود فایل فقط از پنل ادمین انجام می‌شود. دارایی‌های مهم:
-  1) درخواست‌های استعلام و دادهٔ اعضای باشگاه (نام/تلفن) — حریم خصوصی.
-  2) تصاویر محصول و فایل‌های media/ — یکپارچگی و حجم دیسک.
-  3) حساب ادمین و پنل مدیریت — کنترل کامل داده و تخفیف‌ها.
-  4) اعتبار/دسترس‌پذیری سایت — اسپم فرم می‌تواند دیتابیس را پر کند.
-
-۱۰.۲ کنترل‌های پیاده‌شده و محل آن‌ها
-  - XSS: escape پیش‌فرض قالب‌ها؛ نبود safe/mark_safe؛ CSP بدون inline script
-    (theme.js هم فایل خارجی محلی است). نام/برند/مشخصات محصول و نام عضو
-    باشگاه هم از همین مسیر escape می‌شوند.
-  - CSRF: CsrfViewMiddleware + {% csrf_token %} در هر دو فرم + کوکی
-    HttpOnly/Secure در تولید.
-  - Clickjacking: X-Frame-Options: DENY + frame-ancestors 'none'.
-  - MIME sniffing: nosniff.
-  - نشت Referrer: same-origin.
-  - منابع خارجی: صفر؛ CSP همه را می‌بندد (ضد آلودگی CDN).
-  - SQL Injection: ORM جنگو؛ هیچ RawSQL/extra/cursor دستی نیست.
-  - اسپم فرم: Honeypot + محدودیت نرخ IP جدا برای استعلام و باشگاه + سقف طول.
-  - DoS سبک: محدودیت نرخ؛ اما بدون CAPTCHA/ WAF.
-  - آپلود تصویر: فقط کاربر staff از پنل ادمین. فایل با Pillow باز و به WebP
-    تبدیل می‌شود؛ فایل خراب خطای ۵۰۰ نمی‌دهد و ذخیره را نمی‌شکند. هیچ
-    آپلود عمومی یا مسیر آپلود ناشناس وجود ندارد. نوع فایل با محتوای واقعی
-    (نه فقط پسوند) تشخیص داده می‌شود و خروجی همیشه WebP است.
-  - دادهٔ باشگاه: فرم عمومی فقط وضعیت «در انتظار تأیید» می‌سازد؛ فعال‌سازی،
-    سطح و درصد تخفیف فقط از ادمین قابل تغییر است. فرم عمومی هیچ فیلد
-    discount_percent/status ندارد؛ بنابراین کاربر نمی‌تواند تخفیف بگیرد.
-    تلفن یکتا و نرمال‌شده است تا ثبت تکراری/دور زدن ساده ممکن نباشد.
-  - افشای خطا: DEBUG در تولید خاموش؛ ۵۰۰ قالب سفارشی؛ خطاهای SMTP/کش/تصویر
-    فقط لاگ می‌شوند.
-  - مدیریت راز: SECRET_KEY از محیط؛ در DEBUG=False اجباری؛ .env در gitignore.
-  - پنل: مسیر قابل تغییر؛ رمز با اعتبارسنج‌های استاندارد؛ code/created_at
-    readonly؛ حذف محصول فایل‌های media را هم پاک می‌کند.
-  - هدرهای اضافی: Permissions-Policy (دوربین/میکروفن/… غیرفعال).
-  - پارامترهای GET کاتالوگ: q و brand پیش از استفاده strip و به ۸۰ نویسه
-    محدود می‌شوند؛ category و brand فقط از مجموعهٔ مجاز (CATEGORY_CHOICES و
-    برندهای واقعی فعال) پذیرفته می‌شوند و مقدار ناشناخته نادیده گرفته می‌شود.
-    هیچ ورودی کاربری مستقیم در SQL/queries خام نمی‌رود؛ همه از ORM و
-    icontains عبور می‌کنند. در قالب هم مقادیر فیلتر با escape پیش‌فرض چاپ
-    می‌شوند.
-  - صفحهٔ جزئیات محصول: get_object_or_404 روی Product.objects.filter(
-    is_active=True) اجرا می‌شود؛ محصول مخفی حتی با شناسهٔ درست ۴۰۴ می‌دهد و
-    شمارهٔ شناسه‌ها افشا/قابل حدس‌زدن علیه محتوای مخفی نیست. مسیر فقط
-    <int:pk> می‌پذیرد.
-  - اندازهٔ صفحهٔ کاتالوگ: PRODUCTS_PAGE_SIZE سمت سرور با max(6, min(96, n))
-    بسته می‌شود؛ ?page= نامعتبر یا خارج از بازه با get_page به اولین/آخرین
-    صفحه می‌افتد. بنابراین تنظیم اشتباه یا URL دستی، پاسخ بسیار سنگین یا
-    صفحهٔ بی‌محتوا نمی‌سازد.
-  - شمارهٔ صفحه در لینک‌ها: querystring موجود (q/category/brand) حفظ و فقط
-    page عوض می‌شود؛ کاربر با تغییر صفحه فیلترهایش را از دست نمی‌دهد و
-    خروجی قابل بوکمارک/اشتراک است.
-
-۱۰.۳ بررسی با ابزار
-  - python manage.py check → no issues.
-  - python manage.py check --deploy با DEBUG=0 و کلید ۶۴ نویسه‌ای و
-    SSL/HSTS/Preload → «System check identified no issues (0 silenced).»
-    (بدون این متغیرها، هشدارهای W004/W008/W012/W016/W021 طبیعی و مستندند.)
-  - بررسی مرورگر: هیچ خطای کنسول یا نقض CSP؛ JSON-LD پارس می‌شود؛
-    فونت محلی بارگذاری می‌شود؛ Honeypot با ابعاد 1×1 و clip-path پنهان است.
-  - بررسی تم در مرورگر: هر سه حالت (تاریک/روشن/خودکار) اعمال و ذخیره شد؛
-    پس از reload انتخاب حفظ شد؛ در حالت خودکار مقدار data-theme با
-    prefers-color-scheme هم‌خوان بود؛ متای theme-color هم تغییر کرد.
-  - فرم واقعی: ارسال → ریدایرکت /#contact → پیام موفقیت → ردیف در دیتابیس
-    (ردیف تست afterward حذف شد).
-  - فرم باشگاه: ارسال واقعی → /#club، پیام موفقیت، رکورد Customer با
-    وضعیت pending و کد PT-XXXXXX (رکورد تست حذف شد).
-  - محصولات: تصاویر بندانگشتی با کد ۲۰۰ و Content-Type: image/webp
-    بارگذاری شدند؛ مشخصات و data-inquire درست رندر شدند.
-  - کاتالوگ /products/: کد ۲۰۰، فرم جست‌وجو/فیلتر، تعداد نتیجه و کارت‌ها؛
-    q و category/brand در URL و در نتیجه اعمال شدند؛ مقدار نامعتبر نادیده
-    گرفته شد. لینک‌های صفحه‌بندی querystring فیلترها را نگه داشتند.
-  - صفحهٔ جزئیات /products/<id>/: کد ۲۰۰ با همهٔ مشخصات فنی، توضیح، قطعات
-    مشابه و دکمهٔ «استعلام قیمت این قطعه»؛ لینک دکمه ?product=<id>#contact
-    بود. محصول is_active=False و شناسهٔ ناموجود ۴۰۴ دادند.
-  - پیش‌پر کردن از صفحهٔ جزئیات: بازکردن /?product=<id>#contact پیام
-    «استعلام قیمت برای: <نام>» را در id_message گذاشت (همان رفتار دکمهٔ
-    صفحهٔ اصلی، این‌بار از مسیر GET).
-  - پنل ادمین: صفحهٔ اصلی، فهرست/افزودن محصول و فهرست باشگاه با کاربر
-    موقت superuser کد ۲۰۰ دادند (کاربر afterward حذف شد). پیش‌نمایش تصویر
-    در فرم ویرایش محصول بررسی شد؛ در فهرست، ستون تصویر عمداً وجود ندارد.
-  - پنل /admin/login/ با CSP درست رندر شد (بدون inline script/style).
-
-۱۰.۴ نتیجهٔ کلی
-برای هدف «سایت معرفی فروشگاه با کاتالوگ و باشگاه تخفیف» سطح امنیتی خوب و
-بالاتر از حد معمول پروژه‌های مشابه است. هیچ آسیب‌پذیری بحرانی در کد پیدا
-نشد. سه ریسک باقی‌مانده، ریسک‌های عملیاتی‌اند نه کد:
-  - LocMemCache محدودیت نرخ را بین چند worker به اشتراک نمی‌گذارد → Redis.
-  - هر IP پشت NAT مشترک است؛ محدودیت ممکن است کاربران واقعی را هم تحت تأثیر
-    بگذارد (۶ در ۱۰ دقیقه برای استعلام و ۴ در ساعت برای عضویت منطقی است).
-  - Honeypot برای ربات‌های پیشرفتهٔ هدفمند کافی نیست؛ CAPTCHA اختیاری است.
-  - SQLite برای ترافیک همزمان بالا مناسب نیست → PostgreSQL.
-  - امنیت آپلود به تنظیم وب‌سرور وابسته است: در تولید اجرای اسکریپت در
-    media/ را ببندید، سقف حجم بگذارید و پوشه را با Nginx سرو کنید.
-  - دادهٔ باشگاه شخصی است؛ دسترسی ادمین را محدود و از دیتابیس/فایل‌ها
-    پشتیبان امن بگیرید و در مخزن/لاگ قرار ندهید.
-  - اطلاعات تماس و درصدهای نمایشی باشگاه نمونه است؛ قبل از انتشار واقعی شود.
-  - مسیر ادمین پیش‌فرض را در تولید تغییر دهید.
-  - محتوای مخفی کاتالوگ فقط با is_active کنترل می‌شود، نه با مجوز per-object.
-    اگر قطعه‌ای محرمانه است، در ادمین مخفی بماند (شناسه‌اش هم ۴۰۴ می‌دهد).
-
-================================================================================
-۱۱. کیفیت، آزمون‌ها و نتایج واقعی
-================================================================================
-۱۱.۱ آزمون خودکار (Django TestCase)
-  فرمان: python manage.py test
-  نتیجه: Ran 36 tests — OK
-  پوشش: صفحهٔ اصلی، هدرهای امنیتی، حضور فرم/Honeypot، ذخیرهٔ موفق استعلام،
-  فیلدهای اختیاری، تلفن نامعتبر، پیام کوتاه، Honeypot، محدودیت نرخ استعلام،
-  ۴۰۴، رندر کلید سه‌حالتهٔ تم، نبود 'unsafe-inline' در script-src؛
-  نمایش محصول فعال با مشخصات و data-inquire، پنهان‌بودن محصول غیرفعال،
-  تولید بندانگشتی WebP با ابعاد ≤ ۹۶۰؛ رندر بخش/فرم باشگاه، ثبت عضویت با
-  وضعیت pending و کد PT-، تخفیف پیش‌فرض ۵، تلفن تکراری، Honeypot باشگاه و
-  محدودیت نرخ جداگانهٔ باشگاه.
-
-  تست‌های کاتالوگ (ProductCatalogTests — ۱۰ تست):
-  - /products/ فقط محصولات فعال را نشان می‌دهد؛ محصول مخفی غایب است.
-  - صفحهٔ اصلی لینک product_list دارد.
-  - جست‌وجو در نام، برند و مدل ماشین (q=«دورنیه» و q="GTX").
-  - فیلتر هم‌زمان دسته/برند فقط نتیجهٔ منطبق را برمی‌گرداند.
-  - مقدار category/brand نامعتبر نادیده گرفته می‌شود.
-  - صفحه‌بندی واقعی: با PRODUCTS_PAGE_SIZE=6 و ۱۳ محصول، صفحهٔ اول ۶ کارت و
-    لینک page=2 دارد و صفحهٔ دوم هم ۶ کارت برمی‌گرداند.
-  - صفحهٔ جزئیات مشخصات، دکمهٔ استعلام و لینک ?product=&lt;pk&gt;#contact را دارد.
-  - صفحهٔ محصول مخفی ۴۰۴ می‌دهد.
-  - ورود /?product=&lt;pk&gt; متن فرم استعلام را پیش‌پر می‌کند.
-  - PRODUCTS_HOME_LIMIT=2 فقط ۲ محصول و متن «مشاهده همهٔ محصولات (4 قطعه)»
-    را در صفحهٔ اصلی می‌گذارد.
-
-۱۱.۲ آزمون دستی رابط (مرورگر Chromium)
-  - دسکتاپ ۱۴۴۰/۱۲۸۰/۱۰۲۴ و تبلت/موبایل ۷۶۸/۳۹۰/۳۲۰: بدون اسکرول افقی،
-    بدون هم‌پوشانی هدر، منوی موبایل باز/بسته و Escape، لنگرها و انیمیشن‌ها.
-  - عرض‌های ۳۲۰/۳۶۰/۳۹۰/۵۲۰/۷۲۰/۷۶۸/۹۸۱/۱۰۲۴/۱۰۸۱/۱۱۹۹/۱۲۰۰/۱۲۰۱/۱۴۴۰
-    با iframe هم‌عرض آزمون شد؛ هیچ عنصر خارج از کادری نبود (به‌جز Honeypot
-    عمداً off-screen). ستون‌های محصولات: ۱ تا ۷۲۰، ۲ تا ۱۰۸۰، ۳ بالاتر.
-    club-grid در ۹۸۱ تک‌ستون شد. منو دقیقاً در ۱۲۰۰/۱۲۰۱ عوض شد و توگل
-    موبایل در همهٔ عرض‌های کوچک کار کرد.
-  - کنسول: بدون خطا/هشدار؛ CSP چیزی را مسدود نکرد.
-  - تم: کلیک روی خورشید/ماه/نمایشگر → تغییر فوری data-theme و
-    data-theme-mode، ذخیره در localStorage، حفظ پس از reload،
-    هم‌گامی aria-pressed و به‌روزرسانی متای theme-color.
-  - Honeypot: عرض/ارتفاع ۱ پیکسل، clip-path: inset(50%)، خارج از صفحه.
-  - JSON-LD: JSON.parse موفق و @type=Store.
-  - فونت: document.fonts.check('16px Vazirmatn') → true.
-  - فرم استعلام: دادهٔ معتبر → /#contact + flash-success؛ ردیف در DB؛
-    سپس حذف.
-  - کاتالوگ محصولات: ۴ محصول نمونه با تصویر WebP، ۳ مشخصه و ۲ محصول منتخب
-    نمایش داده شد؛ همهٔ تصاویر با ۲۰۰ و image/webp بارگذاری شدند.
-  - صفحهٔ کاتالوگ /products/ (بررسی HTTP روی سرور توسعه): کد ۲۰۰، سرصفحه،
-    فرم جست‌وجو/فیلتر، تعداد نتیجه و کارت‌ها؛ q=GTX و category/brand درست
-    اعمال شدند و مقدار category نامعتبر نادیده گرفته شد. صفحه=۲ هم بدون خطا
-    پاسخ داد (با ۴ محصول، به صفحهٔ اول برمی‌گردد). لینک‌های صفحه‌بندی
-    querystring فیلترها را نگه می‌دارند.
-  - صفحهٔ جزئیات /products/&lt;id&gt;/ (بررسی HTTP): کد ۲۰۰ برای محصول فعال با
-    دکمهٔ «استعلام قیمت این قطعه» و لینک ?product=&lt;id&gt;#contact؛
-    /products/1/ (شناسهٔ ناموجود) و شناسهٔ بزرگ → ۴۰۴ با هدرهای امنیتی.
-  - پیش‌پر کردن از مسیر GET: /?product=4 مقدار
-    «استعلام قیمت برای: نوزل تزریق وفت» را داخل textarea#id_message گذاشت.
-  - CSP هر سه صفحه: script-src و style-src بدون 'unsafe-inline'؛ هیچ منبع
-    خارجی در HTML نبود.
-  - پیش‌پر کردن استعلام: کلیک روی «استعلام قیمت» → مقدار
-    «استعلام قیمت برای: <نام محصول>» در id_message و اسکرول به #contact.
-    اگر کاربر از قبل متن نوشته باشد، بازنویسی نمی‌شود.
-  - فرم باشگاه: دادهٔ معتبر با تلفن فارسی → /#club، پیام موفقیت، رکورد
-    pending با کد PT- و تخفیف ۵؛ رکورد تست حذف شد.
-  - صفحهٔ خطای ۴۰۴ با هدرهای امنیتی.
-  - پنل ادمین: فهرست محصولات/افزودن محصول/فهرست باشگاه کد ۲۰۰؛
-    اقدام «بازسازی بندانگشتی WebP» با کاربر موقت آزمایش شد (کاربر حذف شد).
-
-۱۱.۳ بررسی ایستا
-  - manage.py check: بدون مشکل.
-  - check --deploy: بدون مشکل با تنظیمات تولید.
-  - makemigrations --check: «No changes detected» (مهاجرتهای 0001 تا 0004
-    اعمال شدهاند).
-  - خروجی HTML: بدون style attribute و بدون inline script (سازگار با CSP).
-  - تستها: Ran 36 tests — OK (exit code 0).
-
-۱۱.۴ دسترسی‌پذیری
-  - lang=fa، dir=rtl، skip-link، aria-label روی دکمه‌ها و لینک‌های آیکونی،
-    aria-expanded/controls برای منو، aria-live برای پیام‌ها،
-    focus-visible در CSS، برچسب صریح label برای همهٔ فیلدها،
-    alt خالی/aria-hidden برای تصاویر تزئینی.
-  - کلید تم: role=group با aria-label، هر دکمه aria-label و title فارسی
-    دارد و وضعیت انتخاب با aria-pressed اعلام می‌شود.
-  - کارت محصول: تصویر دارای alt (image_alt یا نام محصول)، ابعاد صریح برای
-    جلوگیری از پرش چیدمان و loading=lazy؛ placeholder برای محصول بدون تصویر.
-  - صفحهٔ کاتالوگ: هر ورودی label صریح دارد، فرم role="search" است، لینک
-    صفحهٔ جاری aria-current="page" و دکمه‌های غیرفعال aria-disabled دارند؛
-    «…» صفحه‌بندی aria-hidden است تا صفحه‌خوان آن را نخواند. تصویر داخل کارت
-    لینک با tabindex="-1" و aria-hidden است تا لینک تکراری ایجاد نشود.
-  - صفحهٔ جزئیات: breadcrumbs با aria-label، تصویر اصلی alt، مشخصات در dl
-    و دکمه‌های متنی (بدون آیکون تنها).
-  - فرم باشگاه: برچسب‌های صریح، پیام خطای متنی و aria-label روی فهرست سطوح.
-
-۱۱.۵ کارایی
-  - بدون فریم‌ورک جاوااسکریپت، بدون فونت آنلاین، CSS/JS محلی.
-  - تصویر کارت محصول بندانگشتی WebP است (حداکثر ۹۶۰×۹۶۰)؛ در تست، تصویر
-    ۱۲۰۰×۹۰۰ به فایل ~۱٫۳ کیلوبایت تبدیل شد. فایل اصلی چندمگابایتی به
-    مرورگر فرستاده نمی‌شود.
-  - preload فونت اصلی، defer اسکریپت، انیمیشن با transform/opacity.
-  - theme.js بسیار کوچک (۱۰۴ خط با کامنت) و همگام در head است تا FOUC
-    رخ ندهد؛ گذار رنگ فقط هنگام کلیک کاربر و در صورت مجازبودن حرکت اجرا می‌شود.
-  - پرس‌وجوی محصولات با prefetch_related("specs") و برش در پایگاه‌داده،
-    بدون N+1 و بدون خواندن کل کاتالوگ.
-  - کاتالوگ با ۸۰۰ تا ۱۲۰۰ قطعه: هر درخواست فقط یک صفحه
-    (PRODUCTS_PAGE_SIZE، پیش‌فرض ۲۴) می‌خواند؛ Paginator.count شمارش را
-    جداگانه و سبک انجام می‌دهد. prefetch_related("specs") مشخصات صفحهٔ جاری
-    را در یک کوئری اضافه می‌آورد. ایندکس‌های product_active_feat_idx،
-    product_category_idx و product_brand_idx فیلتر/مرتب‌سازی را از اسکن کامل
-    جدول بی‌نیاز می‌کنند. جست‌وجوی icontains روی فیلدهای کوتاه (نام/برند/
-    مدل/خلاصه) انجام می‌شود، نه توضیح بلند.
-  - فهرست ادمین محصولات ۵۰ ردیف در صفحه با date_hierarchy است تا بازکردن
-    ادمین با هزار قطعه سنگین نشود.
-  - استاتیک‌ها با collectstatic و کش Nginx در تولید سریع سرو می‌شوند.
-
-================================================================================
-۱۲. استقرار در تولید
-================================================================================
-۱) .env را از .env.example بسازید و مقادیر واقعی بگذارید:
-   DJANGO_DEBUG=0
-   DJANGO_SECRET_KEY=<64 نویسه تصادفی>
-   DJANGO_ALLOWED_HOSTS=example.com,www.example.com
-   DJANGO_CSRF_TRUSTED_ORIGINS=https://example.com,https://www.example.com
-   DJANGO_ADMIN_PATH=panel-<رشته تصادفی>
-   DJANGO_SECURE_SSL_REDIRECT=1
-   DJANGO_SECURE_HSTS_SECONDS=31536000
-   DJANGO_SECURE_HSTS_PRELOAD=1
-   (اگر پشت Nginx/Cloudflare: DJANGO_BEHIND_PROXY=1 و فقط در صورت اطمینان
-    DJANGO_TRUST_PROXY_HEADERS=1)
-
-۲) مهاجرت و کاربر:
-   python manage.py migrate
-   python manage.py createsuperuser
-   python manage.py collectstatic --noinput
-
-۳) اجرا با Gunicorn (نمونه):
-   gunicorn parstextile.wsgi:application --bind 127.0.0.1:8001 --workers 3
-
-۴) Nginx (نمونهٔ فشرده):
-   - server_name example.com
-   - listen 443 ssl http2 (گواهی Let’s Encrypt)
-   - location /static/ { alias /var/www/parstextile/staticfiles/; expires 30d; }
-   - location / { proxy_pass http://127.0.0.1:8001; proxy_set_header Host $host;
-                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-                 proxy_set_header X-Forwarded-Proto $scheme; }
-   - location /media/ { alias /var/www/parstextile/media/; expires 7d;
-                        add_header X-Content-Type-Options nosniff;
-                        location ~* \.(php|py|pl|sh|html?)$ { deny all; } }
-   - client_max_body_size 5m;   # سقف آپلود تصویر در پنل ادمین
-   نکته: media/ را هرگز با اجرای CGI/اسکریپت سرو نکنید؛ فقط فایل استاتیک.
-
-۵) PostgreSQL (پیشنهادی):
-   pip install "psycopg[binary]" و تغییر DATABASES در settings.py از طریق
-   متغیرهای محیطی (در نسخهٔ فعلی فقط SQLite پیکربندی شده است).
-
-۶) کش مشترک برای محدودیت نرخ:
-   pip install redis django-redis و تنظیم CACHES روی Redis. دو شمارندهٔ
-   استعلام و باشگاه هر دو از همین کش استفاده می‌کنند.
-
-۷) پشتیبان‌گیری: db.sqlite3 (یا دیتابیس PostgreSQL)، پوشهٔ media/ (تصاویر
-   اصلی و بندانگشتی‌ها) و .env؛ اجرای دوره‌ای rotate لاگ‌ها.
-
-۸) مجوز فایل‌ها: کاربر وب‌سرور باید در media/products/ و
-   media/products/thumbs/ مجوز نوشتن داشته باشد؛ در غیر این صورت آپلود یا
-   اکشن «بازسازی بندانگشتی WebP» شکست می‌خورد. پشتیبانی WebP را در سرور
-   جدید بررسی کنید:
-   python -c "from PIL import features; print(features.check('webp'))"
-
-۹) پایش: لاگ‌های stdout در systemd/Docker؛ هشدار روی خطاهای SMTP، خطای
-   پردازش تصویر و ۵۰۰.
-
-================================================================================
-۱۳. سفارشی‌سازی
-================================================================================
-- تغییر نام/تلفن/آدرس/ساعات: core/content.py → SITE.
-- تغییر برندها/مدل‌ها: BRANDS.
-- تغییر دسته‌بندی و آیکون: CATEGORIES (icon باید symbol موجود باشد).
-- تغییر مزیت‌ها/آمار/مراحل/سؤالات: FEATURES/STATS/STEPS/FAQ.
-- تغییر محصولات: پنل ادمین → «محصولات» (تصویر، برند، مدل‌ها، مشخصات فنی،
-  نمایش/مخفی، منتخب و ترتیب). برای محصول جدید نیازی به تغییر کد نیست.
-- تغییر اندازه/کیفیت تصویر: THUMB_MAX_SIZE و THUMB_QUALITY در core/images.py؛
-  پس از تغییر، اکشن «بازسازی بندانگشتی WebP» را اجرا کنید.
-- تغییر آستانه/نوع محصول: CATEGORY_CHOICES در core/models.py (نیازمند
-  makemigrations + migrate) و به‌روزرسانی فیلتر ادمین.
-- تغییر متن‌ها و سطوح نمایشی باشگاه: CLUB در content.py؛ درصد واقعی هر عضو
-  را در ادمین (فیلد discount_percent) تنظیم کنید.
-- تغییر رفتار باشگاه: models.Customer (وضعیت‌ها/سطوح/کد)، forms.ClubSignupForm
-  (فیلدهای عمومی) و views.home (پیام‌ها/ریدایرکت). محاسبهٔ درصد را در
-  فروش حضوری/تلفنی انجام دهید؛ این پروژه سبد خرید ندارد.
-- تغییر رنگ: :root (تم تاریک) و [data-theme="light"] (تم روشن) در style.css.
-  رنگ برند را در هر دو پالت (--accent و مشتقاتش) هماهنگ کنید.
-- تغییر رفتار یا پیش‌فرض تم: static/core/js/theme.js (کلید localStorage و
-  مقدار پیش‌فرض «auto»).
-- افزودن کلید دیگر برای تم: دکمه‌ای با data-theme-choice بسازید؛ listener
-  مشترک theme.js آن را خودکار پشتیبانی می‌کند.
-- تغییر فونت: فایل woff2 در static/core/fonts و @font-faceها.
-- تغییر متن‌های ثابت قالب (مثل «۱۹ سال» در کارت درباره): home.html.
-- تغییر متن‌های JS (هیچ متن کاربری ندارد) و aria-labelها: قالب‌ها.
-- تغییر محدودیت فرم: INQUIRY_RATE_LIMIT/INQUIRY_RATE_WINDOW برای استعلام و
-  CLUB_RATE_LIMIT/CLUB_RATE_WINDOW برای باشگاه.
-- تغییر تعداد محصولات صفحهٔ اصلی: PRODUCTS_HOME_LIMIT.
-- تغییر اندازهٔ صفحهٔ کاتالوگ: PRODUCTS_PAGE_SIZE در .env/settings.py
-  (پیش‌فرض ۲۴، سمت سرور به بازهٔ ۶ تا ۹۶ بسته می‌شود). چیدمان کارت‌ها و
-  شماره‌های صفحه در core/templates/core/products.html است.
-- تغییر ظاهر کارت مشترک محصول: core/templates/core/_product_card.html؛
-  همان فایل در صفحهٔ اصلی، کاتالوگ و قطعات مشابه استفاده می‌شود، پس تغییر
-  یک‌بار در هر سه جا اعمال می‌شود. برای کارت کاتالوگ/جزئیات آرگومان
-  detail_url را پاس بدهید.
-- تغییر فیلدهای جست‌وجو: views.product_list (کوئری Q و icontains) و فرم
-  فیلتر در products.html. برای فیلد/مرتب‌سازی جدید، ایندکس مناسب را در
-  Product.Meta (core/models.py) اضافه و مهاجرت را کامیت کنید.
-- تغییر محتوای صفحهٔ جزئیات: core/templates/core/product_detail.html؛
-  مشخصات از ProductSpec و توضیح از Product.description می‌آید. تعداد قطعات
-  مشابه در views.product_detail (برش [:4]) تعیین می‌شود.
-- تغییر عنوان/توضیح متای کاتالوگ و جزئیات: بلوک title/description همان دو
-  قالب.
-- ایمیل: DJANGO_EMAIL_*، CONTACT_NOTIFY_EMAIL و CLUB_NOTIFY_EMAIL.
-- مسیر ادمین: DJANGO_ADMIN_PATH (مثلاً panel-x7k2).
-- عنوان‌های ادمین: parstextile/urls.py (site_header/site_title/index_title).
-- افزودن صفحهٔ جدید: ویو در core/views.py + مسیر در core/urls.py + قالب.
-
-================================================================================
-۱۴. محدودیت‌های شناخته‌شده و پیشنهادهای آینده
-================================================================================
-- Honeypot و محدودیت نرخ بدون CAPTCHA؛ برای اسپم هدفمند، CAPTCHA یا سرویس
-  ضدربات (با سازگاری CSP) اضافه شود.
-- LocMemCache → Redis برای چند worker.
-- SQLite → PostgreSQL برای نوشتن همزمان.
-- سایت عمداً فروشگاه اینترنتی نیست: سبد خرید، پرداخت آنلاین، محاسبهٔ خودکار
-  فاکتور و تاریخچهٔ خرید وجود ندارد. تخفیف باشگاه در خرید حضوری/تلفنی و
-  روی پیش‌فاکتور اعمال می‌شود. اگر فروشگاه آنلاین لازم شد، طراحی جداگانه
-  (سفارش، پرداخت، امنیت PCI) نیاز است.
-- کاتالوگ تصویرمحور است؛ گالری چندتصویری، ویدیو یا فایل PDF مشخصات ندارد.
-  افزودن گالری نیازمند مدل تصویر جداگانه و به‌روزرسانی قالب است.
-- جست‌وجو ساده است: icontains روی نام/برند/مدل ماشین/خلاصه، بدون غلط‌یابی،
-  مترادف‌ها، جست‌وجوی شماره فنی در همهٔ مشخصات یا رتبه‌بندی ارتباط. برای
-  کاتالوگ خیلی بزرگ، PostgreSQL full-text یا موتور جست‌وجوی جداگانه پیشنهاد
-  می‌شود. فیلترها تک‌مقداری‌اند (یک دسته و یک برند در هر درخواست).
-- صفحه‌بندی شماره‌ای است (نه اسکرول بی‌نهایت/AJAX)؛ این انتخاب عمدی برای
-  سازگاری با CSP و قابلیت اشتراک/بوکمارک است.
-- Site search روی کل سایت (فقط کاتالوگ)، سبد خرید/علاقه‌مندی و مقایسهٔ قطعات
-  وجود ندارد؛ سایت بروشور است.
-- خروجی CSV/Excel از استعلام‌ها و اعضای باشگاه در ادمین می‌تواند مفید باشد.
-- افزودن sitemap.xml/robots.txt و Open Graph image برای سئوی کامل‌تر.
-- اگر چند زبان لازم شد: i18n و قالب‌های جدا؛ ساختار فعلی تک‌زبانه است.
-- تست ارسال ایمیل (locmem) اکنون وجود دارد و هر دو گیرنده را پوشش میدهد.
-  تست رندر ۵۰۰ و اکشن بازسازی بندانگشتی هنوز افزوده نشده است.
-- پایش خطا (Sentry) در تولید توصیه می‌شود.
-- اطلاعات تماس، آمار و درصدهای نمایشی باشگاه نمونه‌اند و باید واقعی شوند.
-- تم در سمت مرورگر و با localStorage مدیریت می‌شود؛ اگر ترجیح تم کاربر باید
-  در سرور ذخیره شود (حساب کاربری یا کوکی)، نیازمند طراحی جداگانه است.
-- چاپ همیشه با پالت روشن انجام می‌شود و از تم انتخابی کاربر پیروی نمی‌کند.
-- دادهٔ باشگاه شخصی است و سیاست نگهداری/حذف آن (مدت نگهداری، درخواست حذف
-  مشتری) باید توسط فروشگاه تعریف شود؛ ابزار خودکار حذف/ناشناس‌سازی ندارد.
-
-================================================================================
-پایان سند
-================================================================================
-تهیه‌شده برای پروژهٔ «پارس تکستایل» — نسخهٔ 1.3.0
-هرگونه تغییر در کد را متناسب با همین سند به‌روز کنید.
+Migration 0005 renamed admin verbose names/help texts from the old Persian
+metadata to English. Historical migrations use English metadata as well, so a
+fresh install never creates Persian field labels.
+All display copy and comments in the codebase are English; the only Persian
+text left in the repository is README_fa.md, which is a Persian-language
+overview for readers who prefer it. The site itself serves only English and
+German and always renders left-to-right.

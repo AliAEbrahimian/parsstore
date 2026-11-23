@@ -1,15 +1,18 @@
 {% extends "core/base.html" %}
+{% load i18n_extra %}
 
 {% block title %}{{ product.name }} | {{ SITE.name }}{% endblock %}
+{% block og_title %}{{ product.name }} | {{ SITE.name }}{% endblock %}
 {% block description %}{{ product.summary }}{% endblock %}
+{% block og_description %}{{ product.summary }}{% endblock %}
 
 {% block content %}
 <section class="section page-head product-page-head">
   <div class="container">
-    <nav class="breadcrumbs" aria-label="مسیر صفحه">
-      <a href="{% url 'core:home' %}">خانه</a>
+    <nav class="breadcrumbs" aria-label="{{ T.breadcrumb }}">
+      <a href="{% url 'core:home' %}?lang={{ LANG }}#home">{{ T.home }}</a>
       <span aria-hidden="true">›</span>
-      <a href="{% url 'core:product_list' %}">محصولات</a>
+      <a href="{% url 'core:product_list' %}?lang={{ LANG }}">{{ T.products }}</a>
       <span aria-hidden="true">›</span>
       <span aria-current="page">{{ product.name }}</span>
     </nav>
@@ -35,7 +38,7 @@
           </span>
         {% endif %}
       {% endwith %}
-      <span class="product-cat">{{ product.get_category_display }}</span>
+      <span class="product-cat">{{ product.category|cat_label }}</span>
     </div>
 
     <div class="product-detail-info">
@@ -47,18 +50,18 @@
 
       <dl class="detail-specs">
         <div>
-          <dt>دسته‌بندی</dt>
-          <dd>{{ product.get_category_display }}</dd>
+          <dt>{{ T.dt_category }}</dt>
+          <dd>{{ product.category|cat_label }}</dd>
         </div>
         {% if product.brand %}
           <div>
-            <dt>برند</dt>
+            <dt>{{ T.dt_brand }}</dt>
             <dd dir="ltr">{{ product.brand }}</dd>
           </div>
         {% endif %}
         {% if product.machine_models %}
           <div>
-            <dt>مدل ماشین‌های سازگار</dt>
+            <dt>{{ T.dt_machines }}</dt>
             <dd dir="ltr">{{ product.machine_models }}</dd>
           </div>
         {% endif %}
@@ -77,26 +80,23 @@
       {% endif %}
 
       <div class="detail-actions">
-        <a class="btn btn-primary" href="{% url 'core:home' %}?product={{ product.pk }}#contact">
-          استعلام قیمت این قطعه
+        <a class="btn btn-primary" href="{{ home_contact_url }}">
+          {{ T.detail_cta }}
           <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
         </a>
-        <a class="btn btn-outline" href="{% url 'core:product_list' %}">بازگشت به کاتالوگ</a>
+        <a class="btn btn-outline" href="{% url 'core:product_list' %}?lang={{ LANG }}">{{ T.back_catalog }}</a>
       </div>
-      <p class="detail-note">
-        قیمت و موجودی پس از ثبت استعلام، تلفنی یا با ایمیل اعلام می‌شود؛ سایت
-        فروشگاه اینترنتی نیست و پرداخت آنلاین ندارد.
-      </p>
+      <p class="detail-note">{{ T.detail_note }}</p>
     </div>
   </div>
 </section>
 
 {% if related %}
-  <section class="section related-section" aria-label="قطعات مشابه">
+  <section class="section related-section" aria-label="{{ T.related_aria }}">
     <div class="container">
       <div class="section-head">
-        <p class="eyebrow">در همین دسته</p>
-        <h2>قطعات مشابه</h2>
+        <p class="eyebrow">{{ T.related_eyebrow }}</p>
+        <h2>{{ T.related_h2 }}</h2>
       </div>
       <div class="product-grid">
         {% for item in related %}

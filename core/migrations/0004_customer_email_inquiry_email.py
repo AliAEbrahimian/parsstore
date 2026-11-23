@@ -13,11 +13,11 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='customer',
             name='email',
-            field=models.EmailField(default='', max_length=254, verbose_name='آدرس ایمیل'),
+        field=models.EmailField(default='', max_length=254, verbose_name='Email'),
         ),
         migrations.AddField(
             model_name='inquiry',
             name='email',
-            field=models.EmailField(default='', max_length=254, verbose_name='آدرس ایمیل'),
+        field=models.EmailField(default='', max_length=254, verbose_name='Email'),
         ),
     ]

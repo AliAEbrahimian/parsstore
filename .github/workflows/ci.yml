@@ -14,6 +14,10 @@ jobs:
     name: Python ${{ matrix.python-version }}
     runs-on: ubuntu-latest
 
+    env:
+      # Local/CI checks run in debug mode; the deployment check overrides this.
+      DJANGO_DEBUG: "1"
+
     strategy:
       fail-fast: false
       matrix:

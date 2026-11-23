@@ -1,9 +1,9 @@
 /* ==========================================================================
-   پارس تکستایل — استایل سایت بروشوری
-   ساختار: متغیرها › پایه › اجزا › بخش‌ها › واکنش‌گرا
+   ParsStore - brochure site styles
+   Structure: variables > base > components > sections > responsive
    ========================================================================== */
 
-/* ---------------------------------------------------------------- فونت */
+/* ---------------------------------------------------------------- fonts */
 @font-face {
   font-family: "Vazirmatn";
   font-style: normal;
@@ -44,11 +44,11 @@
   src: url("../fonts/Vazirmatn-ExtraBold.woff2") format("woff2");
 }
 
-/* ---------------------------------------------------------------- متغیرها */
+/* ---------------------------------------------------------------- variables */
 :root {
   color-scheme: dark;
 
-  /* سطوح و کارت‌ها */
+/* Surfaces and cards */
   --bg: #080b0e;
   --bg-soft: #0b0f14;
   --panel: #0f141a;
@@ -64,14 +64,14 @@
   --part-figure-grad: linear-gradient(180deg, #0b1015, #080b0f);
   --footer-bg: #070a0d;
 
-  /* خطوط و جداکننده‌ها */
+/* Lines and dividers */
   --line: #212932;
   --line-soft: rgba(255, 255, 255, 0.07);
   --line-strong: #2a333d;
   --footer-line: #1b222a;
   --footer-line-soft: #151c23;
 
-  /* متن */
+/* Text */
   --text: #e8edf1;
   --text-strong: #ffffff;
   --text-soft: #c4ccd4;
@@ -86,7 +86,7 @@
   --brand-name: #c8d2da;
   --chip-text: #8e9aa4;
 
-  /* رنگ تأکیدی */
+/* Accent colour */
   --accent: #eda33f;
   --accent-bright: #f7c47f;
   --accent-deep: #c9832c;
@@ -102,7 +102,7 @@
   --btn-grad-hover: linear-gradient(180deg, #f7bd68, #eaa03a);
   --btn-text: #18120a;
 
-  /* وضعیت‌ها */
+/* States */
   --ok: #4ade80;
   --ok-text: #86efac;
   --ok-border: #2f5c48;
@@ -115,7 +115,7 @@
   --danger-border: #5b2f2f;
   --danger-bg: rgba(38, 18, 18, 0.97);
 
-  /* افکت‌ها */
+/* Effects */
   --surface-1: rgba(255, 255, 255, 0.02);
   --surface-2: rgba(255, 255, 255, 0.025);
   --surface-3: rgba(255, 255, 255, 0.03);
@@ -139,7 +139,7 @@
   --selection-bg: rgba(237, 163, 63, 0.3);
   --selection-text: #ffffff;
 
-  /* فوتر */
+/* Footer */
   --footer-title: #dfe6ec;
   --footer-text: #8b97a2;
   --footer-muted: #77828d;
@@ -153,8 +153,8 @@
 }
 
 /* ---------------------------------------------------------------------------
-   تم روشن — با data-theme="light" روی <html> فعال می‌شود.
-   theme.js پیش از رندر، مقدار ذخیره‌شده یا ترجیح سیستم را روی همین ویژگی می‌گذارد.
+   Light theme - enabled by data-theme="light" on <html>.
+   theme.js applies the saved value or the system preference before rendering.
    --------------------------------------------------------------------------- */
 [data-theme="light"] {
   color-scheme: light;
@@ -184,15 +184,15 @@
   --text-strong: #0b0e11;
   --text-soft: #3a444e;
   --text-dim: #414b55;
-  --muted: #59636d;
-  --muted-2: #68727c;
-  --muted-3: #6d7781;
-  --faint: #a8b1b9;
-  --placeholder: #939da6;
+  --muted: #4e5862;
+  --muted-2: #5b656f;
+  --muted-3: #616b75;
+  --faint: #98a2ab;
+  --placeholder: #6b7580;
   --part-value: #232b33;
   --brand-latin: #10151a;
   --brand-name: #2b343d;
-  --chip-text: #5b6671;
+  --chip-text: #4c5661;
 
   --accent: #a4630f;
   --accent-bright: #85500a;
@@ -245,12 +245,12 @@
   --selection-text: #0b0e11;
 
   --footer-title: #1e262d;
-  --footer-text: #5c6670;
-  --footer-muted: #6b7680;
+  --footer-text: #4e5862;
+  --footer-muted: #5a646e;
   --footer-icon: #7b8690;
 }
 
-/* ---------------------------------------------------------------- پایه */
+/* ---------------------------------------------------------------- base */
 *,
 *::before,
 *::after {
@@ -258,8 +258,13 @@
 }
 
 html {
-  scroll-behavior: smooth;
   -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 body {
@@ -275,8 +280,8 @@ body {
   text-rendering: optimizeLegibility;
 }
 
-/* هنگام تغییر تم توسط کاربر، گذار کوتاه رنگی اجرا می‌شود.
-   این کلاس را theme.js فقط برای یک لحظه اضافه می‌کند. */
+/* When the user changes the theme, a short colour transition runs.
+theme.js adds this class for a single animation frame. */
 @media (prefers-reduced-motion: no-preference) {
   html.theme-fade,
   html.theme-fade *,
@@ -404,7 +409,7 @@ section[id] {
   line-height: 2;
 }
 
-/* ---------------------------------------------------------------- آیکون‌ها */
+/* ---------------------------------------------------------------- icons */
 .icon-sprite {
   position: absolute;
   width: 0;
@@ -423,7 +428,7 @@ section[id] {
   stroke-linejoin: round;
 }
 
-/* ---------------------------------------------------------------- دکمه‌ها */
+/* ---------------------------------------------------------------- buttons */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -517,7 +522,7 @@ section[id] {
   transform: translateX(-4px);
 }
 
-/* ---------------------------------------------------------------- هدر */
+/* ---------------------------------------------------------------- header */
 .site-header {
   position: sticky;
   top: 0;
@@ -576,6 +581,15 @@ section[id] {
   letter-spacing: 0.13em;
   direction: ltr;
   text-align: right;
+}
+
+/* English/German layout is left-to-right; fix the direction of a few details */
+[dir="ltr"] .brand-text small {
+  text-align: left;
+}
+
+[dir="ltr"] .main-nav a::after {
+  transform-origin: left;
 }
 
 .main-nav {
@@ -645,7 +659,49 @@ section[id] {
   color: var(--accent);
 }
 
-/* ---------------------------------------------------------------- کلید تم */
+/* ---------------------------------------------------------------- language switcher */
+.language-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+  padding: 3px;
+  border: 1px solid var(--line);
+  border-radius: 11px;
+  background: var(--surface-1);
+}
+
+.lang-btn {
+  display: inline-flex;
+  align-items: center;
+  min-height: 30px;
+  padding: 0 8px;
+  border-radius: 8px;
+  color: var(--muted-2);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color 0.2s var(--ease), background-color 0.2s var(--ease);
+}
+
+.lang-btn:hover {
+  background: var(--surface-hover);
+  color: var(--text);
+}
+
+.lang-btn.is-active {
+  background: var(--accent-soft);
+  color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent-border);
+}
+
+.lang-btn:focus-visible {
+  outline: 2px solid var(--accent-focus);
+  outline-offset: 2px;
+}
+
+/* ---------------------------------------------------------------- theme buttons */
 .theme-switch {
   display: inline-flex;
   align-items: center;
@@ -681,7 +737,7 @@ section[id] {
   color: var(--text);
 }
 
-/* حالت فعال از روی data-theme-mode خوانده می‌شود تا پیش از اجرای JS هم درست باشد */
+/* Active state is read from data-theme-mode so it is correct before JS runs */
 [data-theme-mode="auto"] .theme-btn[data-theme-choice="auto"],
 [data-theme-mode="light"] .theme-btn[data-theme-choice="light"],
 [data-theme-mode="dark"] .theme-btn[data-theme-choice="dark"] {
@@ -730,7 +786,7 @@ section[id] {
   transform: translateY(-7px) rotate(-45deg);
 }
 
-/* ---------------------------------------------------------------- هیرو */
+/* ---------------------------------------------------------------- hero */
 .hero {
   position: relative;
   overflow: hidden;
@@ -851,7 +907,7 @@ section[id] {
   stroke-width: 2.4;
 }
 
-/* --- کارت قطعه در هیرو --- */
+/* --- part card in the hero --- */
 .hero-visual {
   position: relative;
   width: 100%;
@@ -991,7 +1047,7 @@ section[id] {
   transform: rotate(1.5deg);
 }
 
-/* --- نوار برندها --- */
+/* --- brand strip --- */
 .brand-strip {
   position: relative;
   padding-block: 24px 28px;
@@ -1042,7 +1098,7 @@ section[id] {
   color: var(--accent);
 }
 
-/* ---------------------------------------------------------------- درباره */
+/* ---------------------------------------------------------------- about */
 .about-grid {
   display: grid;
   grid-template-columns: 1.12fr 0.88fr;
@@ -1179,7 +1235,7 @@ section[id] {
   text-align: end;
 }
 
-/* ---------------------------------------------------------------- آمار */
+/* ---------------------------------------------------------------- stats */
 .stats-band {
   border-block: 1px solid var(--line);
   background: var(--surface-1);
@@ -1216,7 +1272,7 @@ section[id] {
   font-size: 0.78rem;
 }
 
-/* ---------------------------------------------------------------- محصولات */
+/* ---------------------------------------------------------------- products */
 .card-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1311,7 +1367,7 @@ section[id] {
   border-bottom: 1px dashed var(--accent-border-strong);
 }
 
-/* --- محصولات ثبت‌شده در پنل --- */
+/* --- products added in the admin --- */
 .product-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
@@ -1488,7 +1544,7 @@ section[id] {
   color: var(--accent);
 }
 
-/* --- سرصفحهٔ صفحات داخلی (کاتالوگ و جزئیات) --- */
+/* --- inner-page header (catalogue and detail) --- */
 .page-head {
   padding-block: calc(var(--header-h) + clamp(26px, 4vw, 44px)) clamp(20px, 3vw, 30px);
   border-bottom: 1px solid var(--line-soft);
@@ -1524,7 +1580,7 @@ section[id] {
   color: var(--accent);
 }
 
-/* --- کاتالوگ محصولات --- */
+/* --- product catalogue --- */
 .catalog {
   padding-top: clamp(26px, 4vw, 44px);
 }
@@ -1681,7 +1737,7 @@ section[id] {
   text-align: center;
 }
 
-/* --- صفحهٔ جزئیات محصول --- */
+/* --- product detail page --- */
 .product-detail-section {
   padding-top: clamp(28px, 4vw, 48px);
 }
@@ -1773,7 +1829,7 @@ section[id] {
   margin-bottom: 0;
 }
 
-/* ---------------------------------------------------------------- برندها */
+/* ---------------------------------------------------------------- brands */
 .brands-section {
   border-block: 1px solid var(--line-soft);
   background: var(--bg-soft);
@@ -1851,7 +1907,7 @@ section[id] {
   letter-spacing: 0.04em;
 }
 
-/* ---------------------------------------------------------------- چرا ما */
+/* ---------------------------------------------------------------- why us */
 .why {
   background:
     radial-gradient(50% 60% at 100% 0%, var(--accent-soft), transparent 70%);
@@ -1923,7 +1979,7 @@ section[id] {
   line-height: 1.9;
 }
 
-/* ---------------------------------------------------------------- مراحل */
+/* ---------------------------------------------------------------- steps */
 .steps {
   border-top: 1px solid var(--line-soft);
 }
@@ -1982,7 +2038,7 @@ section[id] {
   line-height: 1.95;
 }
 
-/* ---------------------------------------------------------------- سؤالات */
+/* ---------------------------------------------------------------- FAQ */
 .faq {
   border-top: 1px solid var(--line-soft);
   background: var(--bg-soft);
@@ -2054,7 +2110,7 @@ section[id] {
   line-height: 1.95;
 }
 
-/* ---------------------------------------------------------------- باشگاه مشتریان */
+/* ---------------------------------------------------------------- club */
 .club {
   position: relative;
   border-top: 1px solid var(--line-soft);
@@ -2155,7 +2211,7 @@ section[id] {
   margin-top: 18px;
 }
 
-/* ---------------------------------------------------------------- تماس */
+/* ---------------------------------------------------------------- contact */
 .contact {
   position: relative;
   border-top: 1px solid var(--line-soft);
@@ -2263,7 +2319,7 @@ section[id] {
   line-height: 1.9;
 }
 
-/* --- فرم --- */
+/* --- form --- */
 .form-card {
   position: relative;
   overflow: hidden;
@@ -2365,7 +2421,7 @@ textarea.field-input {
   text-align: center;
 }
 
-/* فیلد تله (Honeypot) — از دید کاربر پنهان است، ربات‌ها آن را پر می‌کنند */
+/* Honeypot field - hidden from users, filled in by bots */
 .hp-field {
   position: absolute;
   top: 0;
@@ -2388,7 +2444,7 @@ textarea.field-input {
   border: 0;
 }
 
-/* ---------------------------------------------------------------- پیام‌ها */
+/* ---------------------------------------------------------------- messages */
 .flash-stack {
   position: fixed;
   top: calc(var(--header-h) + 12px);
@@ -2446,7 +2502,7 @@ textarea.field-input {
   opacity: 1;
 }
 
-/* ---------------------------------------------------------------- فوتر */
+/* ---------------------------------------------------------------- footer */
 .site-footer {
   padding-top: clamp(44px, 6vw, 68px);
   border-top: 1px solid var(--footer-line);
@@ -2557,7 +2613,7 @@ textarea.field-input {
   font-size: 0.76rem;
 }
 
-/* ---------------------------------------------------------------- دکمه شناور */
+/* ---------------------------------------------------------------- floating button */
 .wa-float {
   position: fixed;
   bottom: 20px;
@@ -2587,7 +2643,7 @@ textarea.field-input {
   transform: translateY(-2px);
 }
 
-/* ---------------------------------------------------------------- خطا */
+/* ---------------------------------------------------------------- error pages */
 .error-page {
   padding-block: clamp(90px, 14vw, 170px);
 }
@@ -2606,7 +2662,7 @@ textarea.field-input {
   color: var(--muted);
 }
 
-/* ---------------------------------------------------------------- انیمیشن */
+/* ---------------------------------------------------------------- animation */
 @media (prefers-reduced-motion: no-preference) {
   .js-ready .reveal {
     opacity: 0;
@@ -2620,7 +2676,7 @@ textarea.field-input {
   }
 }
 
-/* ---------------------------------------------------------------- واکنش‌گرا */
+/* ---------------------------------------------------------------- responsive */
 @media (max-width: 1080px) {
   .brand-grid {
     grid-template-columns: repeat(2, 1fr);
@@ -2645,6 +2701,16 @@ textarea.field-input {
 
   .feature {
     padding: 18px;
+  }
+}
+
+@media (min-width: 1201px) and (max-width: 1420px) {
+  .header-phone {
+    display: none;
+  }
+
+  .header-inner {
+    gap: 12px;
   }
 }
 
@@ -2766,6 +2832,22 @@ textarea.field-input {
   .theme-switch {
     gap: 0;
     padding: 2px;
+  }
+
+  .language-switch {
+    gap: 0;
+    padding: 2px;
+  }
+
+  .lang-btn {
+    min-height: 28px;
+    padding: 0 6px;
+    font-size: 0;
+  }
+
+  .lang-btn::after {
+    content: attr(data-short);
+    font-size: 0.66rem;
   }
 
   .theme-btn {
@@ -2901,10 +2983,10 @@ textarea.field-input {
   }
 }
 
-/* ---------------------------------------------------------------- چاپ */
+/* ---------------------------------------------------------------- print */
 @media print {
-  /* چاپ همیشه روشن است؛ توکن‌ها بازنویسی می‌شوند تا کارت‌های تاریک
-     روی کاغذ سفید خوانا بمانند. */
+/* Printing is always light; tokens are overridden so dark cards stay
+legible on white paper. */
   :root {
     color-scheme: light;
     --bg: #ffffff;

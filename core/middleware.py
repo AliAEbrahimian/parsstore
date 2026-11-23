@@ -1,15 +1,13 @@
-"""هدرهای امنیتی تکمیلی که جنگو به‌صورت پیش‌فرض ارسال نمی‌کند."""
+"""Security headers and language selection."""
 
 from django.conf import settings
+from django.utils import translation
+
+from .i18n import DEFAULT_LANGUAGE, LANGUAGES
 
 
 class SecurityHeadersMiddleware:
-    """
-    افزودن CSP و Permissions-Policy به همه‌ی پاسخ‌ها.
-
-    نکته: این پروژه هیچ منبع خارجی (CDN، فونت آنلاین، اسکریپت تبلیغاتی) ندارد؛
-    بنابراین CSP کاملاً سخت‌گیرانه تنظیم شده است.
-    """
+    """Add CSP and Permissions-Policy headers to every response."""
 
     CSP = (
         "default-src 'self'; "
@@ -33,15 +31,45 @@ class SecurityHeadersMiddleware:
 
     def __call__(self, request):
         response = self.get_response(request)
+        response.setdefault("Content-Security-Policy", self.CSP)
+        response.setdefault("Permissions-Policy", self.PERMISSIONS_POLICY)
+        return response
 
-        headers = {
-            "Content-Security-Policy": getattr(settings, "CONTENT_SECURITY_POLICY", self.CSP),
-            "Permissions-Policy": self.PERMISSIONS_POLICY,
-            "Referrer-Policy": getattr(settings, "SECURE_REFERRER_POLICY", "same-origin"),
-            "X-Content-Type-Options": "nosniff",
-        }
-        for name, value in headers.items():
-            if name not in response:
-                response[name] = value
 
+class LanguageMiddleware:
+    """Determine the language from ``?lang=`` / cookie and store it in a cookie.
+
+    The active language is always set through ``django.utils.translation.activate``
+    so both Python code and templates follow the same language.
+    """
+
+    COOKIE_NAME = "parsstore_lang"
+
+    def __init__(self, get_response):
+        self.get_response = get_response
+
+    def __call__(self, request):
+        supported = {code for code, _ in LANGUAGES}
+        requested = (request.GET.get("lang") or "").split("-")[0]
+        if requested in supported:
+            language = requested
+        else:
+            cookie = request.COOKIES.get(self.COOKIE_NAME, "")
+            language = cookie if cookie in supported else DEFAULT_LANGUAGE
+
+        translation.activate(language)
+        request.language = language
+        request.LANGUAGE_CODE = language
+        response = self.get_response(request)
+        response.setdefault("Content-Language", language)
+        translation.deactivate()
+        if requested in supported and request.COOKIES.get(self.COOKIE_NAME) != language:
+            response.set_cookie(
+                self.COOKIE_NAME,
+                language,
+                max_age=60 * 60 * 24 * 365,
+                samesite="Lax",
+                secure=not settings.DEBUG,
+                httponly=False,
+            )
         return response

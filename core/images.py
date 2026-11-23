@@ -1,8 +1,8 @@
-"""ساخت بندانگشتی WebP برای تصاویر محصولات.
+"""Create optimised WebP thumbnails for product images.
 
-تصویر اصلی با کیفیت کامل نگهداری می‌شود و نسخهٔ کوچک‌تر (حداکثر ۹۶۰×۹۶۰)
-برای کارت‌های صفحهٔ اصلی ساخته می‌شود؛ به این ترتیب مرورگر به‌جای فایل
-چند مگابایتی، یک فایل سبک دریافت می‌کند و صفحه سریع باز می‌شود.
+The full-resolution original is kept, while a smaller version (at most 960x960)
+is generated for home-page cards. Instead of downloading a multi-megabyte
+file, the browser receives a lightweight image and the page loads quickly.
 """
 
 from io import BytesIO
@@ -15,7 +15,7 @@ THUMB_QUALITY = 82
 
 
 def make_thumbnail(image_field) -> ContentFile | None:
-    """تبدیل تصویر آپلودشده به WebP بهینه؛ در صورت خطا ``None`` برمی‌گردد."""
+    """Build an optimised WebP from an uploaded image; return ``None`` on error."""
     if not image_field:
         return None
 
@@ -24,8 +24,8 @@ def make_thumbnail(image_field) -> ContentFile | None:
         with Image.open(image_field) as source:
             image = ImageOps.exif_transpose(source)
 
-            # تصاویر دارای شفافیت روی پس‌زمینهٔ سفید تخت می‌شوند تا WebP بدون
-            # کانال آلفا و با حجم کمتر ذخیره شود.
+            # Transparent images are flattened onto white so the WebP is saved
+            # without an alpha channel and stays smaller.
             if image.mode in {"RGBA", "LA", "P"}:
                 image = image.convert("RGBA")
                 background = Image.new("RGB", image.size, (255, 255, 255))

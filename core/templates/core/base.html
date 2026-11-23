@@ -1,18 +1,18 @@
-{% load static %}<!DOCTYPE html>
-<html lang="fa" dir="rtl" data-theme="dark" data-theme-mode="dark">
+{% load static %}{% load i18n_extra %}<!DOCTYPE html>
+<html lang="{{ LANG }}" dir="ltr" data-theme="dark" data-theme-mode="dark">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}پارس تکستایل | قطعات یدکی ماشین‌های بافندگی{% endblock %}</title>
-  <meta name="description" content="{% block description %}تأمین تخصصی قطعات یدکی ماشین‌های بافندگی پیکانول، ایتما، سومت، واماتکس، دورنیه و سایر برندها؛ با تضمین اصالت کالا و ارسال سریع به سراسر کشور.{% endblock %}">
+  <title>{% block title %}{{ T.meta_title }}{% endblock %}</title>
+  <meta name="description" content="{% block description %}{{ T.meta_description }}{% endblock %}">
   <meta name="theme-color" content="#080b0e" id="theme-color-meta">
   <meta property="og:type" content="website">
-  <meta property="og:title" content="پارس تکستایل | قطعات یدکی ماشین‌های بافندگی">
-  <meta property="og:description" content="تأمین‌کننده تخصصی قطعات یدکی ماشین‌های بافندگی پیکانول، ایتما، سومت، واماتکس و دورنیه.">
+  <meta property="og:title" content="{% block og_title %}{{ T.meta_title }}{% endblock %}">
+  <meta property="og:description" content="{% block og_description %}{{ T.og_description }}{% endblock %}">
   <link rel="icon" href="{% static 'core/img/favicon.svg' %}" type="image/svg+xml">
   <link rel="preload" href="{% static 'core/fonts/Vazirmatn-Regular.woff2' %}" as="font" type="font/woff2" crossorigin>
-  <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
   <script src="{% static 'core/js/theme.js' %}"></script>
+  <link rel="stylesheet" href="{% static 'core/css/style.css' %}">
   <script type="application/ld+json">
   {
     "@context": "https://schema.org",
@@ -24,20 +24,20 @@
     "address": {
       "@type": "PostalAddress",
       "streetAddress": "{{ SITE.address }}",
-      "addressLocality": "تهران",
+      "addressLocality": "Tehran",
       "addressCountry": "IR"
     },
     "openingHours": "Sa-We 09:00-17:30, Th 09:00-13:00"
   }
   </script>
 </head>
-<body>
-  <a class="skip-link" href="#main">پرش به محتوای اصلی</a>
+<body data-inquire-template="{{ T.prefill }}">
+  <a class="skip-link" href="#main">{{ T.skip }}</a>
   {% include "core/_icons.html" %}
 
   <header class="site-header" id="site-header">
     <div class="container header-inner">
-      <a class="brand" href="{% url 'core:home' %}#home" aria-label="پارس تکستایل — صفحه اصلی">
+      <a class="brand" href="{% url 'core:home' %}?lang={{ LANG }}#home" aria-label="{{ T.brand_aria }}">
         <span class="brand-mark" aria-hidden="true">
           <svg viewBox="0 0 32 32">
             <rect x="1.4" y="1.4" width="29.2" height="29.2" rx="9" fill="none" stroke="currentColor" stroke-opacity=".28"/>
@@ -47,11 +47,11 @@
         </span>
         <span class="brand-text">
           <b>{{ SITE.name }}</b>
-          <small>{{ SITE.name_en }} · WEAVING PARTS</small>
+          <small>{{ SITE.name_en }} · {{ T.tagline }}</small>
         </span>
       </a>
 
-      <nav class="main-nav" id="main-nav" aria-label="منوی اصلی">
+      <nav class="main-nav" id="main-nav" aria-label="{{ T.nav_aria }}">
         <ul>
           {% for item in NAV %}
             <li><a href="{{ item.href }}">{{ item.label }}</a></li>
@@ -65,22 +65,28 @@
           <span dir="ltr">{{ SITE.phone }}</span>
         </a>
 
-        <div class="theme-switch" role="group" aria-label="حالت نمایش سایت">
-          <button class="theme-btn" type="button" data-theme-choice="auto" aria-pressed="false" aria-label="تم خودکار (هماهنگ با سیستم)" title="تم خودکار">
+        <div class="language-switch" role="group" aria-label="{{ T.lang_label }}">
+          {% for code, label in LANGUAGES %}
+            <a class="lang-btn{% if code == LANG %} is-active{% endif %}" href="{{ SWITCH_URLS|get_item:code }}" hreflang="{{ code }}" lang="{{ code }}" data-short="{{ code|upper }}">{{ label }}</a>
+          {% endfor %}
+        </div>
+
+        <div class="theme-switch" role="group" aria-label="{{ T.theme_group }}">
+          <button class="theme-btn" type="button" data-theme-choice="auto" aria-pressed="false" aria-label="{{ T.theme_auto }}" title="{{ T.theme_auto }}">
             <svg class="icon" aria-hidden="true"><use href="#i-auto"></use></svg>
           </button>
-          <button class="theme-btn" type="button" data-theme-choice="light" aria-pressed="false" aria-label="تم روشن" title="تم روشن">
+          <button class="theme-btn" type="button" data-theme-choice="light" aria-pressed="false" aria-label="{{ T.theme_light }}" title="{{ T.theme_light }}">
             <svg class="icon" aria-hidden="true"><use href="#i-sun"></use></svg>
           </button>
-          <button class="theme-btn" type="button" data-theme-choice="dark" aria-pressed="true" aria-label="تم تاریک" title="تم تاریک">
+          <button class="theme-btn" type="button" data-theme-choice="dark" aria-pressed="true" aria-label="{{ T.theme_dark }}" title="{{ T.theme_dark }}">
             <svg class="icon" aria-hidden="true"><use href="#i-moon"></use></svg>
           </button>
         </div>
 
-        <a class="btn btn-primary btn-sm" href="#contact">استعلام قیمت</a>
+        <a class="btn btn-primary btn-sm" href="{% url 'core:home' %}?lang={{ LANG }}#contact">{{ T.header_cta }}</a>
       </div>
 
-      <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="باز و بستن منو">
+      <button class="nav-toggle" id="nav-toggle" type="button" aria-expanded="false" aria-controls="main-nav" aria-label="{{ T.nav_toggle }}">
         <span></span><span></span><span></span>
       </button>
     </div>
@@ -90,9 +96,9 @@
     <div class="flash-stack" role="status" aria-live="polite">
       {% for message in messages %}
         <div class="flash flash-{{ message.tags }}" data-flash>
-          <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
+          <svg class="icon" aria-hidden="true"><use href="#i-{% if message.tags == 'error' %}alert{% else %}check{% endif %}"></use></svg>
           <span>{{ message }}</span>
-          <button class="flash-close" type="button" aria-label="بستن پیام">&times;</button>
+          <button class="flash-close" type="button" aria-label="{{ T.flash_close }}">&times;</button>
         </div>
       {% endfor %}
     </div>
@@ -105,7 +111,7 @@
   <footer class="site-footer">
     <div class="container footer-grid">
       <div class="footer-brand">
-        <a class="brand" href="#home">
+        <a class="brand" href="{% url 'core:home' %}?lang={{ LANG }}#home">
           <span class="brand-mark" aria-hidden="true">
             <svg viewBox="0 0 32 32">
               <rect x="1.4" y="1.4" width="29.2" height="29.2" rx="9" fill="none" stroke="currentColor" stroke-opacity=".28"/>
@@ -120,20 +126,20 @@
         </a>
         <p>{{ SITE.description }}</p>
         <div class="socials">
-          <a href="{{ SITE.whatsapp }}" aria-label="واتساپ" target="_blank" rel="noopener">
+          <a href="{{ SITE.whatsapp }}" aria-label="{{ T.whatsapp }}" target="_blank" rel="noopener">
             <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
           </a>
-          <a href="{{ SITE.instagram }}" aria-label="اینستاگرام" target="_blank" rel="noopener">
+          <a href="{{ SITE.instagram }}" aria-label="{{ T.instagram }}" target="_blank" rel="noopener">
             <svg class="icon" aria-hidden="true"><use href="#i-instagram"></use></svg>
           </a>
-          <a href="mailto:{{ SITE.email }}" aria-label="ایمیل">
+          <a href="mailto:{{ SITE.email }}" aria-label="{{ T.email }}">
             <svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg>
           </a>
         </div>
       </div>
 
       <div class="footer-col">
-        <h3>دسترسی سریع</h3>
+        <h3>{{ T.quick_links }}</h3>
         <ul>
           {% for item in NAV %}
             <li><a href="{{ item.href }}">{{ item.label }}</a></li>
@@ -142,16 +148,16 @@
       </div>
 
       <div class="footer-col">
-        <h3>برندها</h3>
+        <h3>{{ T.brands }}</h3>
         <ul>
           {% for brand in BRANDS_FOOTER|slice:":6" %}
-            <li><a href="#brands">{{ brand.latin }} <span>{{ brand.name }}</span></a></li>
+            <li><a href="{% url 'core:home' %}?lang={{ LANG }}#brands">{{ brand.latin }} <span>{{ brand.name }}</span></a></li>
           {% endfor %}
         </ul>
       </div>
 
       <div class="footer-col">
-        <h3>تماس با ما</h3>
+        <h3>{{ T.contact }}</h3>
         <ul class="footer-contact">
           <li><svg class="icon" aria-hidden="true"><use href="#i-phone"></use></svg><a href="tel:{{ SITE.phone_link }}"><span dir="ltr">{{ SITE.phone }}</span></a></li>
           <li><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg><a href="mailto:{{ SITE.email }}">{{ SITE.email }}</a></li>
@@ -161,14 +167,14 @@
     </div>
 
     <div class="container footer-bottom">
-      <p>© {% now "Y" %} {{ SITE.name }} — تمامی حقوق محفوظ است.</p>
-      <p class="footer-note">سایت معرفی فروشگاه · قطعات یدکی ماشین‌های بافندگی</p>
+      <p>© {% now "Y" %} {{ SITE.name }} — {{ T.rights }}</p>
+      <p class="footer-note">{{ T.footer_note }}</p>
     </div>
   </footer>
 
-  <a class="wa-float" href="{{ SITE.whatsapp }}" target="_blank" rel="noopener" aria-label="گفتگو در واتساپ">
+  <a class="wa-float" href="{{ SITE.whatsapp }}" target="_blank" rel="noopener" aria-label="{{ T.wa_aria }}">
     <svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg>
-    <span>استعلام سریع</span>
+    <span>{{ T.wa_text }}</span>
   </a>
 
   <script src="{% static 'core/js/main.js' %}" defer></script>

@@ -1,34 +1,34 @@
-"""مدل‌های پایگاه‌دادهٔ پارس تکستایل."""
+"""ParsStore database models."""
 
 import secrets
 import uuid
 from pathlib import Path
 
 from django.core.validators import MaxValueValidator
-from django.db import models
+from django.db import IntegrityError, models, transaction
 from django.db.models.signals import post_delete
 from django.dispatch import receiver
 from django.urls import reverse
 
 from .images import make_thumbnail
-from .utils import normalize_digits
+from .utils import normalize_digits, phone_digits
 
 
 class Inquiry(models.Model):
-    """درخواست استعلام قیمت ثبت‌شده از فرم تماس سایت."""
+    """A price inquiry submitted through the contact form."""
 
-    name = models.CharField("نام و نام خانوادگی", max_length=120)
-    company = models.CharField("نام شرکت / کارگاه", max_length=160, blank=True)
-    phone = models.CharField("تلفن تماس", max_length=30)
-    email = models.EmailField("آدرس ایمیل", max_length=254, default="")
-    machine = models.CharField("مدل ماشین بافندگی", max_length=120, blank=True)
-    message = models.TextField("توضیحات و قطعات مورد نیاز")
-    created_at = models.DateTimeField("تاریخ ثبت", auto_now_add=True)
-    is_processed = models.BooleanField("بررسی شده", default=False)
+    name = models.CharField("Full name", max_length=120)
+    company = models.CharField("Company / workshop", max_length=160, blank=True)
+    phone = models.CharField("Phone", max_length=30)
+    email = models.EmailField("Email", max_length=254, default="")
+    machine = models.CharField("Machine model", max_length=120, blank=True)
+    message = models.TextField("Message")
+    created_at = models.DateTimeField("Created", auto_now_add=True)
+    is_processed = models.BooleanField("Processed", default=False)
 
     class Meta:
-        verbose_name = "درخواست استعلام"
-        verbose_name_plural = "درخواست‌های استعلام"
+        verbose_name = "Inquiry"
+        verbose_name_plural = "Inquiries"
         ordering = ["-created_at"]
 
     def __str__(self) -> str:
@@ -36,7 +36,7 @@ class Inquiry(models.Model):
 
 
 class Product(models.Model):
-    """محصول نمایشی سایت؛ بدون سبد خرید و پرداخت آنلاین."""
+    """A showcase product; no shopping cart or online payment."""
 
     CATEGORY_MECHANICAL = "mechanical"
     CATEGORY_ELECTRONIC = "electronic"
@@ -46,57 +46,54 @@ class Product(models.Model):
     CATEGORY_TOOLS = "tools"
 
     CATEGORY_CHOICES = [
-        (CATEGORY_MECHANICAL, "قطعات مکانیکی و سایشی"),
-        (CATEGORY_ELECTRONIC, "قطعات الکترونیکی و بردها"),
-        (CATEGORY_WEFT, "سیستم وفت، نوزل و پمپ"),
-        (CATEGORY_DRIVE, "تسمه، موتور و گیربکس"),
-        (CATEGORY_WEAVING, "قطعات بافندگی و مصرفی"),
-        (CATEGORY_TOOLS, "ابزار و لوازم فنی"),
+        (CATEGORY_MECHANICAL, "Mechanical & wear parts"),
+        (CATEGORY_ELECTRONIC, "Electronics & boards"),
+        (CATEGORY_WEFT, "Weft, nozzles & pumps"),
+        (CATEGORY_DRIVE, "Belts, motors & gearboxes"),
+        (CATEGORY_WEAVING, "Weaving & consumables"),
+        (CATEGORY_TOOLS, "Tools & technical supplies"),
     ]
 
-    name = models.CharField("نام محصول", max_length=160)
-    brand = models.CharField("برند", max_length=80, blank=True)
+    name = models.CharField("Name", max_length=160)
+    brand = models.CharField("Brand", max_length=80, blank=True)
     machine_models = models.CharField(
-        "مدل ماشین‌های سازگار",
+        "Compatible machine models",
         max_length=200,
         blank=True,
-        help_text="مثلاً: GTX / GAMMA / OMNIplus",
+        help_text="e.g. GTX / GAMMA / OMNIplus",
     )
     category = models.CharField(
-        "دسته‌بندی", max_length=20, choices=CATEGORY_CHOICES, default=CATEGORY_MECHANICAL
+        "Category", max_length=20, choices=CATEGORY_CHOICES, default=CATEGORY_MECHANICAL
     )
-    summary = models.CharField("توضیح کوتاه", max_length=240)
-    description = models.TextField("توضیحات کامل", blank=True)
+    summary = models.CharField("Summary", max_length=240)
+    description = models.TextField("Description", blank=True)
 
     image = models.ImageField(
-        "تصویر محصول",
+        "Product image",
         upload_to="products/%Y/%m/",
         blank=True,
-        help_text="ترجیحاً WebP یا JPEG، حداکثر ۱۲۰۰×۹۰۰ پیکسل و کمتر از ۴۰۰ کیلوبایت.",
+        help_text="Prefer WebP or JPEG, max 1200×900 px and under 400 KB.",
     )
-    # نسخهٔ بهینهٔ ۹۶۰ پیکسلی که خودکار از تصویر اصلی ساخته می‌شود.
     image_thumb = models.ImageField(
-        "بندانگشتی", upload_to="products/thumbs/%Y/%m/", blank=True, editable=False
+        "Thumbnail", upload_to="products/thumbs/%Y/%m/", blank=True, editable=False
     )
     image_alt = models.CharField(
-        "متن جایگزین تصویر",
+        "Image alt text",
         max_length=180,
         blank=True,
-        help_text="در صورت خالی بودن، نام محصول استفاده می‌شود.",
+        help_text="Defaults to the product name.",
     )
 
-    is_featured = models.BooleanField("محصول منتخب", default=False)
-    is_active = models.BooleanField("نمایش در سایت", default=True)
-    sort_order = models.PositiveSmallIntegerField("ترتیب نمایش", default=0)
-    created_at = models.DateTimeField("تاریخ ایجاد", auto_now_add=True)
-    updated_at = models.DateTimeField("آخرین ویرایش", auto_now=True)
+    is_featured = models.BooleanField("Featured", default=False)
+    is_active = models.BooleanField("Visible on site", default=True)
+    sort_order = models.PositiveSmallIntegerField("Sort order", default=0)
+    created_at = models.DateTimeField("Created", auto_now_add=True)
+    updated_at = models.DateTimeField("Updated", auto_now=True)
 
     class Meta:
-        verbose_name = "محصول"
-        verbose_name_plural = "محصولات"
+        verbose_name = "Product"
+        verbose_name_plural = "Products"
         ordering = ["sort_order", "name"]
-        # برای کاتالوگ بزرگ (۸۰۰ تا ۱۲۰۰ قطعه) فیلتر و مرتب‌سازی صفحهٔ محصولات
-        # باید از ایندکس استفاده کند تا با رشد کاتالوگ کند نشود.
         indexes = [
             models.Index(
                 fields=["is_active", "is_featured", "sort_order"],
@@ -108,17 +105,21 @@ class Product(models.Model):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        # برای رکورد تازه، تصویرِ پاس‌داده‌شده «جدید» است و باید بندانگشتی بسازد.
         if self._state.adding:
             self._original_image = ""
             self._original_thumb = ""
         else:
-            self._original_image = self.image.name if self.image else ""
-            self._original_thumb = self.image_thumb.name if self.image_thumb else ""
+            # Read file names from field metadata without loading deferred fields
+            self._original_image = self.__dict__.get("image") or ""
+            self._original_thumb = self.__dict__.get("image_thumb") or ""
+            if not self._original_image and self.image:
+                self._original_image = self.image.name
+            if not self._original_thumb and self.image_thumb:
+                self._original_thumb = self.image_thumb.name
 
     @property
     def display_image(self):
-        """بندانگشتی در اولویت است؛ اگر نبود تصویر اصلی نمایش داده می‌شود."""
+        """Prefer the thumbnail; fall back to the original image."""
         return self.image_thumb or self.image
 
     def get_absolute_url(self) -> str:
@@ -127,14 +128,17 @@ class Product(models.Model):
     def save(self, *args, **kwargs):
         image_field = self.image
         image_name = image_field.name if image_field else ""
-        # فایل تازه‌آپلودشده _committed=False است؛ حتی اگر نامش با قبلی یکی باشد
-        # باید دوباره بندانگشتی ساخته شود.
         image_changed = bool(image_field) and not getattr(
             image_field, "_committed", True
         )
         if not image_changed:
             image_changed = image_name != self._original_image
 
+        update_fields = kwargs.get("update_fields")
+        if image_changed and update_fields is not None:
+            kwargs["update_fields"] = set(update_fields) | {"image", "image_thumb"}
+
+        thumb_failed = False
         if image_changed:
             if self.image:
                 content = make_thumbnail(self.image)
@@ -142,53 +146,63 @@ class Product(models.Model):
                     self.image_thumb.save(
                         f"{Path(image_name).stem}-thumb.webp", content, save=False
                     )
-                    if kwargs.get("update_fields") is not None:
-                        kwargs["update_fields"] = set(kwargs["update_fields"]) | {
-                            "image_thumb"
-                        }
+                else:
+                    # A new image was set but no thumbnail was built; clear the old one
+                    thumb_failed = True
+                    self.image_thumb = ""
             else:
                 self.image_thumb = ""
-                if kwargs.get("update_fields") is not None:
-                    kwargs["update_fields"] = set(kwargs["update_fields"]) | {
-                        "image_thumb"
-                    }
 
         super().save(*args, **kwargs)
 
         old_image, old_thumb = self._original_image, self._original_thumb
-        self._original_image = self.image.name if self.image else ""
-        self._original_thumb = self.image_thumb.name if self.image_thumb else ""
+        new_image = self.image.name if self.image else ""
+        new_thumb = self.image_thumb.name if self.image_thumb else ""
 
-        if image_changed:
-            self._delete_file(old_image, keep=self._original_image)
-            self._delete_file(old_thumb, keep=self._original_thumb)
+        # Delete files only after the transaction commits; otherwise a database
+        # rollback would leave paths pointing at nothing.
+        to_delete = []
+        if image_changed or thumb_failed:
+            if old_image and old_image != new_image:
+                to_delete.append(old_image)
+            if old_thumb and old_thumb != new_thumb:
+                to_delete.append(old_thumb)
+        self._delete_files_later(to_delete)
 
-    def _delete_file(self, name: str, keep: str = "") -> None:
-        """حذف فایل قدیمی پس از جایگزینی تصویر (بدون شکستن ذخیره)."""
-        if not name or name == keep:
+        self._original_image = new_image
+        self._original_thumb = new_thumb
+
+    def _delete_files_later(self, names):
+        if not names:
             return
-        try:
-            self.image.storage.delete(name)
-        except OSError:
-            pass
+        storage = self.image.storage
+
+        def delete_files():
+            for name in names:
+                try:
+                    storage.delete(name)
+                except OSError:
+                    pass
+
+        transaction.on_commit(delete_files)
 
     def __str__(self) -> str:
         return self.name
 
 
 class ProductSpec(models.Model):
-    """یک ردیف مشخصهٔ فنی برای محصول (مثلاً «شماره فنی: PIC-1042-A»)."""
+    """A single technical specification row for a product."""
 
     product = models.ForeignKey(
-        Product, on_delete=models.CASCADE, related_name="specs", verbose_name="محصول"
+        Product, on_delete=models.CASCADE, related_name="specs", verbose_name="Product"
     )
-    label = models.CharField("عنوان مشخصه", max_length=60)
-    value = models.CharField("مقدار", max_length=120)
-    sort_order = models.PositiveSmallIntegerField("ترتیب", default=0)
+    label = models.CharField("Label", max_length=60)
+    value = models.CharField("Value", max_length=120)
+    sort_order = models.PositiveSmallIntegerField("Sort order", default=0)
 
     class Meta:
-        verbose_name = "مشخصهٔ فنی"
-        verbose_name_plural = "مشخصات فنی"
+        verbose_name = "Specification"
+        verbose_name_plural = "Specifications"
         ordering = ["sort_order", "id"]
 
     def __str__(self) -> str:
@@ -196,15 +210,15 @@ class ProductSpec(models.Model):
 
 
 class Customer(models.Model):
-    """عضو باشگاه مشتریان؛ تخفیف هنگام خرید حضوری/تلفنی اعمال می‌شود."""
+    """A club member; the discount is applied to in-store/phone purchases."""
 
     TIER_BRONZE = "bronze"
     TIER_SILVER = "silver"
     TIER_GOLD = "gold"
     TIER_CHOICES = [
-        (TIER_BRONZE, "برنزی"),
-        (TIER_SILVER, "نقره‌ای"),
-        (TIER_GOLD, "طلایی"),
+        (TIER_BRONZE, "Bronze"),
+        (TIER_SILVER, "Silver"),
+        (TIER_GOLD, "Gold"),
     ]
     TIER_DISCOUNTS = {TIER_BRONZE: 5, TIER_SILVER: 8, TIER_GOLD: 12}
 
@@ -212,49 +226,49 @@ class Customer(models.Model):
     STATUS_ACTIVE = "active"
     STATUS_BLOCKED = "blocked"
     STATUS_CHOICES = [
-        (STATUS_PENDING, "در انتظار تأیید"),
-        (STATUS_ACTIVE, "فعال"),
-        (STATUS_BLOCKED, "مسدود"),
+        (STATUS_PENDING, "Pending"),
+        (STATUS_ACTIVE, "Active"),
+        (STATUS_BLOCKED, "Blocked"),
     ]
 
     CODE_ALPHABET = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"
 
     code = models.CharField(
-        "کد عضویت", max_length=12, unique=True, blank=True, editable=False
+        "Membership code", max_length=12, unique=True, blank=True, editable=False
     )
-    first_name = models.CharField("نام", max_length=60)
-    last_name = models.CharField("نام خانوادگی", max_length=60)
-    company = models.CharField("شرکت / کارگاه", max_length=160, blank=True)
+    first_name = models.CharField("First name", max_length=60)
+    last_name = models.CharField("Last name", max_length=60)
+    company = models.CharField("Company / workshop", max_length=160, blank=True)
     phone = models.CharField(
-        "شماره تماس",
+        "Phone",
         max_length=20,
         unique=True,
         error_messages={
-            "unique": "این شماره قبلاً در باشگاه مشتریان ثبت شده است.",
+            "unique": "This number is already registered in the customer club.",
         },
     )
-    email = models.EmailField("آدرس ایمیل", max_length=254, default="")
+    email = models.EmailField("Email", max_length=254, default="")
 
     tier = models.CharField(
-        "سطح عضویت", max_length=10, choices=TIER_CHOICES, default=TIER_BRONZE
+        "Tier", max_length=10, choices=TIER_CHOICES, default=TIER_BRONZE
     )
     discount_percent = models.PositiveSmallIntegerField(
-        "درصد تخفیف",
+        "Discount %",
         default=5,
         validators=[MaxValueValidator(100)],
-        help_text="هنگام خرید، همین درصد روی پیش‌فاکتور اعمال می‌شود.",
+        help_text="Applied to the proforma invoice at purchase time.",
     )
     status = models.CharField(
-        "وضعیت", max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING
+        "Status", max_length=10, choices=STATUS_CHOICES, default=STATUS_PENDING
     )
-    notes = models.TextField("یادداشت", blank=True)
+    notes = models.TextField("Notes", blank=True)
 
-    created_at = models.DateTimeField("تاریخ ثبت", auto_now_add=True)
-    updated_at = models.DateTimeField("آخرین ویرایش", auto_now=True)
+    created_at = models.DateTimeField("Created", auto_now_add=True)
+    updated_at = models.DateTimeField("Updated", auto_now=True)
 
     class Meta:
-        verbose_name = "عضو باشگاه مشتریان"
-        verbose_name_plural = "باشگاه مشتریان"
+        verbose_name = "Club member"
+        verbose_name_plural = "Club members"
         ordering = ["-created_at"]
 
     @property
@@ -263,13 +277,24 @@ class Customer(models.Model):
 
     def save(self, *args, **kwargs):
         if self.phone:
-            self.phone = normalize_digits(self.phone).strip()
+            # Strip separators and normalise localised digits before uniqueness check
+            self.phone = phone_digits(self.phone)
         if not self.code:
             self.code = self._generate_code()
-        super().save(*args, **kwargs)
+
+        for _ in range(10):
+            try:
+                with transaction.atomic():
+                    return super().save(*args, **kwargs)
+            except IntegrityError:
+                # Random code collision: generate a new code and retry
+                if Customer.objects.filter(code=self.code).exclude(pk=self.pk).exists():
+                    self.code = self._generate_code()
+                    continue
+                raise
 
     def _generate_code(self) -> str:
-        """کد یکتا و خوانا برای اعلام تلفنی هنگام خرید."""
+        """Generate a unique, readable code for quoting by phone at purchase."""
         for _ in range(10):
             candidate = "PT-" + "".join(
                 secrets.choice(self.CODE_ALPHABET) for _ in range(6)
@@ -284,10 +309,17 @@ class Customer(models.Model):
 
 @receiver(post_delete, sender=Product)
 def _delete_product_files(sender, instance, **kwargs):
-    """پاک کردن تصویر اصلی و بندانگشتی هنگام حذف محصول."""
-    for field in (instance.image, instance.image_thumb):
-        if field:
+    """Delete the original and thumbnail files after a product is deleted."""
+    names = [field.name for field in (instance.image, instance.image_thumb) if field]
+    if not names:
+        return
+    storage = instance.image.storage
+
+    def delete_files():
+        for name in names:
             try:
-                field.delete(save=False)
+                storage.delete(name)
             except OSError:
                 pass
+
+    transaction.on_commit(delete_files)

@@ -1,4 +1,4 @@
-<article class="product-card reveal">
+{% load i18n_extra %}<article class="product-card reveal">
   <div class="product-media">
     {% if detail_url %}
       <a class="product-media-link" href="{{ detail_url }}" tabindex="-1" aria-hidden="true">
@@ -20,7 +20,7 @@
         {% endif %}
       {% endwith %}
     {% if detail_url %}</a>{% endif %}
-    <span class="product-cat">{{ product.get_category_display }}</span>
+    <span class="product-cat">{{ product.category|cat_label }}</span>
   </div>
 
   <div class="product-body">
@@ -51,13 +51,13 @@
         <span class="product-models" dir="ltr">{{ product.machine_models }}</span>
       {% endif %}
       {% if detail_url %}
-        <a class="btn btn-sm btn-outline" href="{{ detail_url }}">جزئیات قطعه</a>
+        <a class="btn btn-sm btn-outline" href="{{ detail_url }}">{{ T.card_details }}</a>
       {% else %}
         <a
           class="btn btn-sm btn-outline"
           href="#contact"
           data-inquire="{{ product.name }}"
-        >استعلام قیمت</a>
+        >{{ T.inquire_part }}</a>
       {% endif %}
     </div>
   </div>

@@ -1,11 +1,11 @@
-/* پارس تکستایل — انتخاب تم (تاریک / روشن / خودکار)
-   این فایل عمداً در <head> و به‌صورت همگام بارگذاری می‌شود تا پیش از
-   نخستین رنگ‌آمیزی صفحه، تم ذخیره‌شده روی <html> اعمال شود و پرش رنگ (FOUC) رخ ندهد.
-   هیچ کد inline ندارد تا با CSP سخت‌گیرانهٔ پروژه سازگار بماند. */
+/* ParsStore - theme switcher (dark / light / auto)
+This file is intentionally loaded synchronously in <head> so the saved theme is
+applied to <html> before the first paint and no colour flash (FOUC) occurs.
+It contains no inline code, keeping the strict Content-Security-Policy intact. */
 (function () {
   "use strict";
 
-  var STORAGE_KEY = "parstextile.theme";
+  var STORAGE_KEY = "parsstore.theme";
   var MODES = ["dark", "light", "auto"];
   var root = document.documentElement;
 
@@ -13,12 +13,18 @@
     ? window.matchMedia("(prefers-color-scheme: light)")
     : null;
 
+/* Add js-ready before the first paint so .reveal elements start hidden and
+   appear after the page loads (prevents FOUC). */
+  if (!systemLight || !window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    root.classList.add("js-ready");
+  }
+
   function readMode() {
     try {
       var stored = window.localStorage.getItem(STORAGE_KEY);
       if (stored && MODES.indexOf(stored) !== -1) return stored;
     } catch (error) {
-      /* دسترسی به localStorage ممکن است در حالت خصوصی مسدود باشد */
+/* localStorage access may be blocked in private mode */
     }
     return "auto";
   }
@@ -40,10 +46,10 @@
 
   var fadeTimer = null;
 
-  /* گذار کوتاه رنگ‌ها فقط هنگام انتخاب دستی کاربر */
+/* Short colour transition only for manual theme choices */
   function fadeTheme() {
     root.classList.add("theme-fade");
-    /* خواندن یک ویژگی، مرورگر را به بازچینش وامی‌دارد تا گذار از رنگ فعلی شروع شود */
+/* Reading a property forces a reflow so the transition starts from the current colour */
     void root.offsetWidth;
     if (fadeTimer) window.clearTimeout(fadeTimer);
     fadeTimer = window.setTimeout(function () {
@@ -68,15 +74,15 @@
       try {
         window.localStorage.setItem(STORAGE_KEY, mode);
       } catch (error) {
-        /* ذخیره‌نشدن تم نباید باعث خطا شود */
+/* Failing to save the theme must not cause an error */
       }
     }
   }
 
-  /* اعمال فوری پیش از رندر شدن body */
+/* Apply immediately, before the body is rendered */
   applyMode(readMode(), false);
 
-  /* یک کلیک مشترک برای همهٔ کلیدهای تم (دسکتاپ و منوی موبایل) */
+/* One shared click handler for all theme buttons (desktop and mobile menu) */
   document.addEventListener("click", function (event) {
     var target = event.target;
     if (!target || !target.closest) return;

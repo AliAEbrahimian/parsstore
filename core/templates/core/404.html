@@ -1,15 +1,16 @@
 {% extends "core/base.html" %}
 
-{% block title %}صفحه پیدا نشد | {{ SITE.name }}{% endblock %}
+{% block title %}{{ T.err404_h1 }} | {{ SITE.name }}{% endblock %}
+{% block og_title %}{{ T.err404_h1 }} | {{ SITE.name }}{% endblock %}
 
 {% block content %}
 <section class="section error-page">
   <div class="container error-inner">
-    <p class="eyebrow">خطای ۴۰۴</p>
-    <h1>این صفحه پیدا نشد</h1>
-    <p>ممکن است نشانی را اشتباه وارد کرده باشید یا صفحه جابه‌جا شده باشد.</p>
-    <a class="btn btn-primary" href="{% url 'core:home' %}">
-      بازگشت به صفحه اصلی
+    <p class="eyebrow">{{ T.err404_eyebrow }}</p>
+    <h1>{{ T.err404_h1 }}</h1>
+    <p>{{ T.err404_text }}</p>
+    <a class="btn btn-primary" href="{% url 'core:home' %}?lang={{ LANG }}#home">
+      {{ T.back_home }}
       <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
     </a>
   </div>

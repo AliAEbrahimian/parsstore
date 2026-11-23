@@ -1,55 +1,55 @@
-name: گزارش باگ
-description: گزارش خطا یا رفتار نادرست در سایت
+name: Bug report
+description: Report an error or unexpected behaviour on the site
 title: "[Bug]: "
 labels: ["bug"]
 body:
   - type: markdown
     attributes:
       value: |
-        از این‌که برای بهتر شدن پروژه وقت می‌گذارید سپاسگزاریم.
-        لطفاً پیش از ثبت، Issues موجود را جست‌وجو کنید.
+        Thanks for taking the time to improve this project.
+        Please search the existing issues before opening a new one.
 
   - type: textarea
     id: description
     attributes:
-      label: توضیح مشکل
-      description: چه اتفاقی افتاد و انتظار داشتید چه اتفاقی بیفتد؟
-      placeholder: هنگام ارسال فرم استعلام، صفحه به‌جای پیام موفقیت خطا نشان می‌دهد.
+      label: Problem description
+      description: What happened, and what did you expect to happen?
+      placeholder: Submitting the inquiry form shows an error instead of a success message.
     validations:
       required: true
 
   - type: textarea
     id: steps
     attributes:
-      label: مراحل بازتولید
+      label: Steps to reproduce
       placeholder: |
-        ۱. صفحه اصلی را باز کنید
-        ۲. فرم را پر کنید
-        ۳. روی «ارسال استعلام» بزنید
+        1. Open the home page
+        2. Fill in the form
+        3. Click "Send inquiry"
     validations:
       required: true
 
   - type: input
     id: version
     attributes:
-      label: نسخهٔ پایتون و جنگو
-      placeholder: Python 3.13.5 — Django 5.2.4
+      label: Python and Django versions
+      placeholder: Python 3.13.5 - Django 5.2.4
     validations:
       required: true
 
   - type: input
     id: browser
     attributes:
-      label: مرورگر / سیستم‌عامل
-      placeholder: Chrome 140 — Windows 11
+      label: Browser / operating system
+      placeholder: Chrome 140 - Windows 11
     validations:
       required: true
 
   - type: textarea
     id: logs
     attributes:
-      label: متن خطا یا لاگ
-      description: خروجی کنسول مرورگر یا ترمینال را اینجا بگذارید (اطلاعات حساس را حذف کنید).
+      label: Error or log output
+      description: Paste browser console or terminal output here (remove sensitive data).
       render: shell
     validations:
       required: false
@@ -57,9 +57,9 @@ body:
   - type: checkboxes
     id: checks
     attributes:
-      label: بررسی‌های نهایی
+      label: Final checks
       options:
-        - label: Issues موجود را جست‌وجو کرده‌ام.
+        - label: I have searched the existing issues.
           required: true
-        - label: این گزارش شامل کلید یا اطلاعات حساس نیست.
+        - label: This report contains no keys or other sensitive information.
           required: true

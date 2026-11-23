@@ -3,12 +3,14 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
-admin.site.site_header = "مدیریت پارس تکستایل"
-admin.site.site_title = "پارس تکستایل"
-admin.site.index_title = "پنل مدیریت سایت"
+from core.i18n import t
+
+admin.site.site_header = t("admin_site_header")
+admin.site.site_title = t("admin_site_title")
+admin.site.index_title = t("admin_index_title")
 
 urlpatterns = [
-    # مسیر پنل مدیریت از متغیر DJANGO_ADMIN_PATH خوانده می‌شود
+    # The admin path is read from the DJANGO_ADMIN_PATH setting
     path(settings.ADMIN_PATH, admin.site.urls),
     path("", include("core.urls")),
 ]

@@ -1,251 +1,252 @@
 """
-تمام متن‌ها و داده‌های نمایشی سایت در همین فایل نگهداری می‌شود.
-برای تغییر نام فروشگاه، شماره تماس، برندها، دسته‌بندی‌ها و ... فقط همین‌جا را ویرایش کنید.
+All display copy and demo data for the site lives in this file.
+To change the store name, phone numbers, brands, categories and so on, edit
+only this file. The German translations are kept in ``content_i18n.py``.
 """
 
 SITE = {
-    "name": "پارس تکستایل",
-    "name_en": "PARS TEXTILE",
-    "slogan": "قطعات یدکی ماشین‌های بافندگی",
-    "since": "۱۳۸۵",
+    "name": "ParsStore",
+    "name_en": "PARSSTORE",
+    "slogan": "Weaving machine spare parts",
+    "since": "2006",
     "description": (
-        "تأمین‌کننده تخصصی قطعات یدکی ماشین‌های بافندگی پیکانول، ایتما، سومت، "
-        "واماتکس، دورنیه و سایر برندهای مطرح صنعت نساجی."
+        "Specialised supplier of spare parts for Picanol, Itema, Somet, "
+        "Vamatex, Dornier and other leading weaving machine brands."
     ),
-    "phone": "۰۲۱ - ۵۵۰۰ ۰۰۰۰",
+    "phone": "+98 21 5500 0000",
     "phone_link": "+982155000000",
-    "mobile": "۰۹۱۲ ۰۰۰ ۰۰۰۰",
+    "mobile": "+98 912 000 0000",
     "mobile_link": "+989120000000",
     "whatsapp": "https://wa.me/989120000000",
-    "email": "info@parstextile.ir",
-    "address": "تهران، خیابان جمهوری، نرسیده به میدان حسن‌آباد، پاساژ نساج، طبقه دوم، واحد ۲۴",
-    "address_short": "تهران، خیابان جمهوری",
-    "hours": "شنبه تا چهارشنبه ۹:۰۰ تا ۱۷:۳۰ — پنجشنبه ۹:۰۰ تا ۱۳:۰۰",
+    "email": "info@parsstore.ir",
+    "address": "Tehran, Jomhouri Street, before Hassanabad Square, Textile Passage, 2nd floor, unit 24",
+    "address_short": "Tehran, Jomhouri Street",
+    "hours": "Saturday–Wednesday 09:00–17:30 — Thursday 09:00–13:00",
     "instagram": "https://instagram.com/",
     "map_url": "https://maps.google.com/?q=Tehran+Jomhouri+Street",
 }
 
-# ---------------------------------------------------------------- برندها
+# ---------------------------------------------------------------- brands
 BRANDS = [
     {
-        "name": "پیکانول",
+        "name": "Picanol",
         "latin": "PICANOL",
-        "country": "بلژیک",
+        "country": "Belgium",
         "models": ["GTX", "GAMMA", "OMNIplus", "OPTIMAX", "PAT"],
-        "note": "ماشین‌های بافندگی تیغه‌ای (Rapier) و ایرجت",
+        "note": "Rapier and air-jet weaving machines",
     },
     {
-        "name": "ایتما",
+        "name": "Itema",
         "latin": "ITEMA",
-        "country": "ایتالیا",
+        "country": "Italy",
         "models": ["ALPHA", "MYTHOS", "SOMET", "VAMATEX"],
-        "note": "پوشش کامل خانواده سومت و واماتکس",
+        "note": "Full coverage of the Somet and Vamatex families",
     },
     {
-        "name": "سومت",
+        "name": "Somet",
         "latin": "SOMET",
-        "country": "ایتالیا",
+        "country": "Italy",
         "models": ["SM92", "SM93", "THEMA", "SUPEREXCEL"],
-        "note": "قطعات مکانیکی و بردهای کنترل",
+        "note": "Mechanical parts and control boards",
     },
     {
-        "name": "واماتکس",
+        "name": "Vamatex",
         "latin": "VAMATEX",
-        "country": "ایتالیا",
+        "country": "Italy",
         "models": ["P1001", "P401S", "LEONARDO", "SILVER"],
-        "note": "تأمین قطعات سایشی و مصرفی",
+        "note": "Wear parts and consumables",
     },
     {
-        "name": "دورنیه",
+        "name": "Dornier",
         "latin": "DORNIER",
-        "country": "آلمان",
+        "country": "Germany",
         "models": ["HTV", "ATV", "PS", "AWS"],
-        "note": "قطعات انتقال قدرت و سیستم وفت",
+        "note": "Power transmission and weft system parts",
     },
     {
-        "name": "سولزر",
+        "name": "Sulzer",
         "latin": "SULZER",
-        "country": "سوئیس",
+        "country": "Switzerland",
         "models": ["G6100", "G6200", "G6300"],
-        "note": "قطعات پروژکتایل و تسمه",
+        "note": "Projectile and belt parts",
     },
     {
-        "name": "تویوتا",
+        "name": "Toyota",
         "latin": "TOYOTA",
-        "country": "ژاپن",
+        "country": "Japan",
         "models": ["JAT", "LWT", "LX"],
-        "note": "نوزل، پمپ و قطعات ایرجت",
+        "note": "Nozzles, pumps and air-jet parts",
     },
     {
-        "name": "تسوداکوما",
+        "name": "Tsudakoma",
         "latin": "TSUDAKOMA",
-        "country": "ژاپن",
+        "country": "Japan",
         "models": ["ZA", "ZW", "ZAX"],
-        "note": "قطعات الکترونیکی و مکانیکی",
+        "note": "Electronic and mechanical parts",
     },
 ]
 
-# ---------------------------------------------------------------- دسته‌بندی محصولات
+# ---------------------------------------------------------------- product categories
 CATEGORIES = [
     {
-        "title": "قطعات مکانیکی و سایشی",
+        "title": "Mechanical & wear parts",
         "icon": "gear",
-        "desc": "چرخ‌دنده، بوش، شفت، بلبرینگ، اهرم و همه قطعات سایشی درگیر با حرکت ماشین.",
-        "tags": ["بوش", "شفت", "چرخ‌دنده"],
+        "desc": "Gears, bushes, shafts, bearings, levers and all moving wear parts.",
+        "tags": ["bush", "shaft", "gear"],
     },
     {
-        "title": "قطعات الکترونیکی و بردها",
+        "title": "Electronics & boards",
         "icon": "chip",
-        "desc": "بردهای کنترل، اینورتر، سنسور، انکودر و قطعات الکترونیکی اصلی برندها.",
-        "tags": ["برد کنترل", "سنسور", "اینورتر"],
+        "desc": "Control boards, inverters, sensors, encoders and genuine electronic components.",
+        "tags": ["board", "sensor", "inverter"],
     },
     {
-        "title": "سیستم وفت، نوزل و پمپ",
+        "title": "Weft, nozzles & pumps",
         "icon": "nozzle",
-        "desc": "نوزل تزریق، والو، پمپ آب و روغن، منیفولد و مجموعه کامل سیستم وفت.",
-        "tags": ["نوزل", "والو", "پمپ"],
+        "desc": "Injection nozzles, valves, water and oil pumps, manifolds and complete weft systems.",
+        "tags": ["nozzle", "valve", "pump"],
     },
     {
-        "title": "تسمه، موتور و گیربکس",
+        "title": "Belts, motors & gearboxes",
         "icon": "belt",
-        "desc": "تسمه‌های انتقال قدرت، موتورهای محرک، گیربکس و کوپلینگ‌های صنعتی.",
-        "tags": ["تسمه", "گیربکس", "موتور"],
+        "desc": "Drive belts, motors, gearboxes and industrial couplings.",
+        "tags": ["belt", "gearbox", "motor"],
     },
     {
-        "title": "قطعات بافندگی و مصرفی",
+        "title": "Weaving & consumables",
         "icon": "thread",
-        "desc": "شانه، ورد، میل‌ورد، دروپ وایر، پروژکتایل و اقلام مصرفی خط بافندگی.",
-        "tags": ["شانه", "ورد", "دروپ وایر"],
+        "desc": "Reeds, heddles, heald shafts, drop wires, projectiles and line consumables.",
+        "tags": ["reed", "heddle", "drop wire"],
     },
     {
-        "title": "ابزار و لوازم فنی",
+        "title": "Tools & technical supplies",
         "icon": "tool",
-        "desc": "ابزار تنظیم و سرویس ماشین بافندگی، لوازم استاندارد و قطعات جانبی.",
-        "tags": ["ابزار", "سرویس", "استاندارد"],
+        "desc": "Tools for adjustment and service, standard parts and accessories.",
+        "tags": ["tools", "service", "standard"],
     },
 ]
 
-# ---------------------------------------------------------------- مزیت‌ها
+# ---------------------------------------------------------------- benefits
 FEATURES = [
     {
         "icon": "shield",
-        "title": "اصالت قطعات",
-        "desc": "تأمین از منابع معتبر با امکان ارائه مدارک و مشخصات فنی قطعات.",
+        "title": "Genuine parts",
+        "desc": "Sourced from reliable channels with documents and technical data available.",
     },
     {
         "icon": "box",
-        "title": "تنوع موجودی",
-        "desc": "بیش از ۱۲٬۰۰۰ قلم قطعه آماده در انبار برای برندهای مطرح بافندگی.",
+        "title": "Wide stock",
+        "desc": "More than 12,000 parts ready in stock for leading weaving brands.",
     },
     {
         "icon": "truck",
-        "title": "ارسال سریع",
-        "desc": "ارسال به سراسر کشور و هماهنگی ارسال بین‌المللی برای مشتریان خارج از ایران.",
+        "title": "Fast delivery",
+        "desc": "Nationwide shipping and international shipping arranged for customers abroad.",
     },
     {
         "icon": "headset",
-        "title": "پشتیبانی فنی",
-        "desc": "کمک به شناسایی قطعه بر اساس مدل ماشین، شماره فنی یا تصویر قطعه.",
+        "title": "Technical support",
+        "desc": "Help identifying parts by machine model, part number or photo.",
     },
     {
         "icon": "tag",
-        "title": "قیمت شفاف",
-        "desc": "استعلام قیمت دقیق پیش از خرید، بدون هزینه پنهان و با فاکتور رسمی.",
+        "title": "Transparent pricing",
+        "desc": "Exact quotation before purchase, no hidden costs, official invoice.",
     },
     {
         "icon": "clock",
-        "title": "سابقه پایدار",
-        "desc": "سال‌ها همکاری با واحدهای نساجی و کارگاه‌های بافندگی در سراسر کشور.",
+        "title": "Long-standing record",
+        "desc": "Years of cooperation with textile mills and weaving workshops nationwide.",
     },
 ]
 
-# ---------------------------------------------------------------- آمار
+# ---------------------------------------------------------------- statistics
 STATS = [
-    {"value": "۱۹", "label": "سال تجربه در صنعت نساجی"},
-    {"value": "۱۲٬۰۰۰+", "label": "قلم قطعه در انبار"},
-    {"value": "۸", "label": "برند تحت پوشش"},
-    {"value": "۲۴", "label": "ساعت پاسخ‌دهی به استعلام"},
+    {"value": "20", "label": "years in the textile industry"},
+    {"value": "12,000+", "label": "parts in stock"},
+    {"value": "8", "label": "brands covered"},
+    {"value": "24", "label": "hours to answer an inquiry"},
 ]
 
-# ---------------------------------------------------------------- مراحل خرید
+# ---------------------------------------------------------------- ordering steps
 STEPS = [
     {
-        "title": "ارسال استعلام",
-        "desc": "مدل ماشین، شماره فنی قطعه یا تصویر آن را برای ما ارسال کنید.",
+        "title": "Send an inquiry",
+        "desc": "Send us the machine model, part number or a photo of the part.",
     },
     {
-        "title": "بررسی فنی",
-        "desc": "کارشناسان ما قطعه را شناسایی و موجودی و زمان تأمین را اعلام می‌کنند.",
+        "title": "Technical review",
+        "desc": "Our experts identify the part and confirm stock and lead time.",
     },
     {
-        "title": "تأیید قیمت",
-        "desc": "پیش‌فاکتور رسمی با قیمت نهایی و شرایط ارسال برای شما صادر می‌شود.",
+        "title": "Price confirmation",
+        "desc": "We issue an official proforma invoice with the final price and delivery terms.",
     },
     {
-        "title": "ارسال کالا",
-        "desc": "پس از تأیید، سفارش بسته‌بندی و در کوتاه‌ترین زمان ارسال می‌شود.",
+        "title": "Dispatch",
+        "desc": "Once confirmed, the order is packed and shipped as quickly as possible.",
     },
 ]
 
-# ---------------------------------------------------------------- باشگاه مشتریان
+# ---------------------------------------------------------------- customer club
 CLUB = {
-    "eyebrow": "باشگاه مشتریان",
-    "title": "هر خرید، تخفیف بیشتر",
+    "eyebrow": "Customer club",
+    "title": "Every purchase earns more discount",
     "lead": (
-        "ما فروشگاه اینترنتی نداریم؛ سفارش‌ها همچنان تلفنی یا حضوری ثبت می‌شوند. "
-        "باشگاه مشتریان برای این است که هنگام خرید، کد عضویت یا شماره موبایل خود را "
-        "اعلام کنید و تخفیف عضو را روی پیش‌فاکتور بگیرید."
+        "We do not run an online shop; orders are still placed by phone or in person. "
+        "As a member, quote your membership code or mobile number when buying to get "
+        "your discount on the proforma invoice."
     ),
     "perks": [
         {
             "icon": "tag",
-            "title": "تخفیف روی هر خرید",
-            "desc": "درصد تخفیف عضو، هنگام صدور پیش‌فاکتور به‌صورت خودکار لحاظ می‌شود.",
+            "title": "Discount on every purchase",
+            "desc": "Your member discount is applied automatically to the proforma invoice.",
         },
         {
             "icon": "shield",
-            "title": "قیمت ویژه اعضا",
-            "desc": "اعضای فعال در استعلام‌ها و خریدهای دوره‌ای قیمت ویژه دریافت می‌کنند.",
+            "title": "Member prices",
+            "desc": "Active members receive special prices on inquiries and repeat orders.",
         },
         {
             "icon": "headset",
-            "title": "پشتیبانی اولویت‌دار",
-            "desc": "درخواست اعضای باشگاه در صف بررسی فنی، اولویت بالاتری دارد.",
+            "title": "Priority support",
+            "desc": "Club requests are prioritised in the technical review queue.",
         },
         {
             "icon": "truck",
-            "title": "اطلاع از موجودی",
-            "desc": "برای اقلام پرمصرف، موجودی و شرایط ارسال زودتر به اعضا اطلاع داده می‌شود.",
+            "title": "Stock updates",
+            "desc": "Members are informed earlier about fast-moving items and delivery terms.",
         },
     ],
     "tiers": [
-        {"name": "برنزی", "discount": "۵٪", "desc": "از نخستین خرید"},
-        {"name": "نقره‌ای", "discount": "۸٪", "desc": "خرید سالانهٔ بالای ۵۰ میلیون تومان"},
-        {"name": "طلایی", "discount": "۱۲٪", "desc": "خرید سالانهٔ بالای ۲۰۰ میلیون تومان"},
+        {"name": "Bronze", "discount": "5%", "desc": "From your first purchase"},
+        {"name": "Silver", "discount": "8%", "desc": "Annual purchases over 500 million rials"},
+        {"name": "Gold", "discount": "12%", "desc": "Annual purchases over 2 billion rials"},
     ],
-    "note": "عضویت رایگان است. پس از تأیید، کد عضویت شما برای اعلام هنگام خرید صادر می‌شود.",
+    "note": "Membership is free. After approval, your membership code is issued for quoting at purchase.",
 }
 
-# ---------------------------------------------------------------- سؤالات متداول
+# ---------------------------------------------------------------- FAQ
 FAQ = [
     {
-        "q": "قطعه مورد نیازم را نمی‌شناسم، چه اطلاعاتی لازم است؟",
-        "a": "مدل دقیق ماشین بافندگی، سال ساخت و در صورت امکان تصویر یا شماره فنی قطعه کافی است. کارشناسان ما بر اساس همین اطلاعات قطعه را شناسایی می‌کنند.",
+        "q": "I don't know the part I need — what information do you need?",
+        "a": "The exact weaving machine model, year of manufacture and, if possible, a photo or the part number are enough. Our experts identify the part from this information.",
     },
     {
-        "q": "امکان ارسال به شهرستان یا خارج از کشور وجود دارد؟",
-        "a": "بله. ارسال به سراسر کشور با باربری و پست انجام می‌شود و برای مشتریان خارج از ایران هماهنگی حمل بین‌المللی صورت می‌گیرد.",
+        "q": "Can you ship to other cities or abroad?",
+        "a": "Yes. We ship nationwide by freight and post, and arrange international transport for customers outside Iran.",
     },
     {
-        "q": "قطعات ارسالی گارانتی دارند؟",
-        "a": "قطعات الکترونیکی و برخی اقلام مکانیکی دارای گارانتی سلامت و تعویض در صورت ایراد فنی هستند؛ شرایط دقیق در پیش‌فاکتور ذکر می‌شود.",
+        "q": "Do the parts come with a warranty?",
+        "a": "Electronic parts and some mechanical items come with a health/defect warranty; exact terms are stated in the proforma invoice.",
     },
     {
-        "q": "حداقل سفارش چقدر است؟",
-        "a": "حداقل سفارش نداریم؛ حتی یک قطعه هم ارسال می‌شود. برای سفارش‌های عمده تخفیف پله‌ای در نظر گرفته می‌شود.",
+        "q": "Is there a minimum order?",
+        "a": "There is no minimum order — even a single part can be shipped. Volume discounts are available for larger orders.",
     },
     {
-        "q": "باشگاه مشتریان چگونه کار می‌کند؟",
-        "a": "فرم عضویت همین صفحه را پر کنید. پس از تأیید، کد عضویت و درصد تخفیف شما مشخص می‌شود و هنگام خرید تلفنی یا حضوری، کد یا شماره موبایل خود را اعلام می‌کنید تا تخفیف روی پیش‌فاکتور اعمال شود. سایت فروشگاه اینترنتی ندارد و پرداخت آنلاین انجام نمی‌شود.",
+        "q": "How does the customer club work?",
+        "a": "Fill in the membership form on this page. After approval you receive your code and discount rate; quote the code or mobile number when ordering by phone or in person so the discount appears on the proforma invoice. There is no online shop and no online payment.",
     },
 ]

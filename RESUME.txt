@@ -1,0 +1,85 @@
+================================================================================
+                                  ALI
+                     Profile and curriculum vitae
+================================================================================
+
+Location:  Iran
+Goal:      Professional career in Germany
+Email:     2aaghaebrahimian@gmail.com
+LinkedIn:  https://www.linkedin.com/in/ali-aghaebrahimian/
+Telegram:  https://t.me/AliAEbrahimian
+GitHub:    https://github.com/AliAEbrahimian
+Instagram: https://www.instagram.com/amzegon?igsh=bHBlbnRvd2JlYmF0
+
+--------------------------------------------------------------------------------
+Profile
+--------------------------------------------------------------------------------
+
+I am a software developer based in Iran, originally from a Persian-speaking
+environment, with a German B2 certificate and a clear goal of working
+professionally in Germany. I enjoy building practical web applications with
+clean structure, strong security defaults and careful attention to the user
+experience. Outside of work I am interested in game development and video
+games.
+
+--------------------------------------------------------------------------------
+Languages
+--------------------------------------------------------------------------------
+
+Persian   Native
+German    B2 certificate (Goethe/Zertifikat B2 level)
+English   Working knowledge (technical documentation and code)
+
+--------------------------------------------------------------------------------
+Technical skills
+--------------------------------------------------------------------------------
+
+Backend    Python, Django, Django ORM, REST-oriented thinking
+Frontend   HTML5, CSS3, JavaScript (vanilla, no framework required)
+Data       SQLite, PostgreSQL concepts, Redis caching concepts
+Tooling    Git, GitHub Actions, virtual environments, pip
+DevOps     Environment-based configuration, collectstatic, Gunicorn/WSGI,
+           Nginx basics, HTTPS/HSTS and Django deployment checks
+Other      Pillow image processing, WebP optimisation, web security basics
+           (CSP, CSRF, rate limiting, trusted-proxy configuration)
+
+--------------------------------------------------------------------------------
+Selected project: ParsStore
+--------------------------------------------------------------------------------
+
+Repository: https://github.com/AliAEbrahimian/parsstore
+
+A bilingual (English/German) Django brochure site for a supplier of weaving
+machine spare parts. It includes a paginated and searchable product catalogue,
+part detail pages, quote-request and customer-club forms, automated WebP
+thumbnails, two-layer email notifications, strict Content-Security-Policy,
+atomic per-IP rate limiting and a hardened, configurable admin panel.
+
+My work on the project included:
+
+  * Designing the four-model data layer (Inquiry, Product, ProductSpec,
+    Customer) and the admin workflow.
+  * Building a searchable, filterable, paginated catalogue with database
+    indexes and safe GET-parameter validation.
+  * Implementing a bilingual string/content layer with language switching via
+    query parameter and cookie, and removing the earlier third language.
+  * Hardening the application: strict CSP, honeypot fields, atomic throttling,
+    opt-in proxy trust and production deployment checks.
+  * Writing the automated test suite and the CI workflow for Python 3.11-3.13.
+  * Renaming the project from parstextile to parsstore and preparing the GitHub
+    documentation (README files, DOCUMENTATION.txt).
+
+--------------------------------------------------------------------------------
+Interests
+--------------------------------------------------------------------------------
+
+Game development, video games, clean code, practical security and continuous
+learning. I am particularly interested in teams where I can contribute to real
+products while improving my German in an everyday professional environment.
+
+--------------------------------------------------------------------------------
+Contact
+--------------------------------------------------------------------------------
+
+Please use the email address above for professional contact, or connect via
+LinkedIn. Additional links are listed at the top of this file.

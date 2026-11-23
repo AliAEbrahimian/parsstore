@@ -12,7 +12,7 @@ db.sqlite3-journal
 staticfiles/
 media/
 
-# محیط و ابزارها
+# Environment and tooling
 .env
 .env.*
 !.env.example
@@ -21,9 +21,10 @@ media/
 Thumbs.db
 .DS_Store
 
-# آزمون و پوشش
+# Tests and coverage
 .coverage
 .coverage.*
 htmlcov/
 .pytest_cache/
+test-output.txt
 *.log

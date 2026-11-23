@@ -1,10 +1,8 @@
-/* پارس تکستایل — رفتارهای تعاملی سبک */
+/* ParsStore - lightweight interactive behaviour */
 (function () {
   "use strict";
 
-  document.documentElement.classList.add("js-ready");
-
-  /* ------------------------------------------------ منوی موبایل */
+/* ------------------------------------------------ mobile menu */
   var header = document.getElementById("site-header");
   var toggle = document.getElementById("nav-toggle");
   var nav = document.getElementById("main-nav");
@@ -25,7 +23,10 @@
     });
 
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape") closeNav();
+      if (event.key === "Escape" && nav.classList.contains("is-open")) {
+        closeNav();
+        toggle.focus();
+      }
     });
 
     window.addEventListener("resize", function () {
@@ -33,7 +34,7 @@
     });
   }
 
-  /* ------------------------------------------------ سایه‌ی هدر هنگام اسکرول */
+/* ------------------------------------------------ header shadow on scroll */
   if (header) {
     var onScroll = function () {
       header.classList.toggle("is-scrolled", window.scrollY > 10);
@@ -42,9 +43,11 @@
     window.addEventListener("scroll", onScroll, { passive: true });
   }
 
-  /* ------------------------------------------------ نمایش تدریجی بخش‌ها */
+/* ------------------------------------------------ reveal sections on scroll */
   var reveals = document.querySelectorAll(".reveal");
-  var reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+  var reduceMotion = window.matchMedia
+    ? window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    : false;
 
   if (!reduceMotion && "IntersectionObserver" in window) {
     var observer = new IntersectionObserver(
@@ -75,7 +78,7 @@
     });
   }
 
-  /* ------------------------------------------------ پیش‌پر کردن پیام استعلام */
+/* ------------------------------------------------ prefill inquiry message */
   document.addEventListener("click", function (event) {
     var trigger = event.target.closest ? event.target.closest("[data-inquire]") : null;
     if (!trigger) return;
@@ -83,23 +86,28 @@
     var field = document.getElementById("id_message");
     if (!field || field.value.trim()) return;
 
-    field.value = "استعلام قیمت برای: " + trigger.getAttribute("data-inquire");
+    var template = document.body.getAttribute("data-inquire-template") || "{name}";
+    field.value = template.replace("{name}", trigger.getAttribute("data-inquire") || "");
     field.dispatchEvent(new Event("input", { bubbles: true }));
   });
 
-  /* ------------------------------------------------ پیام‌های بالای صفحه */
+/* ------------------------------------------------ top-of-page messages */
   document.querySelectorAll("[data-flash]").forEach(function (flash) {
     var closeBtn = flash.querySelector(".flash-close");
-    var hide = function () {
+    var hidden = false;
+    var timer = window.setTimeout(hide, 7000);
+    function hide() {
+      if (hidden) return;
+      hidden = true;
+      window.clearTimeout(timer);
       flash.style.transition = "opacity .3s ease, transform .3s ease";
       flash.style.opacity = "0";
       flash.style.transform = "translateY(-6px)";
       window.setTimeout(function () {
         flash.remove();
       }, 320);
-    };
+    }
 
     if (closeBtn) closeBtn.addEventListener("click", hide);
-    window.setTimeout(hide, 7000);
   });
 })();

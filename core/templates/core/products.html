@@ -1,30 +1,32 @@
 {% extends "core/base.html" %}
+{% load i18n_extra %}
 
-{% block title %}همهٔ محصولات | {{ SITE.name }}{% endblock %}
-{% block description %}کاتالوگ کامل قطعات یدکی ماشین‌های بافندگی؛ جست‌وجو بر اساس نام قطعه، برند، مدل ماشین و دسته‌بندی، همراه با تصویر و مشخصات فنی.{% endblock %}
+{% block title %}{{ T.catalog_title }} | {{ SITE.name }}{% endblock %}
+{% block og_title %}{{ T.catalog_title }} | {{ SITE.name }}{% endblock %}
+{% block description %}{{ T.catalog_desc }}{% endblock %}
+{% block og_description %}{{ T.catalog_desc }}{% endblock %}
 
 {% block content %}
 <section class="section page-head">
   <div class="container">
-    <nav class="breadcrumbs" aria-label="مسیر صفحه">
-      <a href="{% url 'core:home' %}">خانه</a>
+    <nav class="breadcrumbs" aria-label="{{ T.breadcrumb }}">
+      <a href="{% url 'core:home' %}?lang={{ LANG }}#home">{{ T.home }}</a>
       <span aria-hidden="true">›</span>
-      <span aria-current="page">محصولات</span>
+      <span aria-current="page">{{ T.products }}</span>
     </nav>
-    <p class="eyebrow">کاتالوگ قطعات</p>
-    <h1>همهٔ قطعات یدکی</h1>
-    <p class="lead-sm">
-      قطعهٔ مورد نیاز خود را با نام، برند، مدل ماشین یا دسته‌بندی پیدا کنید. برای
-      دیدن مشخصات کامل روی هر قطعه بزنید؛ استعلام قیمت و موجودی در صفحهٔ همان قطعه است.
-    </p>
+    <p class="eyebrow">{{ T.catalog_eyebrow }}</p>
+    <h1>{{ T.catalog_h1 }}</h1>
+    <p class="lead-sm">{{ T.catalog_intro }}</p>
   </div>
 </section>
 
-<section class="section catalog" aria-label="کاتالوگ محصولات">
+<section class="section catalog" aria-label="{{ T.catalog_aria }}">
   <div class="container">
     <form class="catalog-filters" method="get" action="{% url 'core:product_list' %}" role="search">
+      <input type="hidden" name="lang" value="{{ LANG }}">
+
       <div class="filter-field filter-search">
-        <label for="filter-q">جست‌وجو</label>
+        <label for="filter-q">{{ T.search }}</label>
         <input
           id="filter-q"
           class="field-input"
@@ -32,24 +34,24 @@
           name="q"
           value="{{ q }}"
           maxlength="80"
-          placeholder="نام قطعه، شماره فنی، برند یا مدل ماشین"
+          placeholder="{{ T.search_placeholder }}"
         >
       </div>
 
       <div class="filter-field">
-        <label for="filter-category">دسته‌بندی</label>
+        <label for="filter-category">{{ T.cat_heading }}</label>
         <select id="filter-category" class="field-input" name="category">
-          <option value="">همهٔ دسته‌ها</option>
+          <option value="">{{ T.all_categories }}</option>
           {% for value, label in category_choices %}
-            <option value="{{ value }}"{% if value == category %} selected{% endif %}>{{ label }}</option>
+            <option value="{{ value }}"{% if value == category %} selected{% endif %}>{{ value|cat_label }}</option>
           {% endfor %}
         </select>
       </div>
 
       <div class="filter-field">
-        <label for="filter-brand">برند</label>
+        <label for="filter-brand">{{ T.brands }}</label>
         <select id="filter-brand" class="field-input" name="brand">
-          <option value="">همهٔ برندها</option>
+          <option value="">{{ T.all_brands }}</option>
           {% for item in brand_options %}
             <option value="{{ item }}"{% if item == brand %} selected{% endif %}>{{ item }}</option>
           {% endfor %}
@@ -57,20 +59,20 @@
       </div>
 
       <div class="filter-actions">
-        <button class="btn btn-primary" type="submit">جست‌وجو</button>
+        <button class="btn btn-primary" type="submit">{{ T.search }}</button>
         {% if has_filters %}
-          <a class="btn btn-ghost" href="{% url 'core:product_list' %}">پاک کردن</a>
+          <a class="btn btn-ghost" href="{% url 'core:product_list' %}?lang={{ LANG }}">{{ T.clear }}</a>
         {% endif %}
       </div>
     </form>
 
     <div class="catalog-meta">
-      <p><b>{{ result_count }}</b> قطعه پیدا شد.</p>
+      <p><b>{{ result_count }}</b> {{ T.found_parts }}</p>
       {% if has_filters %}
         <p class="catalog-hint">
-          {% if q %}جست‌وجو: «{{ q }}»{% endif %}
-          {% if category %} · فیلتر دسته‌بندی فعال{% endif %}
-          {% if brand %} · برند: <span dir="ltr">{{ brand }}</span>{% endif %}
+          {% if q %}{{ T.search_label }} «{{ q }}»{% endif %}
+          {% if category %} · {{ T.category_filter }}{% endif %}
+          {% if brand %} · {{ T.brand_filter }} <span dir="ltr">{{ brand }}</span>{% endif %}
         </p>
       {% endif %}
     </div>
@@ -83,11 +85,11 @@
       </div>
 
       {% if page_obj.paginator.num_pages > 1 %}
-        <nav class="pager" aria-label="صفحه‌بندی محصولات">
+        <nav class="pager" aria-label="{{ T.pager_aria }}">
           {% if page_obj.has_previous %}
-            <a class="page-link page-nav" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">قبلی</a>
+            <a class="page-link page-nav" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.previous_page_number }}" rel="prev">{{ T.prev }}</a>
           {% else %}
-            <span class="page-link page-nav is-disabled" aria-disabled="true">قبلی</span>
+            <span class="page-link page-nav is-disabled" aria-disabled="true">{{ T.prev }}</span>
           {% endif %}
 
           {% for item in page_items %}
@@ -101,30 +103,30 @@
           {% endfor %}
 
           {% if page_obj.has_next %}
-            <a class="page-link page-nav" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">بعدی</a>
+            <a class="page-link page-nav" href="?{% if querystring %}{{ querystring }}&amp;{% endif %}page={{ page_obj.next_page_number }}" rel="next">{{ T.next }}</a>
           {% else %}
-            <span class="page-link page-nav is-disabled" aria-disabled="true">بعدی</span>
+            <span class="page-link page-nav is-disabled" aria-disabled="true">{{ T.next }}</span>
           {% endif %}
         </nav>
-        <p class="pager-info">صفحهٔ {{ page_obj.number }} از {{ page_obj.paginator.num_pages }}</p>
+        <p class="pager-info">{% page_info page_obj.number page_obj.paginator.num_pages %}</p>
       {% endif %}
     {% else %}
       <div class="catalog-empty">
         <svg class="icon" aria-hidden="true"><use href="#i-gear"></use></svg>
-        <h2>قطعه‌ای با این مشخصات پیدا نشد</h2>
+        <h2>{{ T.empty_title }}</h2>
         {% if has_filters %}
-          <p>عبارت جست‌وجو یا فیلترها را تغییر دهید یا همهٔ فیلترها را پاک کنید.</p>
-          <a class="btn btn-outline" href="{% url 'core:product_list' %}">نمایش همهٔ قطعات</a>
+          <p>{{ T.empty_filter }}</p>
+          <a class="btn btn-outline" href="{% url 'core:product_list' %}?lang={{ LANG }}">{{ T.show_all_parts }}</a>
         {% else %}
-          <p>هنوز محصولی در کاتالوگ ثبت نشده است. برای استعلام قطعه با ما تماس بگیرید.</p>
-          <a class="btn btn-outline" href="{% url 'core:home' %}#contact">استعلام قطعه</a>
+          <p>{{ T.empty_all }}</p>
+          <a class="btn btn-outline" href="{{ home_contact_url }}">{{ T.inquire_part }}</a>
         {% endif %}
       </div>
     {% endif %}
 
     <p class="catalog-note">
-      قطعهٔ مورد نظر در فهرست نیست؟
-      <a href="{% url 'core:home' %}#contact">برای ما بفرستید</a> — بیش از ۱۲٬۰۰۰ قلم قطعه در انبار موجود است.
+      {{ T.products_note }}
+      <a href="{{ home_contact_url }}">{{ T.catalog_note_link }}</a> — {{ T.products_note_tail }}
     </p>
   </div>
 </section>

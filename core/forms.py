@@ -1,5 +1,6 @@
 from django import forms
 
+from .i18n import t
 from .models import Customer, Inquiry
 from .utils import phone_digits
 
@@ -7,7 +8,7 @@ INPUT_CLASS = "field-input"
 
 
 class HoneypotMixin(forms.Form):
-    """فیلد تلهٔ مشترک فرم‌ها؛ کاربر واقعی آن را نمی‌بیند."""
+    """Shared honeypot field; real users never see it."""
 
     website = forms.CharField(
         required=False,
@@ -23,9 +24,8 @@ class HoneypotMixin(forms.Form):
     )
 
     def clean_website(self):
-        """اگر این فیلد پنهان پر شده باشد، درخواست ربات است."""
         if self.cleaned_data.get("website"):
-            raise forms.ValidationError("درخواست نامعتبر است.")
+            raise forms.ValidationError(t("err_invalid_request"))
         return ""
 
 
@@ -37,7 +37,6 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
             "name": forms.TextInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "مثلاً: علی رضایی",
                     "autocomplete": "name",
                     "maxlength": 120,
                 }
@@ -45,7 +44,6 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
             "company": forms.TextInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "مثلاً: نساجی البرز",
                     "autocomplete": "organization",
                     "maxlength": 160,
                 }
@@ -53,7 +51,6 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
             "phone": forms.TextInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "۰۹۱۲ ۰۰۰ ۰۰۰۰",
                     "inputmode": "tel",
                     "autocomplete": "tel",
                     "dir": "ltr",
@@ -63,7 +60,6 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
             "email": forms.EmailInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "name@example.com",
                     "inputmode": "email",
                     "autocomplete": "email",
                     "dir": "ltr",
@@ -73,20 +69,38 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
             "machine": forms.TextInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "مثلاً: Picanol GTX",
                     "autocomplete": "off",
                     "maxlength": 120,
                 }
             ),
             "message": forms.Textarea(
-                attrs={
-                    "class": INPUT_CLASS,
-                    "rows": 4,
-                    "maxlength": 2000,
-                    "placeholder": "فهرست قطعات یا شماره فنی قطعه مورد نیاز را بنویسید…",
-                }
+                attrs={"class": INPUT_CLASS, "rows": 4, "maxlength": 2000}
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        labels = {
+            "name": "f_name",
+            "company": "f_company",
+            "phone": "f_phone",
+            "email": "f_email",
+            "machine": "f_machine",
+            "message": "f_message",
+        }
+        placeholders = {
+            "name": "ph_name",
+            "company": "ph_company",
+            "phone": "ph_phone",
+            "email": None,
+            "machine": "ph_machine",
+            "message": "ph_message",
+        }
+        for name, key in labels.items():
+            self.fields[name].label = t(key)
+            if placeholders[name]:
+                self.fields[name].widget.attrs["placeholder"] = t(placeholders[name])
+        self.fields["email"].widget.attrs["placeholder"] = "name@example.com"
 
     def clean_name(self):
         return " ".join(self.cleaned_data["name"].split())
@@ -95,10 +109,9 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
         return " ".join(self.cleaned_data.get("company", "").split())
 
     def clean_phone(self):
-        phone = self.cleaned_data["phone"].strip()
-        digits = phone_digits(phone)
-        if len(digits) < 8:
-            raise forms.ValidationError("شماره تماس معتبر وارد کنید.")
+        phone = phone_digits(self.cleaned_data["phone"])
+        if not 8 <= len(phone) <= 15:
+            raise forms.ValidationError(t("err_phone"))
         return phone
 
     def clean_email(self):
@@ -107,54 +120,31 @@ class InquiryForm(HoneypotMixin, forms.ModelForm):
     def clean_message(self):
         message = self.cleaned_data["message"].strip()
         if len(message) < 5:
-            raise forms.ValidationError("توضیحات را کامل‌تر بنویسید.")
+            raise forms.ValidationError(t("err_message_short"))
         if len(message) > 2000:
-            raise forms.ValidationError("توضیحات حداکثر ۲۰۰۰ نویسه می‌تواند باشد.")
+            raise forms.ValidationError(t("err_message_long"))
         return message
 
 
 class ClubSignupForm(HoneypotMixin, forms.ModelForm):
-    """درخواست عضویت در باشگاه مشتریان؛ پس از تأیید مدیر فعال می‌شود."""
+    """Customer club membership request; activated after admin approval."""
 
     class Meta:
         model = Customer
         fields = ["first_name", "last_name", "company", "phone", "email"]
-        labels = {
-            "first_name": "نام",
-            "last_name": "نام خانوادگی",
-            "company": "شرکت / کارگاه",
-            "phone": "شماره تماس",
-            "email": "آدرس ایمیل",
-        }
         widgets = {
             "first_name": forms.TextInput(
-                attrs={
-                    "class": INPUT_CLASS,
-                    "placeholder": "مثلاً: مریم",
-                    "autocomplete": "given-name",
-                    "maxlength": 60,
-                }
+                attrs={"class": INPUT_CLASS, "autocomplete": "given-name", "maxlength": 60}
             ),
             "last_name": forms.TextInput(
-                attrs={
-                    "class": INPUT_CLASS,
-                    "placeholder": "مثلاً: احمدی",
-                    "autocomplete": "family-name",
-                    "maxlength": 60,
-                }
+                attrs={"class": INPUT_CLASS, "autocomplete": "family-name", "maxlength": 60}
             ),
             "company": forms.TextInput(
-                attrs={
-                    "class": INPUT_CLASS,
-                    "placeholder": "مثلاً: نساجی البرز",
-                    "autocomplete": "organization",
-                    "maxlength": 160,
-                }
+                attrs={"class": INPUT_CLASS, "autocomplete": "organization", "maxlength": 160}
             ),
             "phone": forms.TextInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "۰۹۱۲ ۰۰۰ ۰۰۰۰",
                     "inputmode": "tel",
                     "autocomplete": "tel",
                     "dir": "ltr",
@@ -164,7 +154,6 @@ class ClubSignupForm(HoneypotMixin, forms.ModelForm):
             "email": forms.EmailInput(
                 attrs={
                     "class": INPUT_CLASS,
-                    "placeholder": "name@example.com",
                     "inputmode": "email",
                     "autocomplete": "email",
                     "dir": "ltr",
@@ -172,6 +161,30 @@ class ClubSignupForm(HoneypotMixin, forms.ModelForm):
                 }
             ),
         }
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        labels = {
+            "first_name": "f_first_name",
+            "last_name": "f_last_name",
+            "company": "f_company_short",
+            "phone": "f_phone",
+            "email": "f_email",
+        }
+        placeholders = {
+            "first_name": "ph_first",
+            "last_name": "ph_last",
+            "company": "ph_company",
+            "phone": "ph_phone",
+            "email": None,
+        }
+        for name, key in labels.items():
+            self.fields[name].label = t(key)
+            if placeholders[name]:
+                self.fields[name].widget.attrs["placeholder"] = t(placeholders[name])
+        self.fields["email"].widget.attrs["placeholder"] = "name@example.com"
+        # The duplicate-number message must follow the active language
+        self.fields["phone"].error_messages["unique"] = t("err_phone_duplicate")
 
     def clean_first_name(self):
         return " ".join(self.cleaned_data["first_name"].split())
@@ -185,7 +198,7 @@ class ClubSignupForm(HoneypotMixin, forms.ModelForm):
     def clean_phone(self):
         phone = phone_digits(self.cleaned_data["phone"])
         if not 8 <= len(phone) <= 15:
-            raise forms.ValidationError("شماره تماس معتبر وارد کنید.")
+            raise forms.ValidationError(t("err_phone"))
         return phone
 
     def clean_email(self):

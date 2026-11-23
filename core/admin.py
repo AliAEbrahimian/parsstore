@@ -1,8 +1,11 @@
 from pathlib import Path
 
 from django.contrib import admin, messages
+from django.db import transaction
+from django.utils import timezone
 from django.utils.html import format_html
 
+from .i18n import t
 from .images import make_thumbnail
 from .models import Customer, Inquiry, Product, ProductSpec
 
@@ -52,7 +55,7 @@ class ProductAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     fieldsets = (
         (
-            "اطلاعات محصول",
+            "Product information",
             {
                 "fields": (
                     "name",
@@ -65,53 +68,49 @@ class ProductAdmin(admin.ModelAdmin):
             },
         ),
         (
-            "تصویر",
+            "Image",
             {
                 "fields": ("image", "thumbnail_preview", "image_alt"),
                 "description": (
-                    "تصویر اصلی را یک‌بار آپلود کنید؛ نسخهٔ WebP بهینه خودکار ساخته "
-                    "می‌شود و در صفحهٔ اصلی همان نمایش داده می‌شود. نسبت پیشنهادی ۴:۳."
+                    "Upload the original image once; an optimised WebP version is "
+                    "created automatically. Recommended ratio: 4:3."
                 ),
             },
         ),
-        (
-            "نمایش در سایت",
-            {"fields": ("is_featured", "is_active", "sort_order")},
-        ),
-        (
-            "زمان‌ها",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
-        ),
+        ("Display", {"fields": ("is_featured", "is_active", "sort_order")}),
+        ("Dates", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
-    @admin.display(description="پیش‌نمایش تصویر")
+    @admin.display(description="Image preview")
     def thumbnail_preview(self, obj):
         image = obj.display_image
         if not image:
-            return "تصویری آپلود نشده است."
-        return format_html(
-            '<img src="{}" alt="" width="180" height="135">', image.url
-        )
+            return "No image uploaded."
+        return format_html('<img src="{}" alt="" width="180" height="135">', image.url)
 
-    @admin.action(description="بازسازی بندانگشتی WebP")
+    @admin.action(description="Rebuild WebP thumbnails")
     def rebuild_thumbnails(self, request, queryset):
         rebuilt = 0
-        for product in queryset:
+        for product in queryset.iterator():
             if not product.image:
                 continue
             content = make_thumbnail(product.image)
             if content is None:
                 continue
+            old_thumb = product.image_thumb.name
             product.image_thumb.save(
                 f"{Path(product.image.name).stem}-thumb.webp", content, save=False
             )
-            product.save(update_fields=["image_thumb"])
+            new_thumb = product.image_thumb.name
+            product.save(update_fields=["image_thumb", "updated_at"])
+            if old_thumb and old_thumb != new_thumb:
+                name = old_thumb
+                storage = product.image_thumb.storage
+                transaction.on_commit(
+                    lambda name=name, storage=storage: storage.delete(name)
+                )
             rebuilt += 1
-        self.message_user(
-            request,
-            f"بندانگشتی {rebuilt} محصول بازسازی شد.",
-            messages.SUCCESS,
-        )
+        self.message_user(request, t("admin_rebuilt").format(n=rebuilt), messages.SUCCESS)
 
 
 @admin.register(Customer)
@@ -136,35 +135,28 @@ class CustomerAdmin(admin.ModelAdmin):
     date_hierarchy = "created_at"
     fieldsets = (
         (
-            "هویت عضو",
+            "Member identity",
             {"fields": ("code", "first_name", "last_name", "phone", "email", "company")},
         ),
         (
-            "باشگاه",
+            "Club",
             {
                 "fields": ("tier", "discount_percent", "status", "notes"),
                 "description": (
-                    "درصد تخفیف همان مقداری است که هنگام خرید روی پیش‌فاکتور "
-                    "اعمال می‌شود؛ سطح عضویت فقط برای دسته‌بندی مشتریان است."
+                    "The discount percentage is applied to the proforma invoice at "
+                    "purchase time; the tier is only for customer grouping."
                 ),
             },
         ),
-        (
-            "زمان‌ها",
-            {"fields": ("created_at", "updated_at"), "classes": ("collapse",)},
-        ),
+        ("Dates", {"fields": ("created_at", "updated_at"), "classes": ("collapse",)}),
     )
 
-    @admin.action(description="فعال‌سازی عضویت‌های انتخاب‌شده")
+    @admin.action(description="Activate selected memberships")
     def activate_members(self, request, queryset):
-        updated = queryset.update(status=Customer.STATUS_ACTIVE)
-        self.message_user(
-            request, f"{updated} عضویت فعال شد.", messages.SUCCESS
-        )
+        updated = queryset.update(status=Customer.STATUS_ACTIVE, updated_at=timezone.now())
+        self.message_user(request, t("admin_activated").format(n=updated), messages.SUCCESS)
 
-    @admin.action(description="مسدودسازی عضویت‌های انتخاب‌شده")
+    @admin.action(description="Block selected memberships")
     def block_members(self, request, queryset):
-        updated = queryset.update(status=Customer.STATUS_BLOCKED)
-        self.message_user(
-            request, f"{updated} عضویت مسدود شد.", messages.WARNING
-        )
+        updated = queryset.update(status=Customer.STATUS_BLOCKED, updated_at=timezone.now())
+        self.message_user(request, t("admin_blocked").format(n=updated), messages.WARNING)

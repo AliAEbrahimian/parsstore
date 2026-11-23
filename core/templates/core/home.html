@@ -1,6 +1,9 @@
 {% extends "core/base.html" %}
+{% load i18n_extra %}
 
-{% block title %}{{ SITE.name }} | قطعات یدکی ماشین‌های بافندگی پیکانول، ایتما و سایر برندها{% endblock %}
+{% block title %}{{ SITE.name }} | {{ T.home_title }}{% endblock %}
+{% block og_title %}{{ SITE.name }} | {{ T.home_title }}{% endblock %}
+{% block og_description %}{{ T.og_description }}{% endblock %}
 
 {% block content %}
 <section class="hero" id="home">
@@ -9,32 +12,29 @@
     <div class="hero-copy">
       <span class="pill">
         <span class="pill-dot" aria-hidden="true"></span>
-        تأمین قطعات از سال {{ SITE.since }}
+        {{ T.hero_pill }} {{ SITE.since }}
       </span>
 
       <h1>
-        قطعات یدکی
-        <span class="grad">ماشین‌های بافندگی</span>
-        <span class="hero-line">پیکانول، ایتما و دیگر برندها</span>
+        {{ T.hero_h1a }}
+        <span class="grad">{{ T.hero_h1b }}</span>
+        <span class="hero-line">{{ T.hero_h1c }}</span>
       </h1>
 
-      <p class="lead">
-        تأمین تخصصی قطعات یدکی ماشین‌های بافندگی پیکانول، ایتما، سومت، واماتکس و دورنیه.
-        کافی است مدل ماشین، شماره فنی قطعه یا حتی یک تصویر از آن را برای ما بفرستید.
-      </p>
+      <p class="lead">{{ T.hero_lead }}</p>
 
       <div class="hero-actions">
         <a class="btn btn-primary" href="#products">
-          مشاهده دسته‌بندی قطعات
+          {{ T.hero_cta1 }}
           <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
         </a>
-        <a class="btn btn-ghost" href="#contact">استعلام قیمت</a>
+        <a class="btn btn-ghost" href="#contact">{{ T.header_cta }}</a>
       </div>
 
       <ul class="hero-points">
-        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> تضمین اصالت کالا</li>
-        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> موجودی انبار تهران</li>
-        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> ارسال به سراسر کشور</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> {{ T.hero_point1 }}</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> {{ T.hero_point2 }}</li>
+        <li><svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg> {{ T.hero_point3 }}</li>
       </ul>
     </div>
 
@@ -69,20 +69,20 @@
         </div>
 
         <div class="part-rows">
-          <div class="part-row"><span>شناسه قطعه</span><b dir="ltr">PIC-1042-A</b></div>
-          <div class="part-row"><span>وضعیت</span><b class="ok"><span class="status-dot"></span> موجود در انبار</b></div>
-          <div class="part-row"><span>ارسال</span><b>۲۴ ساعت کاری</b></div>
+          <div class="part-row"><span>{{ T.part_id }}</span><b dir="ltr">PIC-1042-A</b></div>
+          <div class="part-row"><span>{{ T.part_status }}</span><b class="ok"><span class="status-dot"></span> {{ T.part_in_stock }}</b></div>
+          <div class="part-row"><span>{{ T.part_shipping }}</span><b>{{ T.part_24h }}</b></div>
         </div>
       </div>
 
-      <span class="float-chip chip-a">اصالت تضمینی</span>
-      <span class="float-chip chip-b">+۱۲٬۰۰۰ قلم قطعه</span>
+      <span class="float-chip chip-a">{{ T.chip_auth }}</span>
+      <span class="float-chip chip-b">{{ T.chip_count }}</span>
     </div>
   </div>
 
   <div class="brand-strip">
     <div class="container">
-      <p class="brand-strip-title">برندهای تحت پوشش</p>
+      <p class="brand-strip-title">{{ T.brand_strip }}</p>
       <ul class="brand-logos">
         {% for brand in brands %}
           <li><b dir="ltr">{{ brand.latin }}</b><span>{{ brand.name }}</span></li>
@@ -95,53 +95,47 @@
 <section class="section about" id="about">
   <div class="container about-grid">
     <div class="about-copy reveal">
-      <p class="eyebrow">درباره فروشگاه</p>
-      <h2>بیش از یک تأمین‌کننده؛ همکار فنی خط بافندگی شما</h2>
-      <p>
-        {{ SITE.name }} از سال {{ SITE.since }} در حوزه تأمین قطعات یدکی ماشین‌های بافندگی فعالیت می‌کند.
-        تمرکز ما روی قطعاتی است که توقف خط تولید را به حداقل می‌رسانند: از یک بوش ساده تا برد کنترل و مجموعه نوزل.
-      </p>
-      <p>
-        با شناخت مدل‌های رایج بازار ایران — پیکانول، سومت، واماتکس، ایتما، دورنیه و … — قطعه درست را
-        سریع‌تر پیدا می‌کنیم و پیش از فروش، سازگاری آن را با ماشین شما بررسی می‌کنیم.
-      </p>
+      <p class="eyebrow">{{ T.about_eyebrow }}</p>
+      <h2>{{ T.about_h2 }}</h2>
+      <p>{{ T.about_p1|fmt:SITE.since }}</p>
+      <p>{{ T.about_p2 }}</p>
 
       <ul class="about-list">
         <li>
           <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
-          <div><b>شناسایی قطعه با تصویر یا شماره فنی</b><span>اگر شماره قطعه را ندارید، از قطعه عکس بفرستید.</span></div>
+          <div><b>{{ T.about_l1t }}</b><span>{{ T.about_l1d }}</span></div>
         </li>
         <li>
           <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
-          <div><b>مشاوره پیش از خرید</b><span>سازگاری قطعه با مدل و سال ساخت ماشین بررسی می‌شود.</span></div>
+          <div><b>{{ T.about_l2t }}</b><span>{{ T.about_l2d }}</span></div>
         </li>
         <li>
           <svg class="icon" aria-hidden="true"><use href="#i-check"></use></svg>
-          <div><b>همراهی پس از فروش</b><span>در صورت نیاز به تنظیم یا نصب، راهنمایی فنی ارائه می‌شود.</span></div>
+          <div><b>{{ T.about_l3t }}</b><span>{{ T.about_l3d }}</span></div>
         </li>
       </ul>
 
       <a class="text-link" href="#contact">
-        گفتگو با کارشناس فنی
+        {{ T.about_link }}
         <svg class="icon" aria-hidden="true"><use href="#i-arrow"></use></svg>
       </a>
     </div>
 
     <aside class="fact-card reveal">
-      <p class="fact-eyebrow">در یک نگاه</p>
-      <p class="fact-number">۱۹ <span>سال</span></p>
-      <p class="fact-note">تجربه در تأمین قطعات صنعت نساجی</p>
+      <p class="fact-eyebrow">{{ T.fact_eyebrow }}</p>
+      <p class="fact-number">{{ stats.0.value }} <span>{{ T.fact_years }}</span></p>
+      <p class="fact-note">{{ T.fact_note }}</p>
       <dl class="fact-list">
-        <div><dt>حوزه فعالیت</dt><dd>قطعات یدکی ماشین بافندگی</dd></div>
-        <div><dt>انبار</dt><dd>تهران — ارسال سراسری</dd></div>
-        <div><dt>پاسخ‌دهی</dt><dd>کمتر از ۲۴ ساعت کاری</dd></div>
-        <div><dt>فروش</dt><dd>تک‌قطعه و عمده</dd></div>
+        <div><dt>{{ T.fact_f1t }}</dt><dd>{{ T.fact_f1d }}</dd></div>
+        <div><dt>{{ T.fact_f2t }}</dt><dd>{{ T.fact_f2d }}</dd></div>
+        <div><dt>{{ T.fact_f3t }}</dt><dd>{{ T.fact_f3d }}</dd></div>
+        <div><dt>{{ T.fact_f4t }}</dt><dd>{{ T.fact_f4d }}</dd></div>
       </dl>
     </aside>
   </div>
 </section>
 
-<section class="stats-band" aria-label="آمار فروشگاه">
+<section class="stats-band" aria-label="{{ T.stats_aria }}">
   <div class="container stats-grid">
     {% for stat in stats %}
       <div class="stat reveal">
@@ -155,12 +149,9 @@
 <section class="section products" id="products">
   <div class="container">
     <div class="section-head reveal">
-      <p class="eyebrow">محصولات و دسته‌بندی‌ها</p>
-      <h2>قطعات پرکاربرد با مشخصات کامل</h2>
-      <p>
-        نمونه‌ای از قطعات موجود در انبار، همراه با تصویر و مشخصات فنی. برای استعلام قیمت،
-        موجودی یا سازگاری با ماشین خود، روی «استعلام قیمت» بزنید.
-      </p>
+      <p class="eyebrow">{{ T.products_eyebrow }}</p>
+      <h2>{{ T.products_h2 }}</h2>
+      <p>{{ T.products_intro }}</p>
     </div>
 
     {% if products %}
@@ -171,14 +162,14 @@
       </div>
 
       <div class="products-all reveal">
-        <a class="btn btn-outline" href="{% url 'core:product_list' %}">
-          مشاهده همهٔ محصولات{% if products_total %} ({{ products_total }} قطعه){% endif %}
+        <a class="btn btn-outline" href="{% url 'core:product_list' %}?lang={{ LANG }}">
+          {{ T.products_all }}{% if products_total %} ({{ products_total }} {{ T.products_piece }}){% endif %}
         </a>
       </div>
 
       <div class="products-subhead reveal">
-        <h3>دسته‌بندی قطعات</h3>
-        <p>اگر شماره فنی قطعه را ندارید، از دسته‌بندی زیر شروع کنید.</p>
+        <h3>{{ T.cat_heading }}</h3>
+        <p>{{ T.cat_intro }}</p>
       </div>
     {% endif %}
 
@@ -201,8 +192,8 @@
     </div>
 
     <p class="products-note reveal">
-      قطعه مورد نظر در فهرست نیست؟
-      <a href="#contact">استعلام کنید</a> — بیش از ۱۲٬۰۰۰ قلم قطعه در انبار موجود است.
+      {{ T.products_note }}
+      <a href="#contact">{{ T.products_note_link }}</a> — {{ T.products_note_tail }}
     </p>
   </div>
 </section>
@@ -210,9 +201,9 @@
 <section class="section brands-section" id="brands">
   <div class="container">
     <div class="section-head reveal">
-      <p class="eyebrow">برندها و مدل‌ها</p>
-      <h2>ماشین‌هایی که برایشان قطعه تأمین می‌کنیم</h2>
-      <p>قطعات مکانیکی، الکترونیکی و مصرفی برای نسل‌های مختلف ماشین‌های بافندگی.</p>
+      <p class="eyebrow">{{ T.brands_eyebrow }}</p>
+      <h2>{{ T.brands_h2 }}</h2>
+      <p>{{ T.brands_intro }}</p>
     </div>
 
     <div class="brand-grid">
@@ -236,13 +227,10 @@
 <section class="section why" id="why">
   <div class="container why-grid">
     <div class="why-intro reveal">
-      <p class="eyebrow">چرا {{ SITE.name }}؟</p>
-      <h2>سفارش قطعه، بدون دغدغه توقف خط</h2>
-      <p>
-        در صنعت نساجی، هر ساعت توقف ماشین هزینه دارد. ما فرآیند پیدا کردن و رساندن قطعه را
-        ساده و شفاف کرده‌ایم تا خط تولید شما سریع‌تر به حرکت برگردد.
-      </p>
-      <a class="btn btn-outline" href="#contact">شروع استعلام</a>
+      <p class="eyebrow">{{ T.why_eyebrow }}</p>
+      <h2>{{ T.why_h2 }}</h2>
+      <p>{{ T.why_intro }}</p>
+      <a class="btn btn-outline" href="#contact">{{ T.why_cta }}</a>
     </div>
 
     <div class="feature-grid">
@@ -262,9 +250,9 @@
 <section class="section steps" id="how">
   <div class="container">
     <div class="section-head reveal">
-      <p class="eyebrow">فرآیند سفارش</p>
-      <h2>در چهار قدم ساده</h2>
-      <p>از استعلام تا تحویل، همه‌چیز روشن و قابل پیگیری است.</p>
+      <p class="eyebrow">{{ T.steps_eyebrow }}</p>
+      <h2>{{ T.steps_h2 }}</h2>
+      <p>{{ T.steps_intro }}</p>
     </div>
 
     <ol class="steps-grid">
@@ -282,11 +270,11 @@
 <section class="section faq" id="faq">
   <div class="container faq-grid">
     <div class="faq-intro reveal">
-      <p class="eyebrow">سؤالات متداول</p>
-      <h2>پاسخ چند پرسش پرتکرار</h2>
-      <p>اگر پاسخ سؤال‌تان را پیدا نکردید، از طریق واتساپ یا تلفن با ما در تماس باشید.</p>
+      <p class="eyebrow">{{ T.faq_eyebrow }}</p>
+      <h2>{{ T.faq_h2 }}</h2>
+      <p>{{ T.faq_intro }}</p>
       <a class="text-link" href="tel:{{ SITE.phone_link }}">
-        تماس با فروشگاه
+        {{ T.faq_call }}
         <svg class="icon" aria-hidden="true"><use href="#i-phone"></use></svg>
       </a>
     </div>
@@ -323,7 +311,7 @@
         {% endfor %}
       </ul>
 
-      <ul class="club-tiers" aria-label="سطوح عضویت">
+      <ul class="club-tiers" aria-label="{{ T.club_tiers_aria }}">
         {% for tier in CLUB.tiers %}
           <li class="club-tier">
             <b>{{ tier.name }}</b>
@@ -335,16 +323,16 @@
     </div>
 
     <div class="form-card reveal">
-      <h3>درخواست عضویت</h3>
-      <p class="form-hint">پس از ثبت، کارشناس ما برای تأیید و اعلام کد عضویت تماس می‌گیرد.</p>
+      <h3>{{ T.club_form_title }}</h3>
+      <p class="form-hint">{{ T.club_form_hint }}</p>
 
-      <form method="post" action="{% url 'core:home' %}#club" class="club-form" novalidate>
+      <form method="post" action="{% url 'core:home' %}?lang={{ LANG }}#club" class="club-form" novalidate>
         {% csrf_token %}
         <input type="hidden" name="form_type" value="club">
         {{ club_form.non_field_errors }}
 
         <div class="hp-field" aria-hidden="true">
-          <label for="{{ club_form.website.id_for_label }}">وب‌سایت</label>
+          <label for="{{ club_form.website.id_for_label }}">{{ T.honeypot }}</label>
           {{ club_form.website }}
           {{ club_form.website.errors }}
         </div>
@@ -378,7 +366,7 @@
         </div>
 
         <button class="btn btn-primary btn-block" type="submit">
-          ثبت درخواست عضویت
+          {{ T.club_submit }}
           <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
         </button>
 
@@ -391,49 +379,46 @@
 <section class="section contact" id="contact">
   <div class="container contact-grid">
     <div class="contact-copy reveal">
-      <p class="eyebrow">تماس و استعلام</p>
-      <h2>قطعه مورد نیازتان را برای ما بفرستید</h2>
-      <p class="lead-sm">
-        مدل ماشین، شماره فنی قطعه یا تصویر آن را ارسال کنید؛ کارشناسان ما موجودی و قیمت را
-        در کمتر از یک روز کاری اعلام می‌کنند.
-      </p>
+      <p class="eyebrow">{{ T.contact_eyebrow }}</p>
+      <h2>{{ T.contact_h2 }}</h2>
+      <p class="lead-sm">{{ T.contact_intro }}</p>
 
       <ul class="contact-list">
         <li>
           <span class="contact-icon"><svg class="icon" aria-hidden="true"><use href="#i-phone"></use></svg></span>
-          <div><span>تلفن فروشگاه</span><a href="tel:{{ SITE.phone_link }}"><span dir="ltr">{{ SITE.phone }}</span></a></div>
+          <div><span>{{ T.contact_phone }}</span><a href="tel:{{ SITE.phone_link }}"><span dir="ltr">{{ SITE.phone }}</span></a></div>
         </li>
         <li>
           <span class="contact-icon"><svg class="icon" aria-hidden="true"><use href="#i-whatsapp"></use></svg></span>
-          <div><span>واتساپ / موبایل</span><a href="{{ SITE.whatsapp }}" target="_blank" rel="noopener"><span dir="ltr">{{ SITE.mobile }}</span></a></div>
+          <div><span>{{ T.contact_whatsapp }}</span><a href="{{ SITE.whatsapp }}" target="_blank" rel="noopener"><span dir="ltr">{{ SITE.mobile }}</span></a></div>
         </li>
         <li>
           <span class="contact-icon"><svg class="icon" aria-hidden="true"><use href="#i-mail"></use></svg></span>
-          <div><span>ایمیل</span><a href="mailto:{{ SITE.email }}">{{ SITE.email }}</a></div>
+          <div><span>{{ T.email }}</span><a href="mailto:{{ SITE.email }}">{{ SITE.email }}</a></div>
         </li>
         <li>
           <span class="contact-icon"><svg class="icon" aria-hidden="true"><use href="#i-pin"></use></svg></span>
-          <div><span>نشانی فروشگاه</span><p>{{ SITE.address }}</p></div>
+          <div><span>{{ T.contact_address }}</span><p>{{ SITE.address }}</p></div>
         </li>
       </ul>
 
       <div class="hours-card">
         <svg class="icon" aria-hidden="true"><use href="#i-clock"></use></svg>
-        <p><b>ساعات کاری</b><span>{{ SITE.hours }}</span></p>
+        <p><b>{{ T.contact_hours }}</b><span>{{ SITE.hours }}</span></p>
       </div>
     </div>
 
     <div class="form-card reveal">
-      <h3>فرم استعلام قیمت</h3>
-      <p class="form-hint">پر کردن فیلدهای ستاره‌دار الزامی است.</p>
+      <h3>{{ T.inquiry_form_title }}</h3>
+      <p class="form-hint">{{ T.inquiry_form_hint }}</p>
 
-      <form method="post" action="{% url 'core:home' %}#contact" class="inquiry-form" novalidate>
+      <form method="post" action="{% url 'core:home' %}?lang={{ LANG }}#contact" class="inquiry-form" novalidate>
         {% csrf_token %}
         <input type="hidden" name="form_type" value="inquiry">
         {{ form.non_field_errors }}
 
         <div class="hp-field" aria-hidden="true">
-          <label for="{{ form.website.id_for_label }}">وب‌سایت</label>
+          <label for="{{ form.website.id_for_label }}">{{ T.honeypot }}</label>
           {{ form.website }}
           {{ form.website.errors }}
         </div>
@@ -472,13 +457,11 @@
         </div>
 
         <button class="btn btn-primary btn-block" type="submit">
-          ارسال استعلام
+          {{ T.inquiry_submit }}
           <svg class="icon" aria-hidden="true"><use href="#i-send"></use></svg>
         </button>
 
-        <p class="form-note">
-          اطلاعات شما فقط برای پاسخ به همین استعلام استفاده می‌شود.
-        </p>
+        <p class="form-note">{{ T.inquiry_note }}</p>
       </form>
     </div>
   </div>

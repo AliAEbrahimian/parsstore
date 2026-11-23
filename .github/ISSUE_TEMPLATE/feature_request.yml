@@ -1,36 +1,36 @@
-name: پیشنهاد ویژگی
-description: ایده یا بهبود برای سایت
+name: Feature request
+description: Suggest an idea or an improvement for the site
 title: "[Feature]: "
 labels: ["enhancement"]
 body:
   - type: textarea
     id: problem
     attributes:
-      label: مشکل یا نیاز
-      description: این پیشنهاد چه مشکلی را حل می‌کند؟
+      label: Problem or need
+      description: What problem would this feature solve?
     validations:
       required: true
 
   - type: textarea
     id: solution
     attributes:
-      label: راه‌حل پیشنهادی
-      description: اگر ایدهٔ مشخصی دارید، اینجا توضیح دهید.
+      label: Proposed solution
+      description: Describe your idea in detail.
     validations:
       required: true
 
   - type: textarea
     id: alternatives
     attributes:
-      label: گزینه‌های دیگر
-      description: آیا راه دیگری را هم بررسی کرده‌اید؟
+      label: Alternatives considered
+      description: Have you considered any other approaches?
     validations:
       required: false
 
   - type: checkboxes
     id: checks
     attributes:
-      label: بررسی‌های نهایی
+      label: Final checks
       options:
-        - label: Issues موجود را جست‌وجو کرده‌ام.
+        - label: I have searched the existing issues.
           required: true

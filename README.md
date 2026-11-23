@@ -1,342 +1,185 @@
-# پارس تکستایل
+[🇬🇧 English](README.md) | [Persian](README_fa.md) | [🇩🇪 Deutsch](README_de.md)
 
-سایت بروشوری برای فروشگاه قطعات یدکی ماشین‌های بافندگی، ساخته‌شده با **جنگو ۵**:
-صفحهٔ اصلی معرفی، **کاتالوگ کامل و صفحه‌بندی‌شدهٔ محصولات** و صفحهٔ جزئیات هر قطعه.
+# parsstore
 
-[![CI](https://github.com/USERNAME/parstextile/actions/workflows/ci.yml/badge.svg)](https://github.com/USERNAME/parstextile/actions/workflows/ci.yml)
+**Weaving machine spare parts — catalogue, quote requests and a customer club, built with Django 5.**
+
+[![CI](https://github.com/AliAEbrahimian/parsstore/actions/workflows/ci.yml/badge.svg)](https://github.com/AliAEbrahimian/parsstore/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12%20%7C%203.13-3776ab?logo=python&logoColor=white)](https://www.python.org/)
 [![Django](https://img.shields.io/badge/django-5.2-092e20?logo=django&logoColor=white)](https://www.djangoproject.com/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-eda33f)](LICENSE)
 
-> 🔗 پیش از انتشار، `USERNAME` را در نشان CI با نام کاربری/سازمان گیت‌هاب خود جایگزین کنید.
+[![AliAEbrahimian's GitHub stats](https://github-readme-stats.vercel.app/api?username=AliAEbrahimian&show_icons=true&theme=radical)](https://github.com/AliAEbrahimian)
+[![Top languages](https://github-readme-stats.vercel.app/api/top-langs/?username=AliAEbrahimian&layout=compact&theme=radical)](https://github.com/AliAEbrahimian)
 
-معرفی فروشگاه قطعات یدکی برندهای پیکانول (Picanol)، ایتما (Itema)، سومت (Somet)،
-واماتکس (Vamatex)، دورنیه (Dornier)، سولزر، تویوتا و تسوداکوما — به‌همراه کاتالوگ
-محصولات با تصویر و مشخصات فنی، فرم استعلام قیمت و **باشگاه مشتریان** با تخفیف
-خرید حضوری/تلفنی. این سایت همچنان **فروشگاه اینترنتی نیست**؛ سبد خرید و پرداخت
-آنلاین ندارد.
+> Replace `AliAEbrahimian` in the badge URLs with your own GitHub username if you fork this repository.
 
 ---
 
-## ✨ ویژگی‌ها
+## 👤 About the maintainer
 
-- صفحهٔ اصلی کامل: هدر، هیرو، درباره ما، آمار، پیش‌نمایش محصولات، برندها و
-  مدل‌ها، مزیت‌ها، مراحل سفارش، سؤالات متداول، باشگاه مشتریان، تماس و فرم استعلام.
-- **کاتالوگ کامل در `/products/` برای ۸۰۰ تا ۱۲۰۰ قطعه**: جست‌وجو در نام، برند،
-  مدل ماشین و خلاصه؛ فیلتر دسته‌بندی و برند؛ صفحه‌بندی سمت سرور (پیش‌فرض ۲۴
-  قطعه) و ایندکس‌های پایگاه‌داده. صفحهٔ اصلی فقط چند قطعهٔ منتخب را نشان می‌دهد.
-- **صفحهٔ جزئیات هر قطعه** در `/products/<id>/` با همهٔ مشخصات فنی، توضیح کامل،
-  قطعات مشابه و دکمهٔ استعلام که پیام فرم تماس را از پیش پر می‌کند.
-- **کاتالوگ محصولات قابل مدیریت از ادمین**: هر محصول تصویر، برند، مدل‌های سازگار،
-  توضیح و مشخصات فنی نامحدود دارد. تصویر اصلی در `media/products/` و نسخهٔ سبک
-  WebP به‌صورت خودکار در `media/products/thumbs/` ساخته می‌شود.
-- **باشگاه مشتریان با تخفیف خرید**: عضویت رایگان با فرم عمومی (وضعیت «در انتظار
-  تأیید»)، فعال‌سازی و تعیین درصد تخفیف در ادمین، و اعمال تخفیف روی پیش‌فاکتور
-  خریدهای تلفنی/حضوری با کد عضویت. بدون فروشگاه اینترنتی و بدون پرداخت آنلاین.
-- فارسی و راست‌به‌چپ با فونت **وزیرمتن** که به‌صورت محلی در پروژه قرار دارد (بدون CDN).
-- سه حالت نمایش **تاریک، روشن و خودکار**؛ حالت خودکار از تنظیم رنگ سیستم‌عامل
-  پیروی می‌کند و انتخاب کاربر در مرورگر ذخیره می‌شود.
-- ظاهر صنعتی با رنگ تأکیدی کهربایی و کاملاً واکنش‌گرا (موبایل، تبلت، دسکتاپ).
-- متن‌های ثابت سایت در `core/content.py`؛ محصولات و اعضای باشگاه در پایگاه‌داده.
-- فرم استعلام و فرم عضویت با اعتبارسنجی سمت سرور، فیلد تلهٔ ضدربات (Honeypot) و
-  محدودسازی نرخ جداگانه برای هر فرم.
-- **اطلاعرسانی ایمیلی دوگانه**: هر استعلام و هر عضویت باشگاه، یک ایمیل تأیید به
-  مشتری و (در صورت تنظیم گیرنده) یک ایمیل اطلاعرسانی به مدیر ارسال میکند.
-- هدرهای امنیتی سخت‌گیرانه، خواندن تنظیمات از محیط و مسیر پنل مدیریت قابل تغییر.
-- صفحه‌های خطای ۴۰۴ و ۵۰۰، فاوآیکون، دادهٔ ساختاریافتهٔ JSON-LD و انیمیشن‌های سبک اسکرول.
-- ۳۶ تست خودکار (صفحه، هدرها، فرم‌ها، کاتالوگ/جست‌وجو/فیلتر/صفحه‌بندی، صفحهٔ
-  جزئیات، تولید بندانگشتی WebP، باشگاه، تم، ۴۰۴) و گردش‌کار CI گیت‌هاب.
+Hi, I'm **Ali** from **Iran**. I'm a **native Persian speaker**, hold a **German B2 certificate**, and am working towards a professional career in **Germany**. Outside of code I enjoy **game development** and **video games**.
+
+- LinkedIn: <https://www.linkedin.com/in/ali-aghaebrahimian/>
+- Email: <2aaghaebrahimian@gmail.com>
+- Telegram: <https://t.me/AliAEbrahimian>
+
+### Languages and tools
+
+<p align="center">
+  <a href="https://www.python.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/python/python-original.svg" alt="Python" width="40" height="40"/></a>
+  <a href="https://www.djangoproject.com/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/django/django-original.svg" alt="Django" width="40" height="40"/></a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/HTML" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/html5/html5-original.svg" alt="HTML5" width="40" height="40"/></a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/CSS" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/css3/css3-original.svg" alt="CSS3" width="40" height="40"/></a>
+  <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/javascript/javascript-original.svg" alt="JavaScript" width="40" height="40"/></a>
+  <a href="https://www.sqlite.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/sqlite/sqlite-original.svg" alt="SQLite" width="40" height="40"/></a>
+  <a href="https://git-scm.com/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/git/git-original.svg" alt="Git" width="40" height="40"/></a>
+  <a href="https://github.com/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/github/github-original.svg" alt="GitHub" width="40" height="40"/></a>
+  <a href="https://www.postgresql.org/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/postgresql/postgresql-original.svg" alt="PostgreSQL" width="40" height="40"/></a>
+  <a href="https://redis.io/" target="_blank" rel="noreferrer"><img src="https://raw.githubusercontent.com/devicons/devicon/master/icons/redis/redis-original.svg" alt="Redis" width="40" height="40"/></a>
+</p>
 
 ---
 
-## 🚀 اجرا در چند قدم
+## 📦 What is parsstore?
+
+`parsstore` is the renamed successor of the former `parstextile` project. It is a **bilingual** (English / German), left-to-right brochure site for a supplier of **weaving-machine spare parts**. It includes a searchable, paginated catalogue, part detail pages, quote forms, a customer club with discounts, and a hardened Django admin.
+
+It is **not** an online shop: there is no cart and no online payment. Prices and stock are confirmed by phone or email.
+
+---
+
+## ✨ Features
+
+- **Two languages**: English (`en`, default) and German (`de`), both left-to-right. Visitors can switch with the header language selector; `?lang=` and a one-year cookie remember the choice, while search/filter query strings are preserved.
+- **Complete catalogue** at `/products/`: search by name, brand, machine model and summary; category/brand filters; server-side pagination (24 items by default); sortable admin with DB indexes. The home page shows only featured parts.
+- **Part detail pages** at `/products/<id>/` with specifications, images, related parts and a quote button that prefills the contact form via `?product=<id>#contact`.
+- **Customer club**: public sign-up creates a pending member; the admin activates the member and sets the discount used on offline/phone proformas.
+- **Automatic WebP thumbnails** generated from admin uploads, with safe file replacement/deletion after transaction commit.
+- **Three display modes** (dark / light / auto), local Vazirmatn font, no CDN, no inline scripts, strict CSP.
+- **Two-layer email flow**: confirmation to the customer and optional notification to the manager; SMTP failures are logged without losing the form submission.
+- **Hardened defaults**: `DEBUG=False`, secret key required outside debug, atomic rate limiting, trusted-proxy opt-in, configurable admin path and shared-cache/Redis support.
+- **Automated tests** covering pages, i18n, forms, catalogue, thumbnails, rate limits, security headers and 404/500 pages.
+
+---
+
+## 🚀 Quick start
 
 ```bash
-# ۱) محیط مجازی
 python -m venv .venv
-.venv\Scripts\activate        # ویندوز
-# source .venv/bin/activate   # لینوکس / مک
+.venv\Scripts\activate        # Windows
+# source .venv/bin/activate   # Linux / macOS
 
-# ۲) نصب پیش‌نیازها (Django و Pillow برای پردازش تصویر)
 pip install -r requirements.txt
+cp .env.example .env
+# For local development only: set DJANGO_DEBUG=1 and a local DJANGO_SECRET_KEY.
 
-# ۳) ساخت جدول‌های پایگاه‌داده
 python manage.py migrate
-
-# ۴) کاربر پنل مدیریت (برای دیدن درخواست‌های استعلام)
 python manage.py createsuperuser
-
-# ۵) اجرا
 python manage.py runserver
 ```
 
-سایت: <http://127.0.0.1:8000> — پنل مدیریت: <http://127.0.0.1:8000/admin/>
+Open <http://127.0.0.1:8000>. The admin is at <http://127.0.0.1:8000/admin/> unless `DJANGO_ADMIN_PATH` is changed.
 
-### آزمون‌ها
+### Verification
 
 ```bash
 python manage.py check
+python manage.py makemigrations --check --dry-run
 python manage.py test
 ```
 
----
-
-## ⚙️ تنظیمات محیطی
-
-هیچ وابستگی بیرونی برای خواندن `.env` وجود ندارد؛ `settings.py` خودش فایل `.env`
-(در صورت وجود) را می‌خواند. نمونهٔ کامل در [`.env.example`](.env.example) است.
-
-| متغیر | پیش‌فرض | توضیح |
-| --- | --- | --- |
-| `DJANGO_DEBUG` | `1` | `0` برای تولید |
-| `DJANGO_SECRET_KEY` | — | در `DEBUG=0` **الزامی** است |
-| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1` | دامنه‌های مجاز، جداشده با کاما |
-| `DJANGO_CSRF_TRUSTED_ORIGINS` | خالی | مثل `https://example.com` |
-| `DJANGO_ADMIN_PATH` | `admin` | مسیر پنل؛ مثلاً `panel-x7k2` |
-| `DJANGO_DB_PATH` | `db.sqlite3` | مسیر پایگاه‌دادهٔ SQLite |
-| `DJANGO_TRUST_PROXY_HEADERS` | `0` | فقط پشت پراکسی مطمئن `1` شود |
-| `INQUIRY_RATE_LIMIT` | `6` | تعداد مجاز استعلام از هر IP |
-| `INQUIRY_RATE_WINDOW` | `600` | بازهٔ محدودیت استعلام (ثانیه) |
-| `CLUB_RATE_LIMIT` | `4` | تعداد مجاز درخواست عضویت از هر IP |
-| `CLUB_RATE_WINDOW` | `3600` | بازهٔ محدودیت عضویت (ثانیه) |
-| `PRODUCTS_HOME_LIMIT` | `6` | تعداد محصولات نمایش‌داده‌شده در صفحهٔ اصلی |
-| `PRODUCTS_PAGE_SIZE` | `24` | تعداد قطعه در هر صفحهٔ کاتالوگ (۶ تا ۹۶) |
-| `CONTACT_NOTIFY_EMAIL` | خالی | گیرندهٔ ایمیل اطلاعرسانی استعلام به مدیر |
-| `CLUB_NOTIFY_EMAIL` | خالی | گیرندهٔ ایمیل اطلاعرسانی عضویت (پیشفرض: `CONTACT_NOTIFY_EMAIL`) |
-| — | — | اگر هر دو خالی باشند، به ایمیل کاربران فعال ادمین ارسال میشود |
-| `DJANGO_EMAIL_*` | console backend | تنظیمات SMTP؛ ایمیل تأیید به مشتری همیشه ارسال میشود |
-| `DJANGO_LOG_LEVEL` | `INFO` | سطح لاگ |
-
-> ⚠️ فایل `.env` را هرگز کامیت نکنید؛ در `.gitignore` قرار دارد.
-
----
-
-## 🗂 ساختار پروژه
-
-```text
-parstextile/
-├─ manage.py
-├─ requirements.txt
-├─ README.md
-├─ SECURITY.md
-├─ CONTRIBUTING.md
-├─ CHANGELOG.md
-├─ DOCUMENTATION.txt        مستند کامل فارسی (خط‌به‌خط)
-├─ LICENSE
-├─ .env.example
-├─ .editorconfig
-├─ .gitattributes
-├─ .github/
-│  ├─ workflows/ci.yml      check + tests روی پایتون ۳٫۱۱ تا ۳٫۱۳
-│  ├─ dependabot.yml
-│  ├─ ISSUE_TEMPLATE/       قالب گزارش باگ و پیشنهاد ویژگی
-│  └─ pull_request_template.md
-├─ parstextile/             تنظیمات و مسیرهای اصلی پروژه
-│  ├─ settings.py           محیط، امنیت، ایمیل، کش و لاگ
-│  ├─ urls.py               مسیر ادمین + ۴۰۴/۵۰۰
-│  ├─ wsgi.py / asgi.py
-├─ core/                    اپ اصلی
-│  ├─ content.py            ★ متن‌های ثابت، برندها، دسته‌بندی‌ها، مزایا و باشگاه
-│  ├─ models.py             Inquiry، Product، ProductSpec، Customer
-│  ├─ images.py             ساخت بندانگشتی WebP از تصویر محصول
-│  ├─ utils.py              تبدیل ارقام فارسی/عربی به لاتین
-│  ├─ forms.py              فرم استعلام + عضویت باشگاه + Honeypot
-│  ├─ views.py              صفحهٔ اصلی، کاتالوگ/جزئیات، فرم‌ها، محدودیت نرخ، ایمیل
-│  ├─ middleware.py         CSP، Permissions-Policy، Referrer-Policy
-│  ├─ admin.py              مدیریت استعلام‌ها، محصولات (با پیش‌نمایش) و اعضا
-│  ├─ context_processors.py SITE و منو برای همهٔ قالب‌ها
-│  ├─ migrations/           0001 اولیه + 0002 محصول/باشگاه + 0003 ایندکس‌ها
-│  ├─ tests.py              ۳۶ تست خودکار
-│  └─ templates/core/       base، home، products، product_detail، کارت مشترک، خطاها
-├─ static/core/
-│  ├─ css/style.css         استایل‌ها + توکن‌های تم تاریک و روشن
-│  ├─ js/theme.js           انتخاب تم (تاریک/روشن/خودکار) پیش از رندر
-│  ├─ js/main.js            منوی موبایل، انیمیشن، پیام‌ها، پیش‌پر کردن استعلام
-│  ├─ fonts/                وزیرمتن (۵ وزن، woff2، محلی)
-│  └─ img/favicon.svg
-├─ media/                   آپلودها (در gitignore) → products/ و products/thumbs/
-└─ templates/               برای بازنویسی قالب‌های آینده (اختیاری)
-```
-
----
-
-## 🎨 سفارشی‌سازی
-
-### متن‌ها و اطلاعات فروشگاه
-
-همه در `core/content.py`:
-
-| مورد | کلید |
-| --- | --- |
-| نام فروشگاه (فارسی/انگلیسی)، شعار، سال شروع فعالیت | `SITE` |
-| تلفن، موبایل/واتساپ، ایمیل، اینستاگرام، نشانی، ساعات کاری | `SITE` |
-| برندها و مدل‌های تحت پوشش | `BRANDS` |
-| دسته‌بندی قطعات | `CATEGORIES` |
-| مزیت‌ها | `FEATURES` |
-| آمار (سال تجربه، تعداد اقلام و…) | `STATS` |
-| مراحل سفارش | `STEPS` |
-| متن‌ها و سطوح باشگاه مشتریان | `CLUB` |
-| سؤالات متداول | `FAQ` |
-
-> شماره‌های تلفن و نشانی فعلی **نمونه** هستند؛ حتماً با اطلاعات واقعی فروشگاه جایگزین شوند.
-
-### محصولات، تصاویر و مشخصات فنی
-
-محصولات از پنل ادمین (`/admin/` → «محصولات») مدیریت می‌شوند. چند محصول منتخب
-در بخش `#products` صفحهٔ اصلی و **همهٔ محصولات** در کاتالوگ `/products/`
-نمایش داده می‌شوند:
-
-1. تصویر اصلی را آپلود کنید؛ نسبت پیشنهادی **۴:۳** (مثلاً ۱۲۰۰×۹۰۰) و حجم
-   کمتر از ۴۰۰ کیلوبایت. فرمت WebP یا JPEG بهترین نتیجه را می‌دهد.
-2. توضیح کوتاه، برند، مدل‌های سازگار و در صورت نیاز توضیح کامل را پر کنید.
-3. در بخش «مشخصات فنی» ردیف‌های دلخواه اضافه کنید (مثلاً شماره فنی، جنس، تلرانس).
-4. با «نمایش در سایت» محصول را منتشر یا مخفی کنید؛ «محصول منتخب» آن را بالاتر
-   می‌آورد و «ترتیب نمایش» عدد کوچک‌تر را جلوتر می‌گذارد.
-
-**کاتالوگ بزرگ:** بخش محصولات صفحهٔ اصلی فقط `PRODUCTS_HOME_LIMIT` قطعه را
-می‌خواند. فهرست کامل در `/products/` است و با `Paginator` جنگو صفحه‌بندی
-می‌شود؛ هر درخواست فقط `PRODUCTS_PAGE_SIZE` ردیف (پیش‌فرض ۲۴) می‌خواند.
-جست‌وجو در نام/برند/مدل ماشین/خلاصه با `icontains` و فیلتر دسته‌بندی/برند روی
-همان کوئری اعمال می‌شود. برای ۸۰۰ تا ۱۲۰۰ قطعه، ایندکس‌های
-`product_active_feat_idx`، `product_category_idx` و `product_brand_idx` در
-مدل `Product` تعریف شده‌اند. اندازهٔ صفحه در بازهٔ ۶ تا ۹۶ محدود می‌شود تا
-پاسخ خیلی سنگین یا صفحهٔ بی‌محتوا ساخته نشود.
-
-**نگهداری تصاویر:** فایل اصلی در `media/products/<سال>/<ماه>/` ذخیره می‌شود و
-هنگام ذخیره، یک بندانگشتی WebP با حداکثر ابعاد ۹۶۰×۹۶۰ و کیفیت ۸۲ در
-`media/products/thumbs/<سال>/<ماه>/` ساخته می‌شود. قالب همیشه ابتدا بندانگشتی
-را با `loading="lazy"` و ابعاد مشخص نمایش می‌دهد؛ بنابراین صفحهٔ اصلی به‌جای
-فایل چندمگابایتی، یک فایل سبک دریافت می‌کند. اگر تصویری عوض شود، فایل قبلی
-حذف می‌شود و با حذف محصول، هر دو فایل پاک می‌شوند. با اکشن **«بازسازی بندانگشتی
-WebP»** می‌توانید برای چند محصول، نسخهٔ بهینه را دوباره بسازید.
-
-> پوشهٔ `media/` در `.gitignore` است و نباید کامیت شود. در تولید، آن را با
-> Nginx (یا سرویس فایل/CDN) سرو کنید و از آن پشتیبان بگیرید.
-
-### باشگاه مشتریان و تخفیف خرید
-
-باشگاه برای **اعمال تخفیف در خرید حضوری یا تلفنی** است؛ سایت هنوز فروشگاه
-اینترنتی نیست و سبد خرید/پرداخت آنلاین ندارد.
-
-1. مشتری فرم «درخواست عضویت» را در بخش `#club` پر می‌کند؛ رکورد با وضعیت
-   **در انتظار تأیید** و کد یکتای `PT-XXXXXX` ذخیره می‌شود.
-2. در ادمین → «باشگاه مشتریان»، عضو را بررسی و وضعیت را **فعال** کنید.
-3. سطح (برنزی/نقره‌ای/طلایی) و **درصد تخفیف** را تعیین کنید؛ این درصد مبنای
-   اعمال تخفیف روی پیش‌فاکتور است (پیش‌فرض ۵٪).
-4. هنگام خرید، مشتری کد عضویت یا شماره موبایل خود را اعلام می‌کند و فروشنده
-   بر اساس `discount_percent` ثبت‌شده تخفیف را روی فاکتور اعمال می‌کند.
-
-شمارهٔ موبایل هر عضو یکتاست و ارقام فارسی/عربی به لاتین تبدیل می‌شوند. برای
-جلوگیری از ثبت تکراری، خطای «این شماره قبلاً در باشگاه مشتریان ثبت شده است»
-نمایش داده می‌شود. متن سطوح و درصدهای نمایشی در `CLUB` داخل `content.py` قابل
-ویرایش است؛ درصد واقعی هر عضو در ادمین تعیین می‌شود.
-
-### رنگ‌ها، ظاهر و حالت نمایش
-
-تم سایت سه حالت دارد: **تاریک**، **روشن** و **خودکار**. حالت خودکار از
-`prefers-color-scheme` سیستم‌عامل پیروی می‌کند و انتخاب کاربر در
-`localStorage` با کلید `parstextile.theme` ذخیره می‌شود.
-
-- پالت تاریک در `:root` ابتدای `static/core/css/style.css`.
-- پالت روشن در بلوک `[data-theme="light"]` همان فایل.
-- برای تغییر رنگ برند، در هر دو پالت `--accent` و مشتقات آن
-  (`--accent-bright`، `--accent-deep`، `--accent-soft`، …) را هماهنگ کنید.
-- رنگ سطح‌ها، متن و خطوط را از توکن‌ها بگیرید؛ از نوشتن رنگ ثابت در
-  قاعده‌های CSS خودداری کنید تا هر دو تم سالم بمانند.
-
-```css
-:root {                 /* تم تاریک */
-  --bg: #080b0e;
-  --text: #e8edf1;
-  --accent: #eda33f;
-}
-
-[data-theme="light"] {  /* تم روشن */
-  --bg: #f6f3ee;
-  --text: #1f252b;
-  --accent: #a4630f;
-}
-```
-
-`theme.js` مقدار نهایی را روی `<html data-theme="dark|light">` و انتخاب کاربر
-را روی `data-theme-mode="dark|light|auto"` می‌گذارد. اگر JS غیرفعال باشد،
-همان تم تاریک پیش‌فرض سرور نمایش داده می‌شود.
-
-### فونت
-
-فایل‌های `woff2` را در `static/core/fonts/` بگذارید و `@font-face`های ابتدای CSS را به‌روز کنید.
-
-### اطلاعرسانی ایمیلی
-
-هرگاه مشتری فرم استعلام یا عضویت باشگاه را ارسال کند، دو ایمیل فرستاده میشود:
-
-1. **ایمیل تأیید به مشتری**: همیشه به آدرسی که در فرم وارد کرده است.
-2. **ایمیل اطلاعرسانی به مدیر**: فقط زمانی که گیرنده تنظیم شده باشد؛
-   `CONTACT_NOTIFY_EMAIL` برای استعلام و `CLUB_NOTIFY_EMAIL` برای عضویت (اگر دومی
-   خالی باشد از اولی استفاده میشود؛ اگر هر دو خالی باشند، به ایمیل کاربران
-   فعال پنل مدیریت (is_staff) ارسال میشود).
-
-پیشفرض `DJANGO_EMAIL_BACKEND` روی console است تا پیامها در ترمینال چاپ شوند.
-برای ارسال واقعی، `DJANGO_EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend`
-و تنظیمات `DJANGO_EMAIL_HOST`، `DJANGO_EMAIL_PORT`، `DJANGO_EMAIL_HOST_USER`،
-`DJANGO_EMAIL_HOST_PASSWORD` و `DJANGO_DEFAULT_FROM_EMAIL` را در `.env` بگذارید.
-خطاهای SMTP فقط لاگ میشوند و ثبت فرم را متوقف نمیکنند.
-
----
-
-## 🔐 امنیت
-
-پروژه برای یک سایت معرفی (بدون پرداخت و دادهٔ حساس) سخت‌سازی شده است:
-
-- **CSP سخت‌گیرانه**: `script-src 'self'`، `style-src 'self'` و بدون هیچ منبع خارجی؛
-  تنها اسکریپت‌های محلی `main.js` و `theme.js` اجرا می‌شوند و هیچ کد inline وجود ندارد.
-- **هدرها**: `Permissions-Policy`، `Referrer-Policy: same-origin`، `nosniff`، `X-Frame-Options: DENY`.
-- **CSRF** روی همهٔ فرم‌ها؛ کوکی‌های امن در حالت تولید.
-- **Honeypot** برای ربات‌های اسپم و **محدودیت نرخ جداگانه** برای استعلام
-  (۶ در ۱۰ دقیقه) و عضویت باشگاه (۴ در ساعت) به‌ازای هر IP.
-- **اعتبارسنجی سمت سرور** و سقف طول همهٔ فیلدها؛ بدون `safe` و بدون کوئری خام SQL.
-- **آپلود تصویر فقط از پنل ادمین**: فایل با Pillow باز و به WebP تبدیل می‌شود؛
-  آپلود عمومی وجود ندارد و `media/` فقط فایل‌های تولیدشده را نگه می‌دارد.
-- **مسیر ادمین قابل تغییر** و الزام `DJANGO_SECRET_KEY` وقتی `DEBUG=False` است.
-
-قبل از انتشار:
+For a production-like check:
 
 ```bash
 DJANGO_DEBUG=0 \
-DJANGO_SECRET_KEY="<کلید تصادفی ۵۰+ نویسه‌ای>" \
+DJANGO_SECRET_KEY="<random-50+-character-key>" \
 DJANGO_ALLOWED_HOSTS="example.com" \
 DJANGO_SECURE_SSL_REDIRECT=1 \
 DJANGO_SECURE_HSTS_SECONDS=31536000 \
+DJANGO_SECURE_HSTS_PRELOAD=1 \
 python manage.py check --deploy
 ```
 
-نتیجهٔ مورد انتظار: `System check identified no issues (0 silenced).`
+---
 
-جزئیات بیشتر و راه گزارش آسیب‌پذیری: [SECURITY.md](SECURITY.md)
+## ⚙️ Environment variables
+
+Settings are read from the real environment or a local `.env` file (no extra dependency). See [`.env.example`](.env.example).
+
+| Variable | Default | Purpose |
+| --- | --- | --- |
+| `DJANGO_DEBUG` | `0` | Set to `1` only for local development |
+| `DJANGO_SECRET_KEY` | — | Required when `DEBUG=0` |
+| `DJANGO_ALLOWED_HOSTS` | `localhost,127.0.0.1,[::1]` | Comma-separated hostnames |
+| `DJANGO_CSRF_TRUSTED_ORIGINS` | empty | e.g. `https://example.com` |
+| `DJANGO_ADMIN_PATH` | `admin` | Change the admin URL slug |
+| `DJANGO_DB_PATH` | `db.sqlite3` | SQLite database path |
+| `DJANGO_CACHE_BACKEND` | LocMemCache | Custom Django cache backend |
+| `DJANGO_REDIS_URL` | empty | e.g. `redis://127.0.0.1:6379/1` for shared rate limits |
+| `DJANGO_TRUST_PROXY_HEADERS` | `0` | Enable only behind a trusted reverse proxy |
+| `DJANGO_TRUSTED_PROXY_COUNT` | `1` | Number of trusted proxy hops for `X-Forwarded-For` |
+| `INQUIRY_RATE_LIMIT` / `INQUIRY_RATE_WINDOW` | `6` / `600` | Quote-request throttle |
+| `CLUB_RATE_LIMIT` / `CLUB_RATE_WINDOW` | `4` / `3600` | Membership throttle |
+| `PRODUCTS_HOME_LIMIT` / `PRODUCTS_PAGE_SIZE` | `6` / `24` | Catalogue display limits |
+| `CONTACT_NOTIFY_EMAIL` / `CLUB_NOTIFY_EMAIL` | empty | Manager notification recipients |
+| `DJANGO_EMAIL_*` | console backend | SMTP configuration; `EMAIL_TIMEOUT` defaults to 10s |
+| `DJANGO_LOG_LEVEL` | `INFO` | Root log level |
+
+> Never commit `.env`, `db.sqlite3` or `media/`.
 
 ---
 
-## 🚢 استقرار در تولید
+## 🗂 Project structure
 
-1. `DJANGO_DEBUG=0`، `DJANGO_SECRET_KEY` تصادفی و `DJANGO_ALLOWED_HOSTS` واقعی را تنظیم کنید.
-2. `python manage.py collectstatic` و سرو فایل‌های استاتیک با Nginx (یا WhiteNoise).
-3. برنامه را با Gunicorn/uvicorn اجرا کنید (نه `runserver`).
-4. HTTPS و HSTS را فعال کنید (`DJANGO_SECURE_SSL_REDIRECT=1`).
-5. پوشهٔ `media/` را با Nginx سرو کنید و دسترسی اجرای اسکریپت در آن را ببندید؛
-   سقف حجم آپلود ادمین (مثلاً `client_max_body_size 5m;`) را تعیین کنید.
-6. برای ترافیک واقعی، پایگاه‌داده را به PostgreSQL و کش محدودیت نرخ را به Redis منتقل کنید.
-7. از `db.sqlite3` (یا PostgreSQL)، پوشهٔ `media/` و `.env` نسخهٔ پشتیبان بگیرید.
-8. اگر بندانگشتی‌ها را بازسازی کردید، مطمئن شوید مجوز نوشتن `media/products/thumbs/`
-   برای کاربر وب‌سرور وجود دارد.
+```text
+parsstore/
+├─ manage.py
+├─ requirements.txt
+├─ README.md / README_fa.md / README_de.md
+├─ DOCUMENTATION.txt / RESUME.txt
+├─ parsstore/                 project settings and URLs
+│  ├─ settings.py             env, security, i18n, cache, email, logging
+│  └─ urls.py                 admin + custom 404/500 handlers
+├─ core/
+│  ├─ content.py              English source content
+│  ├─ content_i18n.py         German content and merge logic
+│  ├─ i18n.py                 bilingual UI strings and helpers
+│  ├─ middleware.py           language + security headers
+│  ├─ context_processors.py   SITE, NAV, T, language-switch URLs
+│  ├─ models.py / forms.py / views.py / admin.py
+│  ├─ images.py / utils.py    WebP thumbnails / phone normalisation
+│  ├─ tests.py                automated test suite
+│  └─ templates/core/         base, home, catalogue, detail, cards, errors
+└─ static/core/               CSS, JS, local fonts, favicon
+```
 
 ---
 
-## 🤝 مشارکت
+## 🌐 Translation notes
 
-پیش از ارسال Pull Request، [CONTRIBUTING.md](CONTRIBUTING.md) را بخوانید.
-برای گزارش باگ از قالب Issue استفاده کنید و آسیب‌پذیری‌های امنیتی را خصوصی گزارش دهید.
+- UI strings live in `core/i18n.py`; longer display content lives in `core/content.py` (English source) and `core/content_i18n.py` (German overrides).
+- Add a key to both languages in `UI` and use `{{ T.key }}` in templates or `t("key")` in Python.
+- Language links keep the current path and non-language query parameters, so filtering still works after a switch.
 
-## 📄 مجوز
+---
 
-این پروژه تحت مجوز [MIT](LICENSE) منتشر شده است.
-نام و اطلاعات تماس فعلی نمونه هستند و متعلق به برند واقعی نیستند.
+## 🔐 Security
+
+Strict CSP without external origins, CSRF, honeypot fields, atomic per-IP throttling, validated GET filters, server-side validation, safe image handling, opt-in proxy trust, and production deployment checks are included. The full configuration reference is in `DOCUMENTATION.txt`.
+
+---
+
+## 🚢 Deployment notes
+
+1. Set `DEBUG=0`, a random `SECRET_KEY`, real `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS`.
+2. Use a shared cache (Redis) when running more than one worker so rate limits are consistent.
+3. Run `collectstatic`, serve `staticfiles/` and `media/` through Nginx, and disable script execution in `media/`.
+4. Run Gunicorn/uvicorn behind HTTPS; enable `SECURE_SSL_REDIRECT` and HSTS.
+5. Back up the database, `media/` and `.env` separately.
+
+---
+
+## 🤝 Contributing & licence
+
+Released under the [MIT licence](LICENSE). Report bugs or suggest features with the GitHub issue templates. The shop details shown in the demo content are examples.
